@@ -1,7 +1,7 @@
 // Structural edits shared by editor commands (mutate `doc`; safe on an immer draft).
 import type { IdGenerator } from './ids';
 import { rebuildRisers } from './risers';
-import type { ProjectDoc } from './types';
+import type { ConduitSegment, PlanNode, Point, ProjectDoc } from './types';
 
 export interface CascadeSummary {
   nodeIds: string[];
@@ -107,4 +107,138 @@ function renumberFloors(doc: ProjectDoc): void {
     .forEach((f, i) => {
       doc.floors.find((x) => x.id === f.id)!.order = i;
     });
+}
+
+/** Moves nodes; vertices of segments with both ends moved follow along. */
+export function moveNodes(doc: ProjectDoc, nodeIds: string[], delta: Point): void {
+  const ids = new Set(nodeIds);
+  for (const n of doc.nodes) {
+    if (ids.has(n.id)) n.position = { x: n.position.x + delta.x, y: n.position.y + delta.y };
+  }
+  for (const s of doc.segments) {
+    if (ids.has(s.fromNodeId) && ids.has(s.toNodeId)) {
+      s.vertices = s.vertices.map((v) => ({ x: v.x + delta.x, y: v.y + delta.y }));
+    }
+  }
+}
+
+export interface Clipboard {
+  nodes: PlanNode[];
+  segments: ConduitSegment[];
+}
+
+/** Copies nodes (panels excluded) and the segments between them. */
+export function copyNodes(doc: ProjectDoc, nodeIds: string[]): Clipboard {
+  const ids = new Set(nodeIds);
+  const nodes = doc.nodes.filter((n) => ids.has(n.id) && n.kind !== 'panel');
+  const kept = new Set(nodes.map((n) => n.id));
+  return structuredClone({
+    nodes,
+    segments: doc.segments.filter((s) => kept.has(s.fromNodeId) && kept.has(s.toNodeId)),
+  });
+}
+
+/**
+ * Pastes a clipboard onto `floorId` shifted by `offset`, with new ids. Pasted riser points
+ * get a new riserGroupId (unlinked). Returns the new node ids.
+ */
+export function pasteNodes(
+  doc: ProjectDoc,
+  clipboard: Clipboard,
+  floorId: string,
+  offset: Point,
+  genId: IdGenerator,
+): string[] {
+  const idMap = new Map<string, string>();
+  const groupMap = new Map<string, string>();
+  const created: string[] = [];
+  for (const n of clipboard.nodes) {
+    const id = genId();
+    idMap.set(n.id, id);
+    created.push(id);
+    const copy: PlanNode = {
+      ...structuredClone(n),
+      id,
+      floorId,
+      position: { x: n.position.x + offset.x, y: n.position.y + offset.y },
+    };
+    if (copy.riserGroupId !== undefined) {
+      const group = groupMap.get(copy.riserGroupId) ?? genId();
+      groupMap.set(copy.riserGroupId, group);
+      copy.riserGroupId = group;
+    }
+    doc.nodes.push(copy);
+  }
+  for (const s of clipboard.segments) {
+    doc.segments.push({
+      ...structuredClone(s),
+      id: genId(),
+      fromNodeId: idMap.get(s.fromNodeId)!,
+      toNodeId: idMap.get(s.toNodeId)!,
+      vertices: s.vertices.map((v) => ({ x: v.x + offset.x, y: v.y + offset.y })),
+    });
+  }
+  return created;
+}
+
+/**
+ * Links a riser point to the adjacent floor above or below: creates the matching riser point
+ * there (same position and group) when the group has none on that floor. Returns its id.
+ */
+export function linkRiser(
+  doc: ProjectDoc,
+  nodeId: string,
+  direction: 'up' | 'down',
+  genId: IdGenerator,
+): string | null {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  if (!node || node.kind !== 'riser_point') return null;
+  const floors = [...doc.floors].sort((a, b) => a.order - b.order);
+  const index = floors.findIndex((f) => f.id === node.floorId);
+  const target = floors[index + (direction === 'up' ? 1 : -1)];
+  if (!target) return null;
+  node.riserGroupId ??= genId();
+  const existing = doc.nodes.find(
+    (n) =>
+      n.kind === 'riser_point' && n.floorId === target.id && n.riserGroupId === node.riserGroupId,
+  );
+  if (existing) return existing.id;
+  const id = genId();
+  doc.nodes.push({
+    id,
+    floorId: target.id,
+    kind: 'riser_point',
+    position: { ...node.position },
+    label: node.label,
+    status: node.status,
+    riserGroupId: node.riserGroupId,
+  });
+  rebuildRisers(doc, genId);
+  return id;
+}
+
+/** Detaches a riser point from its group; its riser segments go away. */
+export function unlinkRiser(doc: ProjectDoc, nodeId: string, genId: IdGenerator): string[] {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  if (!node || node.kind !== 'riser_point') return [];
+  node.riserGroupId = genId();
+  return rebuildRisers(doc, genId);
+}
+
+const labelPrefix: Record<PlanNode['kind'], string> = {
+  panel: 'Q',
+  junction_box: 'J',
+  terminal_box: 'B',
+  riser_point: 'R',
+};
+
+/** Next free default label for a node kind: Q1, J3, B12, R2. */
+export function nextNodeLabel(doc: ProjectDoc, kind: PlanNode['kind']): string {
+  const prefix = labelPrefix[kind];
+  let max = 0;
+  for (const n of doc.nodes) {
+    const m = n.kind === kind ? new RegExp(`^${prefix}(\\d+)$`).exec(n.label) : null;
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `${prefix}${max + 1}`;
 }

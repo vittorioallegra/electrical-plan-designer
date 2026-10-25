@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router';
+import { CatalogProvider } from '../catalog/useCatalog';
 import { useAuth } from './AuthProvider';
 
 /** Protected routes. On sign-out or session expiry, redirects to /login and comes back after. */
@@ -14,5 +15,9 @@ export function RequireAuth() {
     const next = `${location.pathname}${location.search}`;
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
   }
-  return <Outlet />;
+  return (
+    <CatalogProvider>
+      <Outlet />
+    </CatalogProvider>
+  );
 }

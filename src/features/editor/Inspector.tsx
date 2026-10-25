@@ -6,19 +6,39 @@ import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { formatLength } from '@/ui/format';
 import { NumberInput } from '@/ui/NumberInput';
+import { NodeInspector } from './NodeInspector';
+import { SegmentInspector } from './SegmentInspector';
 
-export function Inspector({ onImport }: { onImport: () => void }) {
+export function Inspector({
+  onImport,
+  onDelete,
+}: {
+  onImport: () => void;
+  onDelete: (ids: string[]) => void;
+}) {
   const { t } = useTranslation();
   const selection = useEditor((s) => s.ui.selection);
-  const wall = useEditor((s) =>
-    s.ui.selection.length === 1
-      ? s.data.doc.floors.flatMap((f) => f.walls).find((w) => w.id === s.ui.selection[0])
-      : undefined,
-  );
-  if (wall) return <WallInspector wall={wall} />;
+  const readOnly = useEditor((s) => s.readOnly);
+  const doc = useEditor((s) => s.data.doc);
+  if (selection.length === 1) {
+    const id = selection[0]!;
+    const node = doc.nodes.find((n) => n.id === id);
+    if (node) return <NodeInspector node={node} onDelete={() => onDelete([id])} />;
+    const segment = doc.segments.find((s) => s.id === id);
+    if (segment) return <SegmentInspector segment={segment} onDelete={() => onDelete([id])} />;
+    const wall = doc.floors.flatMap((f) => f.walls).find((w) => w.id === id);
+    if (wall) return <WallInspector wall={wall} />;
+  }
   if (selection.length > 1) {
     return (
-      <p className="text-text-muted">{t('inspector.multiple', { count: selection.length })}</p>
+      <div className="flex flex-col gap-2">
+        <p className="text-text-muted">{t('inspector.multiple', { count: selection.length })}</p>
+        <p className="text-text-muted">{t('inspector.multipleHint')}</p>
+        <Button variant="danger" disabled={readOnly} onClick={() => onDelete(selection)}>
+          <Trash2 size={16} />
+          {t('inspector.delete')}
+        </Button>
+      </div>
     );
   }
   return <BackgroundPanel onImport={onImport} />;

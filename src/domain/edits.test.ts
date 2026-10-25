@@ -3,7 +3,18 @@ import demo from '../../tests/fixtures/demo-project.json';
 import { createCatalogLookup } from './catalog/lookup';
 import { runChecks } from './checks';
 import { defaultProjectSettings } from './defaults';
-import { cascadeOf, deleteElements, deleteFloor, moveFloor } from './edits';
+import {
+  cascadeOf,
+  copyNodes,
+  deleteElements,
+  deleteFloor,
+  linkRiser,
+  moveFloor,
+  moveNodes,
+  nextNodeLabel,
+  pasteNodes,
+  unlinkRiser,
+} from './edits';
 import { projectDocSchema } from './schema';
 import type { ProjectDoc } from './types';
 
@@ -76,5 +87,64 @@ describe('structural edits', () => {
       'f1',
     ]);
     expect(projectDocSchema.safeParse(d).success).toBe(true);
+  });
+});
+
+describe('node edits', () => {
+  // protects=move keeps conduit shape; fails_when=moving both ends leaves vertices behind; no_claim=snapping
+  it('moves nodes and the vertices of segments between them', () => {
+    const d = fresh();
+    moveNodes(d, ['n_jb1', 'n_s1'], { x: 1, y: 0 });
+    expect(d.nodes.find((n) => n.id === 'n_s1')!.position).toEqual({ x: 6, y: 3 });
+    expect(d.segments.find((s) => s.id === 's02')!.vertices).toEqual([{ x: 6, y: 1.5 }]);
+    // s01 has only one moved end: no vertices to move, the end follows the node by reference.
+    expect(d.segments.find((s) => s.id === 's01')!.vertices).toEqual([]);
+  });
+
+  // protects=copy/paste; fails_when=pasted boxes share ids or risers stay linked; no_claim=clipboard API
+  it('copies and pastes nodes with contents and inner segments, risers unlinked', () => {
+    const d = fresh();
+    const clip = copyNodes(d, ['n_jb1', 'n_s1', 'n_r0', 'n_panel']);
+    expect(clip.nodes.map((n) => n.id)).toEqual(['n_jb1', 'n_s1', 'n_r0']);
+    expect(clip.segments.map((s) => s.id)).toEqual(['s02']);
+    const created = pasteNodes(d, clip, 'f0', { x: 0.5, y: 0.5 }, genId);
+    const pasted = d.nodes.filter((n) => created.includes(n.id));
+    expect(pasted.find((n) => n.label === 'Kitchen socket')!.contents).toHaveLength(3);
+    expect(pasted.find((n) => n.kind === 'riser_point')!.riserGroupId).not.toBe('rg1');
+    expect(projectDocSchema.safeParse(d).success).toBe(true);
+  });
+
+  // protects=riser linking; fails_when=linking does not create the riser point and segment; no_claim=—
+  it('links a riser point to the floor above and creates the riser segment', () => {
+    const d = fresh();
+    d.nodes.push({
+      id: 'rx',
+      floorId: 'f1',
+      kind: 'riser_point',
+      position: { x: 2, y: 2 },
+      label: 'R9',
+      status: 'active',
+    });
+    const above = linkRiser(d, 'rx', 'up', genId)!;
+    expect(d.nodes.find((n) => n.id === above)).toMatchObject({
+      floorId: 'f2',
+      position: { x: 2, y: 2 },
+    });
+    expect(
+      d.segments.some(
+        (s) => [s.fromNodeId, s.toNodeId].sort().join() === [above, 'rx'].sort().join(),
+      ),
+    ).toBe(true);
+    expect(linkRiser(d, above, 'up', genId)).toBeNull();
+    const removed = unlinkRiser(d, above, genId);
+    expect(removed).toHaveLength(1);
+  });
+
+  // protects=default labels; fails_when=a new box reuses an existing label number; no_claim=—
+  it('numbers default labels per kind', () => {
+    const d = fresh();
+    expect(nextNodeLabel(d, 'junction_box')).toBe('J1');
+    d.nodes.push({ ...d.nodes[1]!, id: 'x', label: 'J7' });
+    expect(nextNodeLabel(d, 'junction_box')).toBe('J8');
   });
 });

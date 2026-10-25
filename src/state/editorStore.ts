@@ -23,7 +23,15 @@ interface HistoryEntry {
   inverse: Patch[];
 }
 
-export type Tool = 'select' | 'wall' | 'calibrate';
+export type Tool =
+  | 'select'
+  | 'wall'
+  | 'calibrate'
+  | 'panel'
+  | 'junction_box'
+  | 'terminal_box'
+  | 'riser_point'
+  | 'conduit';
 
 export interface EditorUi {
   floorId: string;

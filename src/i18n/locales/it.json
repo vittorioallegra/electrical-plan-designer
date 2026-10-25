@@ -97,7 +97,13 @@
       "deleteTitle": "Eliminare {{name}}?",
       "deleteBody": "Rimuove {{nodes}} elementi e {{segments}} tratti di tubo; {{circuits}} circuiti sono coinvolti. Annulla li ripristina."
     },
-    "emptyCanvas": "Parti dalla pianta: importa un PDF o un'immagine, oppure disegna i muri."
+    "emptyCanvas": "Parti dalla pianta: importa un PDF o un'immagine, oppure disegna i muri.",
+    "deleteConfirm": {
+      "title": "Eliminare la selezione?",
+      "body": "Vengono rimossi {{nodes}} elementi e {{segments}} tratti di tubo.",
+      "circuits": "Questi circuiti perdono destinazioni o il percorso manuale:",
+      "done": "Eliminato. Annulla lo ripristina."
+    }
   },
   "catalog": {
     "builtin": {
@@ -157,7 +163,8 @@
       "tv_socket": "Presa TV",
       "two_way_switch": "Deviatore",
       "usb_charger": "Caricatore USB"
-    }
+    },
+    "missingItem": "Articolo di catalogo mancante ({{id}})"
   },
   "common": {
     "loading": "Caricamento…",
@@ -237,7 +244,17 @@
     "select": "Seleziona",
     "wall": "Muri",
     "calibrate": "Calibra",
-    "drawWalls": "Disegna muri"
+    "drawWalls": "Disegna muri",
+    "panel": "Quadro",
+    "junctionBox": "Scatola di derivazione",
+    "terminalBox": "Scatola",
+    "riser": "Risalita",
+    "conduit": "Tubo",
+    "hints": {
+      "conduit": "Clicca una scatola per iniziare, clicca per le curve, clicca una scatola per finire. Invio termina con una nuova scatola di derivazione, Backspace toglie una curva, Esc annulla.",
+      "wall": "Clicca per aggiungere gli angoli del muro; clicca di nuovo l'ultimo punto o premi Esc per fermarti. Tieni premuto Alt per disattivare lo snap.",
+      "place": "Clicca sulla pianta per posizionare. Una scatola di derivazione su un tubo lo divide."
+    }
   },
   "inspector": {
     "multiple": "{{count}} elementi selezionati",
@@ -251,6 +268,34 @@
       "ay": "Inizio Y",
       "bx": "Fine X",
       "by": "Fine Y"
+    },
+    "multipleHint": "Trascina per spostarli insieme; Alt+trascina duplica.",
+    "node": {
+      "label": "Etichetta",
+      "x": "Posizione X",
+      "y": "Posizione Y",
+      "mounting": "Montaggio",
+      "provision": "Predisposizione (solo tubo, senza cavo)",
+      "customHeight": "Altezza specifica",
+      "useDefault": "Usa predefinita",
+      "heightValue": "Centro scatola a {{height}} dal pavimento",
+      "boxItem": "Tipo scatola",
+      "noBox": "Nessuna"
+    },
+    "segment": {
+      "title": "Tratto di tubo",
+      "riserTitle": "Risalita",
+      "ends": "{{from}} → {{to}}",
+      "total": "Lunghezza con calate",
+      "plan": "Lunghezza in pianta",
+      "conduit": "Tubo",
+      "runElevation": "Quota tubo"
+    },
+    "riser": {
+      "title": "Piani collegati",
+      "link": "Collega a {{floor}}",
+      "linked": "Collegato a {{floor}}",
+      "unlink": "Scollega"
     }
   },
   "background": {
@@ -287,5 +332,17 @@
       "render_failed": "Impossibile convertire la pagina.",
       "upload_failed": "Caricamento non riuscito. Controlla la connessione e riprova."
     }
+  },
+  "nodeKind": {
+    "panel": "Quadro",
+    "junction_box": "Scatola di derivazione",
+    "terminal_box": "Scatola terminale",
+    "riser_point": "Punto di risalita"
+  },
+  "mounting": {
+    "socket": "Altezza prese",
+    "switch": "Altezza interruttori",
+    "ceiling": "Soffitto",
+    "custom": "Altezza personalizzata"
   }
 }

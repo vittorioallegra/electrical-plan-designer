@@ -1,14 +1,45 @@
-import { BrickWall, MousePointer2, Ruler } from 'lucide-react';
+import { BrickWall, MousePointer2, Ruler, Spline } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import type { Tool } from '@/state/editorStore';
 import { cn } from '@/ui/cn';
+import { ElectricalSymbol } from '@/ui/ElectricalSymbol';
 
-const tools: { tool: Tool; icon: typeof MousePointer2; key: string; shortcut: string }[] = [
-  { tool: 'select', icon: MousePointer2, key: 'tools.select', shortcut: 'V' },
-  { tool: 'wall', icon: BrickWall, key: 'tools.wall', shortcut: 'W' },
-  { tool: 'calibrate', icon: Ruler, key: 'tools.calibrate', shortcut: 'K' },
+const tools: { tool: Tool; icon: ReactNode; key: string; shortcut: string }[] = [
+  { tool: 'select', icon: <MousePointer2 size={16} />, key: 'tools.select', shortcut: 'V' },
+  {
+    tool: 'panel',
+    icon: <ElectricalSymbol kind="panel" size={16} />,
+    key: 'tools.panel',
+    shortcut: 'P',
+  },
+  {
+    tool: 'junction_box',
+    icon: <ElectricalSymbol kind="junction_box" size={16} />,
+    key: 'tools.junctionBox',
+    shortcut: 'J',
+  },
+  {
+    tool: 'terminal_box',
+    icon: <ElectricalSymbol kind="socket" size={16} />,
+    key: 'tools.terminalBox',
+    shortcut: 'B',
+  },
+  {
+    tool: 'riser_point',
+    icon: <ElectricalSymbol kind="riser" size={16} />,
+    key: 'tools.riser',
+    shortcut: 'R',
+  },
+  { tool: 'conduit', icon: <Spline size={16} />, key: 'tools.conduit', shortcut: 'C' },
+  { tool: 'wall', icon: <BrickWall size={16} />, key: 'tools.wall', shortcut: 'W' },
+  { tool: 'calibrate', icon: <Ruler size={16} />, key: 'tools.calibrate', shortcut: 'K' },
 ];
+
+export const toolShortcuts: Record<string, Tool> = Object.fromEntries(
+  tools.map((t) => [t.shortcut.toLowerCase(), t.tool]),
+);
 
 export function ToolPalette() {
   const { t } = useTranslation();
@@ -18,11 +49,14 @@ export function ToolPalette() {
   const hasBackground = useEditor(
     (s) => !!s.data.doc.floors.find((f) => f.id === s.ui.floorId)?.background,
   );
+  const hasPanel = useEditor((s) => s.data.doc.panels.length > 0);
   return (
     <div role="toolbar" aria-label={t('editor.tools')} className="flex flex-col gap-0.5">
-      {tools.map(({ tool, icon: Icon, key, shortcut }) => {
+      {tools.map(({ tool, icon, key, shortcut }) => {
         const disabled =
-          (readOnly && tool !== 'select') || (tool === 'calibrate' && !hasBackground);
+          (readOnly && tool !== 'select') ||
+          (tool === 'calibrate' && !hasBackground) ||
+          (tool === 'panel' && hasPanel);
         return (
           <button
             key={tool}
@@ -36,8 +70,9 @@ export function ToolPalette() {
             )}
             onClick={() => store.getState().setUi({ tool, selection: [] })}
           >
-            <Icon size={16} />
-            {t(key)}
+            {icon}
+            <span className="flex-1">{t(key)}</span>
+            <kbd className="text-xs opacity-60">{shortcut}</kbd>
           </button>
         );
       })}
@@ -45,4 +80,21 @@ export function ToolPalette() {
   );
 }
 
-export const toolShortcuts: Record<string, Tool> = { v: 'select', w: 'wall', k: 'calibrate' };
+/** Hint shown over the canvas for the active tool. */
+export function toolHintKey(tool: Tool): string | null {
+  switch (tool) {
+    case 'calibrate':
+      return 'background.calibrateClick';
+    case 'conduit':
+      return 'tools.hints.conduit';
+    case 'wall':
+      return 'tools.hints.wall';
+    case 'panel':
+    case 'junction_box':
+    case 'terminal_box':
+    case 'riser_point':
+      return 'tools.hints.place';
+    case 'select':
+      return null;
+  }
+}

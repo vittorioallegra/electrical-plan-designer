@@ -61,3 +61,24 @@ export function worldToBackground(background: Background, world: Point): Point |
     y: (dx * Math.sin(rad) + dy * Math.cos(rad)) / scale,
   };
 }
+
+/** Closest point of a polyline to `p`: distance, point and the index of the hit edge. */
+export function projectOnPolyline(
+  points: readonly Point[],
+  p: Point,
+): { distance: number; point: Point; edgeIndex: number } {
+  let best = { distance: Infinity, point: points[0] ?? p, edgeIndex: 0 };
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]!;
+    const b = points[i]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy;
+    const t =
+      len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    const q = { x: a.x + t * dx, y: a.y + t * dy };
+    const d = distance(p, q);
+    if (d < best.distance) best = { distance: d, point: q, edgeIndex: i - 1 };
+  }
+  return best;
+}

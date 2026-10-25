@@ -97,7 +97,13 @@
       "deleteTitle": "Delete {{name}}?",
       "deleteBody": "Removes {{nodes}} elements and {{segments}} conduit segments; {{circuits}} circuits are affected. Undo restores them."
     },
-    "emptyCanvas": "Start from the floor plan: import a PDF or image, or draw the walls."
+    "emptyCanvas": "Start from the floor plan: import a PDF or image, or draw the walls.",
+    "deleteConfirm": {
+      "title": "Delete the selection?",
+      "body": "This removes {{nodes}} elements and {{segments}} conduit segments.",
+      "circuits": "These circuits lose targets or their manual route:",
+      "done": "Deleted. Undo brings it back."
+    }
   },
   "catalog": {
     "builtin": {
@@ -157,7 +163,8 @@
       "tv_socket": "TV socket",
       "two_way_switch": "Two-way switch",
       "usb_charger": "USB charger"
-    }
+    },
+    "missingItem": "Missing catalog item ({{id}})"
   },
   "common": {
     "loading": "Loading…",
@@ -237,7 +244,17 @@
     "select": "Select",
     "wall": "Walls",
     "calibrate": "Calibrate",
-    "drawWalls": "Draw walls"
+    "drawWalls": "Draw walls",
+    "panel": "Panel",
+    "junctionBox": "Junction box",
+    "terminalBox": "Box",
+    "riser": "Riser",
+    "conduit": "Conduit",
+    "hints": {
+      "conduit": "Click a box to start, click to add bends, click a box to finish. Enter ends at a new junction box, Backspace removes a bend, Esc cancels.",
+      "wall": "Click to add wall corners; click the last point again or press Esc to stop. Hold Alt to disable snapping.",
+      "place": "Click on the plan to place. A junction box dropped on a conduit splits it."
+    }
   },
   "inspector": {
     "multiple": "{{count}} elements selected",
@@ -251,6 +268,34 @@
       "ay": "Start Y",
       "bx": "End X",
       "by": "End Y"
+    },
+    "multipleHint": "Drag to move them together; Alt-drag duplicates.",
+    "node": {
+      "label": "Label",
+      "x": "Position X",
+      "y": "Position Y",
+      "mounting": "Mounting",
+      "provision": "Provision (conduit only, no wire yet)",
+      "customHeight": "Height override",
+      "useDefault": "Use default",
+      "heightValue": "Box center at {{height}} from the floor",
+      "boxItem": "Box type",
+      "noBox": "None"
+    },
+    "segment": {
+      "title": "Conduit segment",
+      "riserTitle": "Riser",
+      "ends": "{{from}} → {{to}}",
+      "total": "Length with drops",
+      "plan": "Plan length",
+      "conduit": "Conduit",
+      "runElevation": "Run elevation"
+    },
+    "riser": {
+      "title": "Linked floors",
+      "link": "Link to {{floor}}",
+      "linked": "Linked to {{floor}}",
+      "unlink": "Unlink"
     }
   },
   "background": {
@@ -287,5 +332,17 @@
       "render_failed": "The page could not be rendered.",
       "upload_failed": "Upload failed. Check the connection and retry."
     }
+  },
+  "nodeKind": {
+    "panel": "Panel",
+    "junction_box": "Junction box",
+    "terminal_box": "Terminal box",
+    "riser_point": "Riser point"
+  },
+  "mounting": {
+    "socket": "Socket height",
+    "switch": "Switch height",
+    "ceiling": "Ceiling",
+    "custom": "Custom height"
   }
 }

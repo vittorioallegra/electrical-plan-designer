@@ -1,10 +1,26 @@
 import type Konva from 'konva';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Stage } from 'react-konva';
+import { useTranslation } from 'react-i18next';
+import {
+  Circle,
+  Group,
+  Image as KonvaImage,
+  Layer,
+  Line,
+  Path,
+  Rect,
+  Stage,
+  Text,
+} from 'react-konva';
 import { metersPerPixel, worldToBackground } from '@/domain/geometry';
+import { createLengthContext } from '@/domain/lengths';
 import { newId } from '@/domain/ids';
-import type { Floor, Point } from '@/domain/types';
+import type { Floor, PlanNode, Point, RunElevation } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
+import { formatLength } from '@/ui/format';
+import { provisionDash, symbolPaths, type SymbolKind } from '@/ui/symbols';
+import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode } from '../commands';
+import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from './hitTest';
 import { snapPoint, type SnapResult } from './snapping';
 import { useBackgroundImage } from './useBackgroundImage';
 import { gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
@@ -12,18 +28,53 @@ import { gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport
 /** Meters per background pixel before calibration (1 px = 1 cm). */
 export const UNCALIBRATED_MPP = 0.01;
 export const DEFAULT_WALL_THICKNESS = 0.2;
+/** Below this zoom (px per meter) length labels are hidden; node labels below half of it. */
+export const LABEL_MIN_SCALE = 30;
 
 const css = (name: string) =>
   typeof document === 'undefined'
     ? '#000'
     : getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000';
 
-export interface PlanCanvasProps {
-  onCalibrationPoints: (p1: Point, p2: Point) => void;
+type Drag =
+  | { kind: 'pan'; start: Point; view: View; moved: boolean }
+  | { kind: 'box'; start: Point; current: Point; additive: boolean; moved: boolean }
+  | {
+      kind: 'move';
+      nodeIds: string[];
+      start: Point;
+      anchor: Point;
+      delta: Point;
+      duplicate: boolean;
+      moved: boolean;
+    };
+
+export function symbolOf(node: PlanNode): SymbolKind {
+  switch (node.kind) {
+    case 'panel':
+      return 'panel';
+    case 'junction_box':
+      return 'junction_box';
+    case 'riser_point':
+      return 'riser';
+    case 'terminal_box':
+      return node.mounting === 'switch'
+        ? 'switch'
+        : node.mounting === 'ceiling'
+          ? 'ceiling'
+          : 'socket';
+  }
 }
 
-/** The plan canvas: background, grid, walls and the active tool. World units are meters. */
-export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
+export interface PlanCanvasProps {
+  onCalibrationPoints: (p1: Point, p2: Point) => void;
+  onDeleteRequest: (ids: string[]) => void;
+}
+
+/** The plan canvas: background, grid, walls, conduits, nodes and the active tool (meters). */
+export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasProps) {
+  const { i18n } = useTranslation();
+  const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
   const container = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 800, height: 600 });
@@ -31,22 +82,32 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
   const tool = useEditor((s) => s.ui.tool);
   const floorId = useEditor((s) => s.ui.floorId);
   const selection = useEditor((s) => s.ui.selection);
-  const floor = useEditor((s) => s.data.doc.floors.find((f) => f.id === s.ui.floorId));
-  const nodes = useEditor((s) => s.data.doc.nodes);
-  const segments = useEditor((s) => s.data.doc.segments);
+  const doc = useEditor((s) => s.data.doc);
+  const settings = useEditor((s) => s.data.settings);
+  const floor = doc.floors.find((f) => f.id === floorId);
   const { image } = useBackgroundImage(floor?.background?.storagePath);
 
   const [cursor, setCursor] = useState<SnapResult | null>(null);
   const [wallStart, setWallStart] = useState<Point | null>(null);
   const [calibration, setCalibration] = useState<Point[]>([]);
-  const pan = useRef<{ start: Point; view: View } | null>(null);
+  const [conduit, setConduit] = useState<{ fromNodeId: string; vertices: Point[] } | null>(null);
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const suppressClick = useRef(false);
+  const lastHits = useRef<{ hits: Hit[]; index: number } | null>(null);
 
   const colors = useMemo(
     () => ({
       grid: css('--color-canvas-grid'),
       wall: css('--color-canvas-wall'),
+      node: css('--color-canvas-node'),
       selection: css('--color-canvas-selection'),
       highlight: css('--color-canvas-highlight'),
+      riser: css('--color-canvas-riser'),
+      run: {
+        floor: css('--color-canvas-run-floor'),
+        ceiling: css('--color-canvas-run-ceiling'),
+        direct: css('--color-canvas-run-direct'),
+      } satisfies Record<RunElevation, string>,
     }),
     [],
   );
@@ -68,54 +129,21 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
     setLastActionKey(actionKey);
     setWallStart(null);
     setCalibration([]);
+    setConduit(null);
   }
 
-  function deleteSelectedWalls() {
-    const s = store.getState();
-    const ids = new Set(s.ui.selection);
-    s.applyCommand('delete walls', (d) => {
-      for (const f of d.doc.floors) f.walls = f.walls.filter((w) => !ids.has(w.id));
-    });
-  }
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
-      if (e.key === 'Escape') {
-        if (wallStart || calibration.length > 0) {
-          setWallStart(null);
-          setCalibration([]);
-        } else {
-          store.getState().setUi({ tool: 'select', selection: [] });
-        }
-      }
-      if (
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        store.getState().ui.selection.length > 0
-      ) {
-        e.preventDefault();
-        deleteSelectedWalls();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
+  const lengths = useMemo(() => createLengthContext(doc, settings), [doc, settings]);
+  const floorNodes = useMemo(() => doc.nodes.filter((n) => n.floorId === floorId), [doc, floorId]);
+  const nodeById = useMemo(() => new Map(doc.nodes.map((n) => [n.id, n])), [doc]);
 
   const snapTargets = useMemo(() => {
-    const onFloor = nodes.filter((n) => n.floorId === floorId);
-    const ids = new Set(onFloor.map((n) => n.id));
+    const ids = new Set(floorNodes.map((n) => n.id));
     return {
-      nodes: onFloor.map((n) => ({ id: n.id, position: n.position })),
-      vertices: segments.filter((s) => ids.has(s.fromNodeId)).flatMap((s) => s.vertices),
+      nodes: floorNodes.map((n) => ({ id: n.id, position: n.position })),
+      vertices: doc.segments.filter((s) => ids.has(s.fromNodeId)).flatMap((s) => s.vertices),
       wallEnds: (floor?.walls ?? []).flatMap((w) => [w.a, w.b]),
     };
-  }, [nodes, segments, floor, floorId]);
-
-  function pointer(stage: Konva.Stage | null): Point | null {
-    const p = stage?.getPointerPosition();
-    return p ? screenToWorld(view, p) : null;
-  }
+  }, [floorNodes, doc.segments, floor]);
 
   function snapped(raw: Point, alt: boolean): SnapResult {
     return snapPoint(raw, snapTargets, {
@@ -125,35 +153,149 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
     });
   }
 
+  function select(ids: string[]) {
+    store.getState().setUi({ selection: ids });
+  }
+
+  function finishConduitAtVertex() {
+    if (!conduit || conduit.vertices.length === 0) return;
+    const jb = addConduitToNewJunction(store, conduit.fromNodeId, conduit.vertices);
+    setConduit(jb ? { fromNodeId: jb, vertices: [] } : null);
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+      ) {
+        return;
+      }
+      if (e.key === 'Escape') {
+        if (wallStart || calibration.length > 0 || conduit) {
+          setWallStart(null);
+          setCalibration([]);
+          setConduit(null);
+        } else {
+          store.getState().setUi({ tool: 'select', selection: [] });
+        }
+        return;
+      }
+      if (tool === 'conduit' && conduit) {
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          setConduit({ ...conduit, vertices: conduit.vertices.slice(0, -1) });
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          finishConduitAtVertex();
+          return;
+        }
+      }
+      if (e.key === 'Tab' && lastHits.current && lastHits.current.hits.length > 1) {
+        e.preventDefault();
+        const next = (lastHits.current.index + 1) % lastHits.current.hits.length;
+        lastHits.current.index = next;
+        select([lastHits.current.hits[next]!.id]);
+        return;
+      }
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        store.getState().ui.selection.length > 0
+      ) {
+        e.preventDefault();
+        onDeleteRequest(store.getState().ui.selection);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  function pointerScreen(e: Konva.KonvaEventObject<MouseEvent | WheelEvent>): Point | null {
+    return e.target.getStage()?.getPointerPosition() ?? null;
+  }
+
   function onWheel(e: Konva.KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
-    const p = e.target.getStage()?.getPointerPosition();
+    const p = pointerScreen(e);
     if (!p) return;
-    const factor = Math.pow(1.0015, -e.evt.deltaY);
-    store.getState().setUi({ view: zoomAt(view, p, factor) });
+    store.getState().setUi({ view: zoomAt(view, p, Math.pow(1.0015, -e.evt.deltaY)) });
   }
 
   function onMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
-    const stage = e.target.getStage();
-    const p = stage?.getPointerPosition();
+    const p = pointerScreen(e);
     if (!p) return;
-    const onEmpty = e.target === stage;
-    if (e.evt.button === 1 || (tool === 'select' && onEmpty && e.evt.button === 0)) {
-      pan.current = { start: p, view };
+    const world = screenToWorld(view, p);
+    if (e.evt.button === 1) {
+      setDrag({ kind: 'pan', start: p, view, moved: false });
+      return;
+    }
+    if (e.evt.button !== 0 || tool !== 'select') return;
+    const hits = hitTest(doc, floorId, world, view.scale);
+    const top = hits[0];
+    if (top?.kind === 'node' && !store.getState().readOnly) {
+      const current = store.getState().ui.selection;
+      const nodeIds = current.includes(top.id)
+        ? current.filter((id) => nodeById.has(id))
+        : [top.id];
+      setDrag({
+        kind: 'move',
+        nodeIds,
+        start: world,
+        anchor: nodeById.get(top.id)!.position,
+        delta: { x: 0, y: 0 },
+        duplicate: e.evt.altKey,
+        moved: false,
+      });
+      return;
+    }
+    if (!top) {
+      setDrag(
+        e.evt.shiftKey
+          ? { kind: 'box', start: world, current: world, additive: true, moved: false }
+          : { kind: 'pan', start: p, view, moved: false },
+      );
     }
   }
 
   function onMouseMove(e: Konva.KonvaEventObject<MouseEvent>) {
-    const stage = e.target.getStage();
-    const p = stage?.getPointerPosition();
+    const p = pointerScreen(e);
     if (!p) return;
-    if (pan.current) {
-      const { start, view: v } = pan.current;
-      store.getState().setUi({ view: { ...v, x: v.x + p.x - start.x, y: v.y + p.y - start.y } });
+    const world = screenToWorld(view, p);
+    if (drag?.kind === 'pan') {
+      const dx = p.x - drag.start.x;
+      const dy = p.y - drag.start.y;
+      store.getState().setUi({ view: { ...drag.view, x: drag.view.x + dx, y: drag.view.y + dy } });
+      if (!drag.moved && Math.hypot(dx, dy) > 3) setDrag({ ...drag, moved: true });
       return;
     }
-    const world = pointer(stage);
-    if (world && tool !== 'select') {
+    if (drag?.kind === 'box') {
+      setDrag({ ...drag, current: world, moved: true });
+      return;
+    }
+    if (drag?.kind === 'move') {
+      const raw = {
+        x: drag.anchor.x + world.x - drag.start.x,
+        y: drag.anchor.y + world.y - drag.start.y,
+      };
+      const target = snapPoint(
+        raw,
+        { ...snapTargets, nodes: snapTargets.nodes.filter((n) => !drag.nodeIds.includes(n.id)) },
+        {
+          scale: view.scale,
+          gridStep: snapStep(view.scale),
+          enabled: !e.evt.altKey || drag.duplicate,
+        },
+      ).point;
+      const delta = { x: target.x - drag.anchor.x, y: target.y - drag.anchor.y };
+      const moved =
+        drag.moved || Math.hypot(world.x - drag.start.x, world.y - drag.start.y) * view.scale > 3;
+      setDrag({ ...drag, delta, moved });
+      return;
+    }
+    if (tool !== 'select') {
       setCursor(
         tool === 'calibrate' ? { point: world, kind: 'none' } : snapped(world, e.evt.altKey),
       );
@@ -161,32 +303,55 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
   }
 
   function onMouseUp() {
-    pan.current = null;
+    if (!drag) return;
+    if (drag.moved) suppressClick.current = true;
+    if (drag.kind === 'move' && drag.moved && (drag.delta.x !== 0 || drag.delta.y !== 0)) {
+      moveSelection(store, drag.nodeIds, drag.delta, drag.duplicate);
+      if (!drag.duplicate) select(drag.nodeIds);
+    }
+    if (drag.kind === 'box' && drag.moved) {
+      const ids = boxSelect(doc, floorId, drag.start, drag.current);
+      const current = store.getState().ui.selection;
+      select(drag.additive ? [...new Set([...current, ...ids])] : ids);
+    }
+    setDrag(null);
   }
 
   function onClick(e: Konva.KonvaEventObject<MouseEvent>) {
     if (e.evt.button !== 0) return;
-    const stage = e.target.getStage();
-    const world = pointer(stage);
-    if (!world) return;
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
+    const p = pointerScreen(e);
+    if (!p) return;
+    const world = screenToWorld(view, p);
     const s = store.getState();
+
     if (tool === 'select') {
-      const wallId = (e.target.attrs as { wallId?: string }).wallId;
-      if (wallId) {
-        s.setUi({
-          selection: e.evt.shiftKey
-            ? s.ui.selection.includes(wallId)
-              ? s.ui.selection.filter((id) => id !== wallId)
-              : [...s.ui.selection, wallId]
-            : [wallId],
-        });
-      } else if (e.target === stage) {
-        s.setUi({ selection: [] });
+      const hits = hitTest(doc, floorId, world, view.scale);
+      lastHits.current = { hits, index: 0 };
+      const top = hits[0];
+      if (!top) {
+        if (!e.evt.shiftKey) select([]);
+        return;
+      }
+      if (e.evt.shiftKey) {
+        const current = s.ui.selection;
+        select(
+          current.includes(top.id) ? current.filter((id) => id !== top.id) : [...current, top.id],
+        );
+      } else {
+        select([top.id]);
       }
       return;
     }
+
+    if (s.readOnly) return;
+    const snap = snapped(world, e.evt.altKey);
+
     if (tool === 'wall') {
-      const point = snapped(world, e.evt.altKey).point;
+      const point = snap.point;
       if (!wallStart) {
         setWallStart(point);
         return;
@@ -204,15 +369,53 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
       setWallStart(point);
       return;
     }
+
     if (tool === 'calibrate' && floor?.background) {
-      const px = toBackgroundPx(floor, world);
-      const next = [...calibration, px];
+      const next = [...calibration, toBackgroundPx(floor, world)];
       if (next.length === 2) {
         setCalibration([]);
         onCalibrationPoints(next[0]!, next[1]!);
       } else {
         setCalibration(next);
       }
+      return;
+    }
+
+    if (tool === 'conduit') {
+      const target = snap.kind === 'node' ? snap.nodeId : undefined;
+      if (!conduit) {
+        if (target) setConduit({ fromNodeId: target, vertices: [] });
+        return;
+      }
+      if (target && target !== conduit.fromNodeId) {
+        if (addConduit(store, conduit.fromNodeId, target, conduit.vertices)) {
+          setConduit({ fromNodeId: target, vertices: [] });
+        }
+        return;
+      }
+      if (target) return;
+      const last = conduit.vertices[conduit.vertices.length - 1];
+      if (last && last.x === snap.point.x && last.y === snap.point.y) {
+        finishConduitAtVertex();
+        return;
+      }
+      setConduit({ ...conduit, vertices: [...conduit.vertices, snap.point] });
+      return;
+    }
+
+    if (
+      tool === 'panel' ||
+      tool === 'junction_box' ||
+      tool === 'terminal_box' ||
+      tool === 'riser_point'
+    ) {
+      if (snap.kind === 'node' || nodeAt(doc, floorId, snap.point, NODE_HIT_PX / view.scale))
+        return;
+      const onSegment =
+        tool === 'junction_box'
+          ? hitTest(doc, floorId, snap.point, view.scale).find((h) => h.kind === 'segment')?.id
+          : undefined;
+      placeNode(store, tool, snap.point, onSegment);
     }
   }
 
@@ -237,6 +440,27 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
     gridLines.push([visible.minX, y, visible.maxX, y]);
   }
 
+  const moving = drag?.kind === 'move' && drag.moved && !drag.duplicate ? drag : null;
+  const ghost = drag?.kind === 'move' && drag.moved && drag.duplicate ? drag : null;
+  const posOf = (n: PlanNode): Point =>
+    moving && moving.nodeIds.includes(n.id)
+      ? { x: n.position.x + moving.delta.x, y: n.position.y + moving.delta.y }
+      : n.position;
+  const px = (v: number) => v / view.scale;
+  const selected = new Set(selection);
+
+  const floorSegments = doc.segments.filter((s) => {
+    const a = nodeById.get(s.fromNodeId);
+    const b = nodeById.get(s.toNodeId);
+    return a?.floorId === floorId && b?.floorId === floorId;
+  });
+  const linkedRisers = new Set(
+    doc.segments
+      .filter((s) => nodeById.get(s.fromNodeId)?.floorId !== nodeById.get(s.toNodeId)?.floorId)
+      .flatMap((s) => [s.fromNodeId, s.toNodeId]),
+  );
+  const conduitFrom = conduit ? nodeById.get(conduit.fromNodeId) : undefined;
+
   return (
     <div
       ref={container}
@@ -255,15 +479,18 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={() => {
-          pan.current = null;
+          setDrag(null);
           setCursor(null);
         }}
         onClick={onClick}
         onContextMenu={(e) => {
           e.evt.preventDefault();
           setWallStart(null);
+          setConduit(null);
         }}
-        style={{ cursor: tool === 'select' ? 'default' : 'crosshair' }}
+        style={{
+          cursor: tool === 'select' ? (drag?.kind === 'pan' ? 'grabbing' : 'default') : 'crosshair',
+        }}
       >
         <Layer listening={false}>
           {bg && image ? (
@@ -277,8 +504,6 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
               opacity={bg.opacity}
             />
           ) : null}
-        </Layer>
-        <Layer listening={false}>
           {gridLines.map((pts, i) => (
             <Line
               key={i}
@@ -289,18 +514,101 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
             />
           ))}
         </Layer>
-        <Layer>
+        <Layer listening={false}>
           {(floor?.walls ?? []).map((w) => (
             <Line
               key={w.id}
               points={[w.a.x, w.a.y, w.b.x, w.b.y]}
-              stroke={selection.includes(w.id) ? colors.selection : colors.wall}
+              stroke={selected.has(w.id) ? colors.selection : colors.wall}
               strokeWidth={w.thickness}
               lineCap="square"
-              hitStrokeWidth={Math.max(w.thickness, 10 / view.scale)}
-              wallId={w.id}
             />
           ))}
+          {floorSegments.map((s) => {
+            const a = posOf(nodeById.get(s.fromNodeId)!);
+            const b = posOf(nodeById.get(s.toNodeId)!);
+            const points = [a, ...s.vertices, b];
+            const edge = Math.floor((points.length - 1) / 2);
+            const label = {
+              x: (points[edge]!.x + points[edge + 1]!.x) / 2,
+              y: (points[edge]!.y + points[edge + 1]!.y) / 2,
+            };
+            return (
+              <Group key={s.id}>
+                {selected.has(s.id) ? (
+                  <Line
+                    points={points.flatMap((p) => [p.x, p.y])}
+                    stroke={colors.selection}
+                    strokeWidth={8}
+                    opacity={0.35}
+                    strokeScaleEnabled={false}
+                    lineJoin="round"
+                  />
+                ) : null}
+                <Line
+                  points={points.flatMap((p) => [p.x, p.y])}
+                  stroke={colors.run[s.runElevation]}
+                  strokeWidth={2.5}
+                  strokeScaleEnabled={false}
+                  lineJoin="round"
+                  dash={s.runElevation === 'ceiling' ? [px(8), px(4)] : undefined}
+                />
+                {view.scale >= LABEL_MIN_SCALE ? (
+                  <Text
+                    x={label.x + px(4)}
+                    y={label.y + px(4)}
+                    text={formatLength(lengths.segmentLengthMm(s) / 1000, locale)}
+                    fontSize={px(11)}
+                    fill={colors.run[s.runElevation]}
+                  />
+                ) : null}
+              </Group>
+            );
+          })}
+          {floorNodes.map((n) => {
+            const pos = posOf(n);
+            return (
+              <Group key={n.id} x={pos.x} y={pos.y}>
+                {selected.has(n.id) ? (
+                  <Circle radius={px(16)} fill={colors.selection} opacity={0.2} />
+                ) : null}
+                <Path
+                  data={symbolPaths[symbolOf(n)]}
+                  x={px(-12)}
+                  y={px(-12)}
+                  scaleX={px(1)}
+                  scaleY={px(1)}
+                  stroke={n.kind === 'riser_point' ? colors.riser : colors.node}
+                  strokeWidth={1.6}
+                  strokeScaleEnabled={false}
+                  fill={n.kind === 'panel' ? colors.node : undefined}
+                  dash={n.status === 'provision' ? provisionDash : undefined}
+                />
+                {n.kind === 'riser_point' && !linkedRisers.has(n.id) ? (
+                  <Circle radius={px(3)} x={px(10)} y={px(-10)} fill={colors.riser} />
+                ) : null}
+                {view.scale >= LABEL_MIN_SCALE / 2 ? (
+                  <Text x={px(14)} y={px(-6)} text={n.label} fontSize={px(11)} fill={colors.node} />
+                ) : null}
+              </Group>
+            );
+          })}
+          {ghost
+            ? doc.nodes
+                .filter((n) => ghost.nodeIds.includes(n.id))
+                .map((n) => (
+                  <Circle
+                    key={n.id}
+                    x={n.position.x + ghost.delta.x}
+                    y={n.position.y + ghost.delta.y}
+                    radius={px(12)}
+                    stroke={colors.selection}
+                    strokeWidth={1.5}
+                    strokeScaleEnabled={false}
+                    dash={[4, 3]}
+                  />
+                ))
+            : null}
         </Layer>
         <Layer listening={false}>
           {wallStart && cursor ? (
@@ -311,25 +619,49 @@ export function PlanCanvas({ onCalibrationPoints }: PlanCanvasProps) {
               opacity={0.5}
             />
           ) : null}
+          {conduitFrom ? (
+            <Line
+              points={[
+                conduitFrom.position,
+                ...conduit!.vertices,
+                ...(cursor ? [cursor.point] : []),
+              ].flatMap((p) => [p.x, p.y])}
+              stroke={colors.run[settings.defaultRunElevation]}
+              strokeWidth={2.5}
+              strokeScaleEnabled={false}
+              dash={[6, 4]}
+            />
+          ) : null}
           {bg
-            ? calibration.map((px, i) => (
-                <Group key={i}>
-                  <Circle
-                    {...backgroundPxToWorld(bg, px, mpp)}
-                    radius={5 / view.scale}
-                    stroke={colors.highlight}
-                    strokeWidth={2}
-                    strokeScaleEnabled={false}
-                  />
-                </Group>
+            ? calibration.map((cpx, i) => (
+                <Circle
+                  key={i}
+                  {...backgroundPxToWorld(bg, cpx, mpp)}
+                  radius={px(5)}
+                  stroke={colors.highlight}
+                  strokeWidth={2}
+                  strokeScaleEnabled={false}
+                />
               ))
             : null}
+          {drag?.kind === 'box' ? (
+            <Rect
+              x={Math.min(drag.start.x, drag.current.x)}
+              y={Math.min(drag.start.y, drag.current.y)}
+              width={Math.abs(drag.current.x - drag.start.x)}
+              height={Math.abs(drag.current.y - drag.start.y)}
+              stroke={colors.selection}
+              strokeWidth={1}
+              strokeScaleEnabled={false}
+              dash={[4, 4]}
+            />
+          ) : null}
           {cursor && tool !== 'select' ? (
             <Rect
-              x={cursor.point.x - 4 / view.scale}
-              y={cursor.point.y - 4 / view.scale}
-              width={8 / view.scale}
-              height={8 / view.scale}
+              x={cursor.point.x - px(4)}
+              y={cursor.point.y - px(4)}
+              width={px(8)}
+              height={px(8)}
               stroke={
                 cursor.kind === 'grid' || cursor.kind === 'none' ? colors.grid : colors.highlight
               }
@@ -354,10 +686,10 @@ function toBackgroundPx(floor: Floor, world: Point): Point {
   return worldToBackground(withCalibration, world)!;
 }
 
-function backgroundPxToWorld(bg: NonNullable<Floor['background']>, px: Point, mpp: number): Point {
+function backgroundPxToWorld(bg: NonNullable<Floor['background']>, p: Point, mpp: number): Point {
   const rad = (bg.rotation * Math.PI) / 180;
-  const x = px.x * mpp;
-  const y = px.y * mpp;
+  const x = p.x * mpp;
+  const y = p.y * mpp;
   return {
     x: bg.offset.x + x * Math.cos(rad) - y * Math.sin(rad),
     y: bg.offset.y + x * Math.sin(rad) + y * Math.cos(rad),

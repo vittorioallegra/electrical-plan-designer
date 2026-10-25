@@ -372,7 +372,7 @@ Approved: yes (2026-10-25)
 - [x] 11. Auth, profile, project list — `feat: add repositories, auth, profile and project list`
 - [x] 12. Editor shell, store, undo/redo, save status, floors, settings — `feat: add editor store, autosave, floors and project settings`
 - [x] 13. Canvas base, walls, background import, calibration — `feat: add plan canvas, walls, background import and calibration`
-- [ ] 14. Nodes and conduit segments
+- [x] 14. Nodes and conduit segments — `feat: add nodes, conduit tool, selection, move, copy/paste and risers`
 - [ ] 15. Catalog, box contents, presets
 - [ ] 16. Minimal BOM drawer tab
 - [ ] 17. Panel designer
@@ -424,14 +424,17 @@ Approved: yes (2026-10-25)
 - E2E runs its own Vite server on :5174 (`--mode e2e`), never reusing a dev server.
 - Uncalibrated backgrounds show at 1 px = 1 cm. Konva's dblclick is not used (it fires for two
   quick clicks at different points); clicking a chain's last point again ends it.
+- Canvas selection uses our own world-space hit test (`canvas/hitTest.ts`: node > segment >
+  wall, Tab cycles), not Konva shape events. Ending a conduit on empty space (Enter or clicking
+  the last bend again) creates a junction box there.
 
 ### Open questions
 - None.
 
 ### Next
-Step 14: nodes + conduit segments on the canvas: place panel/junction/terminal/riser points,
-conduit tool, run-elevation styling, length labels, selection (Tab cycling, multi-select), move,
-cascade delete, copy/paste, riser linking, properties panel.
+Step 15: catalog page (built-ins read-only, user items CRUD/duplicate/archive), terminal box
+contents editor (devices, covers, plate, modules counter), provision toggle, box presets in
+`profiles.box_presets` applied on placement.
 
 ## Review record
 
