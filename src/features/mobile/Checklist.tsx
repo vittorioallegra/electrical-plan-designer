@@ -7,6 +7,7 @@ import { cn } from '@/ui/cn';
 import { formatNumber, type Locale } from '@/ui/format';
 import { NumberInput } from '@/ui/NumberInput';
 import { describeBomLine, describeLineKey } from '../bom/describe';
+import { PurchasesLoadError } from '../bom/PurchasesLoadError';
 import { useAnalysis } from '../bom/useAnalysis';
 import { usePurchases } from '../bom/usePurchases';
 import { useCatalog } from '../catalog/useCatalog';
@@ -23,6 +24,7 @@ export function Checklist() {
   const qty = (n: number, unit: BomLine['unit']) =>
     `${formatNumber(n, locale)} ${t(`bom.units.${unit}`)}`;
 
+  if (purchases.loadFailed) return <PurchasesLoadError purchases={purchases} />;
   if (purchases.loading) return <p className="text-text-muted">{t('common.loading')}</p>;
   if (bom.length === 0) return <p className="text-text-muted">{t('editor.empty.bom')}</p>;
   const done = bom.filter((l) => purchases.status.get(l.key)?.status === 'done').length;

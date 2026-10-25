@@ -246,7 +246,8 @@
   "common": {
     "loading": "Loading…",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "retry": "Retry"
   },
   "auth": {
     "email": "Email",
@@ -702,6 +703,7 @@
   },
   "purchases": {
     "saveFailed": "Could not save the purchase. Check the connection and try again.",
+    "loadFailed": "Could not load the purchase checklist. Check the connection and try again.",
     "progress": "{{done}} of {{total}} bought",
     "remainingOnly": "Show remaining only",
     "partial": "Bought {{bought}} / need {{need}}",

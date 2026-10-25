@@ -6,6 +6,10 @@ import { useToast } from '@/ui/Toast';
 
 export interface Purchases {
   loading: boolean;
+  /** Loading the marks failed: the lines must not be shown as not bought. */
+  loadFailed: boolean;
+  /** Loads the marks again after a failure. */
+  retry(): void;
   /** Purchase state per BOM line key. */
   status: ReadonlyMap<string, PurchaseLineStatus>;
   /** Marks whose line left the BOM, with the quantity bought. */
@@ -22,6 +26,8 @@ export function usePurchases(projectId: string, bom: readonly BomLine[]): Purcha
   const { purchases } = useRepositories();
   const toast = useToast();
   const [marks, setMarks] = useState<Map<string, number | null> | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   // Last rendered marks, read by the rollback of a failed save.
   const current = useRef(marks);
   useEffect(() => {
@@ -32,12 +38,16 @@ export function usePurchases(projectId: string, bom: readonly BomLine[]): Purcha
     let active = true;
     purchases
       .list(projectId)
-      .then((m) => active && setMarks(m))
-      .catch(() => active && setMarks(new Map()));
+      .then((m) => {
+        if (active) setMarks(m);
+      })
+      .catch(() => {
+        if (active) setLoadFailed(true);
+      });
     return () => {
       active = false;
     };
-  }, [purchases, projectId]);
+  }, [purchases, projectId, attempt]);
 
   const setPurchased = useCallback(
     (key: string, qty: number | null) => {
@@ -59,7 +69,12 @@ export function usePurchases(projectId: string, bom: readonly BomLine[]): Purcha
   );
 
   return {
-    loading: marks === null,
+    loading: marks === null && !loadFailed,
+    loadFailed,
+    retry: () => {
+      setLoadFailed(false);
+      setAttempt((n) => n + 1);
+    },
     status,
     orphans,
     toggle: (line) =>

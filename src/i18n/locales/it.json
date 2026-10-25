@@ -246,7 +246,8 @@
   "common": {
     "loading": "Caricamento…",
     "cancel": "Annulla",
-    "save": "Salva"
+    "save": "Salva",
+    "retry": "Riprova"
   },
   "auth": {
     "email": "Email",
@@ -702,6 +703,7 @@
   },
   "purchases": {
     "saveFailed": "Impossibile salvare l’acquisto. Controlla la connessione e riprova.",
+    "loadFailed": "Impossibile caricare la lista acquisti. Controlla la connessione e riprova.",
     "progress": "{{done}} di {{total}} acquistati",
     "remainingOnly": "Mostra solo da comprare",
     "partial": "Comprati {{bought}} / servono {{need}}",

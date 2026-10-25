@@ -61,6 +61,25 @@ describe('mobile light view', () => {
     expect(await screen.findByText(/Could not save the purchase/)).toBeInTheDocument();
   });
 
+  // protects=purchase marks load failure; fails_when=a failed load shows every line as not bought or retry does not recover; no_claim=desktop BOM tab wiring
+  it('shows a load error with retry instead of an empty checklist', async () => {
+    const { repos } = await renderApp(mobilePath);
+    await screen.findByTestId('checklist');
+    await repos.purchases.set(DEMO_PROJECT_ID, BOX, 4);
+    vi.spyOn(repos.purchases, 'list').mockRejectedValueOnce(new Error('offline'));
+    // Switching tabs remounts the checklist, which reloads the marks.
+    await userEvent.click(screen.getByRole('tab', { name: 'Plan' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Checklist' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not load the purchase checklist',
+    );
+    expect(screen.queryByTestId('checklist')).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await screen.findByTestId('checklist');
+    expect(row(BOX)).toHaveAttribute('data-status', 'done');
+  });
+
   // protects=viewport mode routing; fails_when=a phone session opens the desktop editor; no_claim=width detection (unit test)
   it('sends a mobile session from the editor to the mobile view', async () => {
     sessionStorage.setItem('epd.viewMode', 'mobile');

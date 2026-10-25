@@ -5,6 +5,7 @@ import { formatNumber } from '@/ui/format';
 import { useCatalog } from '../catalog/useCatalog';
 import { describeBomLine } from './describe';
 import { useAnalysis } from './useAnalysis';
+import { PurchasesLoadError } from './PurchasesLoadError';
 import { usePurchases } from './usePurchases';
 
 /** Sum of a category's quantities, when every line shares one unit. */
@@ -47,6 +48,7 @@ export function BomTab() {
   const hasCable = bom.some((l) => l.category === 'cable');
   return (
     <div className="flex flex-col gap-1" data-testid="bom">
+      {purchases.loadFailed ? <PurchasesLoadError purchases={purchases} /> : null}
       {!hasCable ? <p className="text-text-muted">{t('bom.noCableYet')}</p> : null}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-x-6 gap-y-2">
         {groups.map(([category, lines]) => (
@@ -69,7 +71,7 @@ export function BomTab() {
                         aria-label={t('purchases.boughtOf', {
                           name: describeBomLine(line, lookup, t, locale),
                         })}
-                        disabled={purchases.loading}
+                        disabled={purchases.loading || purchases.loadFailed}
                         checked={purchases.status.get(line.key)?.status === 'done'}
                         onChange={() => purchases.toggle(line)}
                       />
