@@ -457,13 +457,14 @@ Approved: yes (2026-10-25)
 - `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
   list, box presets) once per session; built-in prices are set from the catalog page as account
   price overrides.
+- Cable-color prices stay editable inline on the quote page (fix `fa07b89`); no Catalog
+  section for them (user, 2026-10-25).
+- Counted strings use i18next `_one`/`_other` keys; strings with several counts nest shared
+  `counts.*` keys via `$t(...)` (user asked to fix plurals after verification, 2026-10-25).
 
 ### Open questions
 - Dogfood checkpoint (step 19) deferred by the user on 2026-10-25: draw one real floor, compare
   the BOM with the hand count, record the time taken and every difference here.
-- Fix `fa07b89` keeps inline quote price inputs for priced lines; should account price
-  overrides for cable colors get a proper home in the Catalog instead?
-- Locale files have no plural forms ("1 targets"); add i18next `_one`/`_other` keys?
 - Non-blocking findings left open: purchase-mark load errors are silent (`usePurchases.ts`);
   non-`DocLoadError` failures leave `ProjectLoader` stuck on loading; `profiles` update policy
   lets a user rewrite their own `quote_counter`; minor UI polish (cut-off "Unpriced"
@@ -474,7 +475,8 @@ Approved: yes (2026-10-25)
 ### Next
 Verification done. Decide on publishing: the repo has no remote and no `main` branch
 (history starts on `feat/electrical-plan-designer`), so publishing means creating a GitHub
-repository first. Then the dogfood checkpoint and the open questions above.
+repository first (user chose not to publish yet, 2026-10-25). Then the dogfood checkpoint
+and the open questions above.
 
 ## Review record
 

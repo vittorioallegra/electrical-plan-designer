@@ -114,7 +114,7 @@ describe('delete confirmation', () => {
     act(() => store.getState().setUi({ selection: ['n_l1'] }));
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(
-      await screen.findByText('This removes 1 elements and 1 conduit segments.'),
+      await screen.findByText('This removes 1 element and 1 conduit segment.'),
     ).toBeInTheDocument();
   });
 });

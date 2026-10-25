@@ -96,12 +96,12 @@
       "moveDown": "Move floor down",
       "delete": "Delete floor",
       "deleteTitle": "Delete {{name}}?",
-      "deleteBody": "Removes {{nodes}} elements and {{segments}} conduit segments; {{circuits}} circuits are affected. Undo restores them."
+      "deleteBody": "Removes $t(counts.elements, {\"count\": {{nodes}}}) and $t(counts.segments, {\"count\": {{segments}}}), affecting $t(counts.circuits, {\"count\": {{circuits}}}). Undo restores them."
     },
     "emptyCanvas": "Start from the floor plan: import a PDF or image, or draw the walls.",
     "deleteConfirm": {
       "title": "Delete the selection?",
-      "body": "This removes {{nodes}} elements and {{segments}} conduit segments.",
+      "body": "This removes $t(counts.elements, {\"count\": {{nodes}}}) and $t(counts.segments, {\"count\": {{segments}}}).",
       "circuits": "These circuits lose targets or their manual route:",
       "done": "Deleted. Undo brings it back."
     },
@@ -334,7 +334,8 @@
     }
   },
   "inspector": {
-    "multiple": "{{count}} elements selected",
+    "multiple_one": "{{count}} element selected",
+    "multiple_other": "{{count}} elements selected",
     "delete": "Delete",
     "wall": {
       "title": "Wall",
@@ -500,7 +501,8 @@
     "noUpstream": "None",
     "circuitsOn": "Protects: {{names}}",
     "noCircuits": "No circuits on this device yet.",
-    "deleteUsed": "Delete ({{count}} circuits become unprotected)"
+    "deleteUsed_one": "Delete ({{count}} circuit becomes unprotected)",
+    "deleteUsed_other": "Delete ({{count}} circuits become unprotected)"
   },
   "units": {
     "mm2": "{{value}} mm²"
@@ -521,9 +523,12 @@
     "defaultName": "Circuit",
     "twoWay": "Two-way switch",
     "twoWayHint": "Select two terminal boxes on the plan: adds two travelers between them.",
-    "targets": "{{count}} targets",
-    "routed": "{{count}} segments",
-    "unreachable": "{{count}} targets unreachable",
+    "targets_one": "{{count}} target",
+    "targets_other": "{{count}} targets",
+    "routed_one": "{{count}} segment",
+    "routed_other": "{{count}} segments",
+    "unreachable_one": "{{count}} target unreachable",
+    "unreachable_other": "{{count}} targets unreachable",
     "extraRun": "Extra conductors",
     "extraRunTitle": "Extra conductors {{from}} → {{to}}",
     "selectHint": "Select a circuit to edit it. Its path is highlighted on the plan.",
@@ -571,7 +576,8 @@
   },
   "checks": {
     "hideConnectivity": "Hide connectivity warnings while drawing",
-    "hiddenCount": "{{count}} hidden",
+    "hiddenCount_one": "{{count}} hidden",
+    "hiddenCount_other": "{{count}} hidden",
     "segment": "Conduit segment",
     "titles": {
       "no_rcd": "No RCD protection",
@@ -598,7 +604,8 @@
       "panel_overlap": "{{name}} overlaps another device",
       "box_modules": "{{name}}: {{used}} of {{available}} modules used",
       "route_invalid": "{{name}}: {{problem}}",
-      "target_unreachable": "{{name}}: {{count}} targets unreachable",
+      "target_unreachable_one": "{{name}}: {{count}} target unreachable",
+      "target_unreachable_other": "{{name}}: {{count}} targets unreachable",
       "box_not_reached": "{{name}}",
       "not_connected": "{{name}}",
       "box_empty": "{{name}}",
@@ -624,7 +631,8 @@
     "issue": "Issue quote",
     "issuedToast": "Quote {{number}} issued",
     "issueFailed": "Could not issue the quote. Try again.",
-    "unpriced": "{{count}} lines have no price: they count as zero until you set one.",
+    "unpriced_one": "{{count}} line has no price: it counts as zero until you set one.",
+    "unpriced_other": "{{count}} lines have no price: they count as zero until you set one.",
     "materials": "Materials",
     "code": "Code",
     "description": "Description",
@@ -676,7 +684,7 @@
     "siteAddress": "Site: {{address}}",
     "project": "Project: {{name}}",
     "adjustment": "Markup / discount {{percent}}%",
-    "summary": "{{floors}} floors · {{circuits}} circuits · {{segments}} conduit segments · {{warnings}} open warnings",
+    "summary": "$t(counts.floors, {\"count\": {{floors}}}) · $t(counts.circuits, {\"count\": {{circuits}}}) · $t(counts.segments, {\"count\": {{segments}}}) · $t(counts.warnings, {\"count\": {{warnings}}})",
     "panelTitle": "Panel {{label}}",
     "enclosure": "Enclosure: {{name}}",
     "circuitsTitle": "Circuits",
@@ -714,5 +722,17 @@
     "fit": "Fit to screen",
     "tabletNotice": "The editor works best on screens at least 1024 px wide.",
     "dismiss": "Dismiss"
+  },
+  "counts": {
+    "elements_one": "{{count}} element",
+    "elements_other": "{{count}} elements",
+    "segments_one": "{{count}} conduit segment",
+    "segments_other": "{{count}} conduit segments",
+    "circuits_one": "{{count}} circuit",
+    "circuits_other": "{{count}} circuits",
+    "floors_one": "{{count}} floor",
+    "floors_other": "{{count}} floors",
+    "warnings_one": "{{count}} open warning",
+    "warnings_other": "{{count}} open warnings"
   }
 }

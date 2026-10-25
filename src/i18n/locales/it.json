@@ -96,12 +96,12 @@
       "moveDown": "Sposta piano giù",
       "delete": "Elimina piano",
       "deleteTitle": "Eliminare {{name}}?",
-      "deleteBody": "Rimuove {{nodes}} elementi e {{segments}} tratti di tubo; {{circuits}} circuiti sono coinvolti. Annulla li ripristina."
+      "deleteBody": "Rimuove $t(counts.elements, {\"count\": {{nodes}}}) e $t(counts.segments, {\"count\": {{segments}}}); circuiti coinvolti: {{circuits}}. Annulla li ripristina."
     },
     "emptyCanvas": "Parti dalla pianta: importa un PDF o un'immagine, oppure disegna i muri.",
     "deleteConfirm": {
       "title": "Eliminare la selezione?",
-      "body": "Vengono rimossi {{nodes}} elementi e {{segments}} tratti di tubo.",
+      "body": "Questo rimuove $t(counts.elements, {\"count\": {{nodes}}}) e $t(counts.segments, {\"count\": {{segments}}}).",
       "circuits": "Questi circuiti perdono destinazioni o il percorso manuale:",
       "done": "Eliminato. Annulla lo ripristina."
     },
@@ -334,7 +334,8 @@
     }
   },
   "inspector": {
-    "multiple": "{{count}} elementi selezionati",
+    "multiple_one": "{{count}} elemento selezionato",
+    "multiple_other": "{{count}} elementi selezionati",
     "delete": "Elimina",
     "wall": {
       "title": "Muro",
@@ -500,7 +501,8 @@
     "noUpstream": "Nessuno",
     "circuitsOn": "Protegge: {{names}}",
     "noCircuits": "Nessun circuito su questo apparecchio.",
-    "deleteUsed": "Elimina ({{count}} circuiti restano senza protezione)"
+    "deleteUsed_one": "Elimina ({{count}} circuito resta senza protezione)",
+    "deleteUsed_other": "Elimina ({{count}} circuiti restano senza protezione)"
   },
   "units": {
     "mm2": "{{value}} mm²"
@@ -521,9 +523,12 @@
     "defaultName": "Circuito",
     "twoWay": "Deviata",
     "twoWayHint": "Seleziona due scatole terminali sulla pianta: aggiunge due navette tra di esse.",
-    "targets": "{{count}} destinazioni",
-    "routed": "{{count}} tratti",
-    "unreachable": "{{count}} destinazioni non raggiungibili",
+    "targets_one": "{{count}} destinazione",
+    "targets_other": "{{count}} destinazioni",
+    "routed_one": "{{count}} tratto",
+    "routed_other": "{{count}} tratti",
+    "unreachable_one": "{{count}} destinazione non raggiungibile",
+    "unreachable_other": "{{count}} destinazioni non raggiungibili",
     "extraRun": "Conduttori aggiuntivi",
     "extraRunTitle": "Conduttori aggiuntivi {{from}} → {{to}}",
     "selectHint": "Seleziona un circuito per modificarlo. Il suo percorso è evidenziato sulla pianta.",
@@ -571,7 +576,8 @@
   },
   "checks": {
     "hideConnectivity": "Nascondi gli avvisi di collegamento mentre disegni",
-    "hiddenCount": "{{count}} nascosti",
+    "hiddenCount_one": "{{count}} nascosto",
+    "hiddenCount_other": "{{count}} nascosti",
     "segment": "Tratto di tubo",
     "titles": {
       "no_rcd": "Senza protezione differenziale",
@@ -598,7 +604,8 @@
       "panel_overlap": "{{name}} si sovrappone a un altro dispositivo",
       "box_modules": "{{name}}: {{used}} di {{available}} moduli usati",
       "route_invalid": "{{name}}: {{problem}}",
-      "target_unreachable": "{{name}}: {{count}} destinazioni irraggiungibili",
+      "target_unreachable_one": "{{name}}: {{count}} destinazione irraggiungibile",
+      "target_unreachable_other": "{{name}}: {{count}} destinazioni irraggiungibili",
       "box_not_reached": "{{name}}",
       "not_connected": "{{name}}",
       "box_empty": "{{name}}",
@@ -624,7 +631,8 @@
     "issue": "Emetti preventivo",
     "issuedToast": "Preventivo {{number}} emesso",
     "issueFailed": "Impossibile emettere il preventivo. Riprova.",
-    "unpriced": "{{count}} righe senza prezzo: valgono zero finché non lo imposti.",
+    "unpriced_one": "{{count}} riga senza prezzo: vale zero finché non lo imposti.",
+    "unpriced_other": "{{count}} righe senza prezzo: valgono zero finché non lo imposti.",
     "materials": "Materiali",
     "code": "Codice",
     "description": "Descrizione",
@@ -676,7 +684,7 @@
     "siteAddress": "Cantiere: {{address}}",
     "project": "Progetto: {{name}}",
     "adjustment": "Ricarico / sconto {{percent}}%",
-    "summary": "{{floors}} piani · {{circuits}} circuiti · {{segments}} tratti di tubo · {{warnings}} avvisi aperti",
+    "summary": "$t(counts.floors, {\"count\": {{floors}}}) · $t(counts.circuits, {\"count\": {{circuits}}}) · $t(counts.segments, {\"count\": {{segments}}}) · $t(counts.warnings, {\"count\": {{warnings}}})",
     "panelTitle": "Quadro {{label}}",
     "enclosure": "Centralino: {{name}}",
     "circuitsTitle": "Circuiti",
@@ -714,5 +722,17 @@
     "fit": "Adatta allo schermo",
     "tabletNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
     "dismiss": "Chiudi"
+  },
+  "counts": {
+    "elements_one": "{{count}} elemento",
+    "elements_other": "{{count}} elementi",
+    "segments_one": "{{count}} tratto di tubo",
+    "segments_other": "{{count}} tratti di tubo",
+    "circuits_one": "{{count}} circuito",
+    "circuits_other": "{{count}} circuiti",
+    "floors_one": "{{count}} piano",
+    "floors_other": "{{count}} piani",
+    "warnings_one": "{{count}} avviso aperto",
+    "warnings_other": "{{count}} avvisi aperti"
   }
 }
