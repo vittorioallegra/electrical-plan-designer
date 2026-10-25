@@ -362,7 +362,7 @@ Approved: yes (2026-10-25)
 - [x] 1. Docs commit (spec + plan) — `docs: add electrical plan designer spec and plan`
 - [x] 2. Scaffold, dev environment scripts, i18n, CLAUDE.md — `chore: scaffold app, dev environment scripts and i18n`
 - [x] 3. UI foundations (tokens, components, symbols, number input) — `feat: add UI foundations (tokens, components, symbols, number input)`
-- [ ] 4. Domain model, defaults, schema, built-in catalog, fixture
+- [x] 4. Domain model, defaults, schema, built-in catalog, fixture — `feat: add domain model, schema, defaults and built-in catalog`
 - [ ] 5. Domain geometry and lengths
 - [ ] 6. Domain routing and occupancy
 - [ ] 7. Domain BOM
@@ -409,13 +409,16 @@ Approved: yes (2026-10-25)
 - Riser rule and persistence changes accepted and written into the spec (user).
 - `check-env.mjs` is chained explicitly in `dev`, `test:db`, `test:e2e` instead of `pre*`
   scripts (pnpm does not run pre/post scripts reliably).
+- Doc types are inferred from the zod schema (`types.ts` re-exports `z.infer`), so they
+  cannot drift. Built-in defaults: box 506 = 7 modules, MCB 1P+N = 1 module (compact),
+  RCD/RCBO = 2 modules; users duplicate items to change them.
 
 ### Open questions
 - None.
 
 ### Next
-Step 4: domain model (`src/domain/types.ts`, `defaults.ts`, `schema.ts`, `migrateDoc`,
-`catalog/builtin.ts`) and the shared fixture `tests/fixtures/demo-project.json`.
+Step 5: domain geometry + lengths (`src/domain/geometry.ts`, `lengths.ts`): polyline length,
+calibration, node heights, floor elevations, segment/riser lengths in integer mm.
 
 ## Review record
 
