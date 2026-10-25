@@ -284,6 +284,7 @@ Approved: yes (2026-10-25)
 - [x] 4. ESLint 10 — `chore: upgrade to ESLint 10`
 - [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
   - [x] 5a. TypeScript 6.0 — `chore: upgrade to TypeScript 6.0`
+  - [x] 5b. TypeScript 7 typecheck — `chore: typecheck with TypeScript 7`
 - [ ] 6. pnpm workspace, app in apps/web
 - [ ] 7. packages/domain (@epd/domain)
 - [ ] 8. Move files to the target layout
@@ -319,6 +320,8 @@ Approved: yes (2026-10-25)
 - ESLint 10: the new recommended rules (`preserve-caught-error`, `no-useless-assignment`,
   `no-unassigned-vars`) are active and report nothing on the current code; `i18next/no-literal-string`
   still reports (checked with a probe file).
+- TypeScript 7 alias works: `typecheck` runs `node node_modules/typescript7/bin/tsc` (7.0.2,
+  ~0.8 s); `node_modules/.bin/tsc` stays TypeScript 6.0.3 for typescript-eslint and editors.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -332,8 +335,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 5b: add `typescript7: npm:typescript@7` and point `typecheck`/`build` at its `tsc` by
-explicit path; `typescript` stays 6.0 for typescript-eslint. If it fails, stay on 6.0 and record.
+Step 5c: set `exactOptionalPropertyTypes: true` in `tsconfig.json`, fix the reported errors
+(domain, repositories; handle generated `database.types.ts` if needed), run typecheck, lint,
+Vitest, Playwright, then commit and tick step 5.
 
 ## Review record
 

@@ -11,9 +11,9 @@
     "setup": "pnpm install && pnpm db:start && pnpm env:local && pnpm db:reset && pnpm exec playwright install chromium",
     "dev": "node scripts/check-env.mjs && vite",
     "dev:mem": "vite --mode memory",
-    "build": "tsc --noEmit -p . && vite build",
+    "build": "pnpm typecheck && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p .",
+    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p .",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -72,6 +72,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0",
+    "typescript7": "npm:typescript@^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }

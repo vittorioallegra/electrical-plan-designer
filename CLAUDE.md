@@ -13,7 +13,8 @@ missing), pnpm 12.
 - `pnpm setup` — install, start local Supabase, write `.env.local`, reset DB, install Chromium
 - `pnpm dev` — dev server on :5173 against local Supabase (runs `scripts/check-env.mjs` first)
 - `pnpm dev:mem` — dev server with in-memory repositories, no Docker needed
-- `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm format`
+- `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm format`. `typecheck` runs TypeScript 7
+  (`typescript7` npm alias); `typescript` stays 6.0 because typescript-eslint needs its API
 - `pnpm test` — unit + component tests (Vitest, jsdom). Quiet, failures only:
   `pnpm exec vitest run --reporter=dot --silent`
 - Single test file: `pnpm exec vitest run src/domain/lengths.test.ts --reporter=dot`;
