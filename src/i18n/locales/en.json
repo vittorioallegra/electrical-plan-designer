@@ -470,5 +470,31 @@
       "panel_device": "Panel devices",
       "missing": "Missing catalog items"
     }
+  },
+  "panel": {
+    "noPanel": "This project has no panel yet. Place one on the plan with the Panel tool.",
+    "goToPlan": "Go to the plan",
+    "palette": "Panel devices",
+    "modulesShort": "{{count}} mod.",
+    "add": "Add {{name}}",
+    "rail": "DIN rail {{n}}",
+    "deviceLabel": "{{label}}, rail {{rail}}, slot {{slot}}",
+    "layout": "Panel layout",
+    "totals": "{{used}} of {{capacity}} modules used",
+    "enclosure": "Enclosure",
+    "noEnclosure": "No enclosure",
+    "suggested": "Suggested: {{name}}",
+    "useSuggestion": "Use",
+    "rails": "DIN rails",
+    "modulesPerRail": "Modules per rail",
+    "hint": "Drag devices from the palette onto a rail, or use Add. Drop a device on an RCD to put it downstream. Arrow keys move the selected device.",
+    "label": "Label",
+    "railNumber": "Rail",
+    "slotNumber": "Slot",
+    "upstream": "Upstream device",
+    "noUpstream": "None",
+    "circuitsOn": "Protects: {{names}}",
+    "noCircuits": "No circuits on this device yet.",
+    "deleteUsed": "Delete ({{count}} circuits become unprotected)"
   }
 }

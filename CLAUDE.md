@@ -63,3 +63,5 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
   in Playwright, driving the store through `window.__epd` (`tests/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
+- `useEditor(selector)` must return stable references: select raw store fields and derive
+  arrays with `useMemo`, never `.filter()/.map()` inside the selector (render loop).

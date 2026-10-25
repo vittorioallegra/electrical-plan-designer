@@ -470,5 +470,31 @@
       "panel_device": "Apparecchi da quadro",
       "missing": "Articoli di catalogo mancanti"
     }
+  },
+  "panel": {
+    "noPanel": "Questo progetto non ha ancora un quadro. Posizionalo sulla pianta con lo strumento Quadro.",
+    "goToPlan": "Vai alla pianta",
+    "palette": "Apparecchi da quadro",
+    "modulesShort": "{{count}} mod.",
+    "add": "Aggiungi {{name}}",
+    "rail": "Guida DIN {{n}}",
+    "deviceLabel": "{{label}}, guida {{rail}}, slot {{slot}}",
+    "layout": "Composizione quadro",
+    "totals": "{{used}} di {{capacity}} moduli usati",
+    "enclosure": "Centralino",
+    "noEnclosure": "Nessun centralino",
+    "suggested": "Consigliato: {{name}}",
+    "useSuggestion": "Usa",
+    "rails": "Guide DIN",
+    "modulesPerRail": "Moduli per guida",
+    "hint": "Trascina gli apparecchi dalla palette su una guida, oppure usa Aggiungi. Rilascia un apparecchio su un differenziale per metterlo a valle. Le frecce spostano l'apparecchio selezionato.",
+    "label": "Etichetta",
+    "railNumber": "Guida",
+    "slotNumber": "Slot",
+    "upstream": "Apparecchio a monte",
+    "noUpstream": "Nessuno",
+    "circuitsOn": "Protegge: {{names}}",
+    "noCircuits": "Nessun circuito su questo apparecchio.",
+    "deleteUsed": "Elimina ({{count}} circuiti restano senza protezione)"
   }
 }

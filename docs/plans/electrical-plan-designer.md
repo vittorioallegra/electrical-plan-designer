@@ -375,7 +375,7 @@ Approved: yes (2026-10-25)
 - [x] 14. Nodes and conduit segments — `feat: add nodes, conduit tool, selection, move, copy/paste and risers`
 - [x] 15. Catalog, box contents, presets — `feat: add catalog page, box contents editor and box presets`
 - [x] 16. Minimal BOM drawer tab — `feat: add live BOM drawer tab`
-- [ ] 17. Panel designer
+- [x] 17. Panel designer — `feat: add panel designer with DIN rails, slots and upstream groups`
 - [ ] 18. Circuits UI and routing
 - [ ] 19. Checks panel, full BOM, dogfood checkpoint
 - [ ] 20. Exports and quote
@@ -435,9 +435,9 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 17: panel designer (`/projects/:id/panel`): DIN rails front view, device palette, slot
-placement by drag and keyboard/inspector, upstream assignment, labels, overflow/overlap
-hatching, total modules + suggested enclosure; AC 12 and check 8.
+Step 18: circuits UI (drawer Circuits tab): list per panel device, create/edit (type, section,
+conductors with swatch+role+name), pick targets on the plan, auto/manual routing with live
+validation, extra runs + two-way helper, occupancy in the segment inspector, path highlight.
 
 ## Review record
 
