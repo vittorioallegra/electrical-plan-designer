@@ -272,3 +272,47 @@ export const projectDocSchema = projectDocBaseSchema.superRefine((doc, ctx) => {
     ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message });
   }
 });
+
+const cents = z.number().int();
+
+export const quoteLineSchema = z.object({
+  key: id,
+  description: z.string(),
+  code: z.string().optional(),
+  quantity: nonNegative,
+  unit: z.enum(['pcs', 'm']),
+  unitPrice: cents.nullable(),
+  total: cents.nullable(),
+});
+
+export const quoteTotalsSchema = z.object({
+  materialsBeforeAdjustment: cents,
+  adjustment: cents,
+  materials: cents,
+  labor: cents,
+  taxable: cents,
+  vat: cents,
+  total: cents,
+  unpricedCount: z.number().int().nonnegative(),
+});
+
+export const issuedQuoteSchema = z.object({
+  number: z.number().int().positive(),
+  issuedAt: z.string(),
+  language: z.string(),
+  lines: z.array(quoteLineSchema),
+  settings: quoteSettingsSchema,
+  totals: quoteTotalsSchema,
+});
+
+/** projects.quote: the editable settings plus append-only issued snapshots. */
+export const projectQuoteSchema = z.object({
+  settings: quoteSettingsSchema,
+  issued: z.array(issuedQuoteSchema),
+});
+
+/** profiles.price_overrides: itemId or cable line key → price (cents) and code. */
+export const priceOverridesSchema = z.record(
+  z.string(),
+  z.object({ unitPrice: cents.nonnegative(), code: z.string().optional() }),
+);

@@ -367,7 +367,7 @@ Approved: yes (2026-10-25)
 - [x] 6. Domain routing and occupancy — `feat: add conduit routing, manual route validation and occupancy`
 - [x] 7. Domain BOM — `feat: add BOM computation and purchase reconciliation`
 - [x] 8. Domain checks and conduit fill — `feat: add basic checks and conduit fill`
-- [ ] 9. Domain quote math
+- [x] 9. Domain quote math — `feat: add quote math, price lookup and issued snapshots`
 - [ ] 10. Supabase local schema, RLS, save RPC, storage, seed, deploy doc
 - [ ] 11. Auth, profile, project list
 - [ ] 12. Editor shell, store, undo/redo, save status, floors, settings
@@ -412,13 +412,16 @@ Approved: yes (2026-10-25)
 - Doc types are inferred from the zod schema (`types.ts` re-exports `z.infer`), so they
   cannot drift. Built-in defaults: box 506 = 7 modules, MCB 1P+N = 1 module (compact),
   RCD/RCBO = 2 modules; users duplicate items to change them.
+- Money: catalog/override prices are integer cents; `QuoteSettings` amounts stay euros as in
+  the spec and are converted with `toCents`. Material adjustment applies to the subtotal.
+  Priced user cable items (section + color) price cable lines before overrides.
 
 ### Open questions
 - None.
 
 ### Next
-Step 9: domain quote math (`src/domain/quote.ts`): material lines × price lookup (user item →
-override → unpriced), adjustment %, labor, VAT, integer cents, `issueQuote` snapshot; AC 15b.
+Step 10: Supabase local schema (`supabase init`, migration with tables, RLS, RPCs, buckets,
+seed from the demo fixture, generated types, docs/deploy.md, `test:db` integration tests).
 
 ## Review record
 
