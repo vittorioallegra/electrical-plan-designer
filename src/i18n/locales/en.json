@@ -86,6 +86,7 @@
     "importJson": "Import project JSON",
     "importDone": "Project imported. Undo restores the previous version.",
     "importFailed": "This file is not a valid project.",
+    "importNewer": "This file was made with a newer version of the app and cannot be imported.",
     "floor": {
       "defaultName": "Floor {{n}}",
       "add": "Add floor",

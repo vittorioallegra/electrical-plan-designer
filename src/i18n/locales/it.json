@@ -86,6 +86,7 @@
     "importJson": "Importa JSON del progetto",
     "importDone": "Progetto importato. Annulla ripristina la versione precedente.",
     "importFailed": "Questo file non è un progetto valido.",
+    "importNewer": "Questo file è stato creato con una versione più recente dell'app e non può essere importato.",
     "floor": {
       "defaultName": "Piano {{n}}",
       "add": "Aggiungi piano",

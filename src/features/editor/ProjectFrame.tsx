@@ -85,7 +85,12 @@ export function ProjectFrame({
 
   async function importJson(file: File) {
     try {
-      const { doc } = loadDoc(JSON.parse(await file.text()));
+      const { doc, readOnly: newer } = loadDoc(JSON.parse(await file.text()));
+      if (newer) {
+        // A newer app's doc would lose the fields this version does not know when saved.
+        toast(t('editor.importNewer'), 'error');
+        return;
+      }
       const result = store.getState().applyCommand('import', (d) => {
         d.doc = doc;
       });

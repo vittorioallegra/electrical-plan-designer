@@ -118,3 +118,22 @@ describe('delete confirmation', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('JSON import', () => {
+  // protects=newer-schema guard on import; fails_when=a doc from a newer app is imported, stripped of unknown fields and saved over the project; no_claim=migrations of older docs
+  it('rejects a doc written by a newer app version', async () => {
+    const { control } = await renderApp(planPath);
+    await screen.findByTestId('project-name');
+    const before = structuredClone(control.projects.get(DEMO_PROJECT_ID)!.doc);
+    const newer = { ...structuredClone(demo), schemaVersion: 99, futureField: [1, 2] };
+    const file = new File([JSON.stringify(newer)], 'newer.json', { type: 'application/json' });
+    fireEvent.change(screen.getByTestId('import-json'), { target: { files: [file] } });
+    expect(
+      await screen.findByText(
+        'This file was made with a newer version of the app and cannot be imported.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
+    expect(control.projects.get(DEMO_PROJECT_ID)!.doc).toEqual(before);
+  });
+});
