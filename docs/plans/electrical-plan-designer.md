@@ -365,7 +365,7 @@ Approved: yes (2026-10-25)
 - [x] 4. Domain model, defaults, schema, built-in catalog, fixture — `feat: add domain model, schema, defaults and built-in catalog`
 - [x] 5. Domain geometry and lengths — `feat: add domain geometry and segment lengths`
 - [x] 6. Domain routing and occupancy — `feat: add conduit routing, manual route validation and occupancy`
-- [ ] 7. Domain BOM
+- [x] 7. Domain BOM — `feat: add BOM computation and purchase reconciliation`
 - [ ] 8. Domain checks and conduit fill
 - [ ] 9. Domain quote math
 - [ ] 10. Supabase local schema, RLS, save RPC, storage, seed, deploy doc
@@ -417,8 +417,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 7: domain BOM (`src/domain/bom.ts`): cable per (section, color), conduit per item,
-boxes/contents/panel, stable line keys, missing items, purchase status from purchased qty.
+Step 8: domain checks 1–9 + conduit fill (`src/domain/checks.ts`, `conduitFill.ts`), one
+triggering and one clean fixture per check.
 
 ## Review record
 
