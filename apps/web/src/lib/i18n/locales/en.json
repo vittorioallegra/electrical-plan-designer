@@ -736,5 +736,8 @@
     "floors_other": "{{count}} floors",
     "warnings_one": "{{count}} open warning",
     "warnings_other": "{{count}} open warnings"
+  },
+  "errors": {
+    "unexpected": "Something went wrong. Retry, or go back to the projects."
   }
 }

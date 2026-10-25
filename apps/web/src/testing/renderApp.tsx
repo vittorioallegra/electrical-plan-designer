@@ -1,8 +1,8 @@
 // Test helper: renders the real routes with in-memory repositories.
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { routes } from '@/app/router';
+import { createRoutes } from '@/app/router';
 import { createQueryClient } from '@/lib/query-client';
 import { AppProviders } from '@/app/provider';
 import { createMemoryRepositories } from '@/lib/repositories/memory';
@@ -19,7 +19,15 @@ export async function renderApp(
     signedIn = true,
     seed = true,
     exposeTestHandle = false,
-  }: { lng?: Language; signedIn?: boolean; seed?: boolean; exposeTestHandle?: boolean } = {},
+    prepare,
+  }: {
+    lng?: Language;
+    signedIn?: boolean;
+    seed?: boolean;
+    exposeTestHandle?: boolean;
+    /** Runs before the router starts (and its loaders run), e.g. to install spies. */
+    prepare?: (memory: ReturnType<typeof createMemoryRepositories>) => void;
+  } = {},
 ) {
   const memory = createMemoryRepositories();
   if (seed) seedMemory(memory.control);
@@ -27,9 +35,12 @@ export async function renderApp(
     if (!seed) await memory.repos.auth.signUp(DEV_LOGIN.email, DEV_LOGIN.password);
     else await memory.repos.auth.signIn(DEV_LOGIN.email, DEV_LOGIN.password);
   }
-  const router = createMemoryRouter(routes, { initialEntries: [path] });
+  prepare?.(memory);
   const unsaved = createMemoryUnsavedStore();
   const queryClient = createQueryClient();
+  const router = createMemoryRouter(createRoutes({ repos: memory.repos, queryClient }), {
+    initialEntries: [path],
+  });
   const result = render(
     <AppProviders
       repos={memory.repos}
@@ -39,6 +50,20 @@ export async function renderApp(
     >
       <RouterProvider router={router} />
     </AppProviders>,
+  );
+  // Loaders and lazy route modules make the first render async: wait for it, so tests can
+  // query the page right after `await renderApp()`.
+  await act(
+    () =>
+      new Promise<void>((resolve) => {
+        const ready = () => router.state.initialized && router.state.navigation.state === 'idle';
+        if (ready()) return resolve();
+        const unsubscribe = router.subscribe(() => {
+          if (!ready()) return;
+          unsubscribe();
+          resolve();
+        });
+      }),
   );
   return { ...result, ...memory, router, unsaved, queryClient };
 }

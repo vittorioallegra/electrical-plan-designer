@@ -736,5 +736,8 @@
     "floors_other": "{{count}} piani",
     "warnings_one": "{{count}} avviso aperto",
     "warnings_other": "{{count}} avvisi aperti"
+  },
+  "errors": {
+    "unexpected": "Si è verificato un errore. Riprova o torna ai progetti."
   }
 }

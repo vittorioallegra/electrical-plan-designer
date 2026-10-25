@@ -1,7 +1,13 @@
+import { useLoaderData, useParams } from 'react-router';
 import { ProjectFrame } from '@/app/layouts/ProjectFrame';
 import { ProjectLoader } from '@/features/editor/components/ProjectLoader';
+import type { ProjectRecord } from '@/lib/repositories/types';
 
-/** Loads the project, then shows the shared project frame around the child route. */
+/** The loaded project in the shared project frame around the child route. */
 export function ProjectLayoutRoute() {
-  return <ProjectLoader renderFrame={(props) => <ProjectFrame {...props} />} />;
+  const record = useLoaderData<ProjectRecord | null>();
+  const { id = '' } = useParams();
+  return (
+    <ProjectLoader key={id} record={record} renderFrame={(props) => <ProjectFrame {...props} />} />
+  );
 }

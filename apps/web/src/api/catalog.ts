@@ -1,21 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { builtinCatalog } from '@epd/domain/catalog/builtin';
 import { createCatalogLookup, type CatalogLookup } from '@epd/domain/catalog/lookup';
 import type { CatalogItem } from '@epd/domain/catalog/types';
 import { useSession } from '@/lib/auth/AuthProvider';
 import { useRepositories } from '@/lib/repositories/provider';
-import type { NewCatalogItem, Profile, ProfilePatch } from '@/lib/repositories/types';
+import type { NewCatalogItem, Profile, ProfilePatch, Repositories } from '@/lib/repositories/types';
 import { queryKeys } from './keys';
 import { useProfile, useUpdateProfile } from './profile';
 
 const NO_ITEMS: CatalogItem[] = [];
 
+export const catalogItemsQuery = (repos: Repositories, userId: string) =>
+  queryOptions({ queryKey: queryKeys.catalogItems(userId), queryFn: () => repos.catalog.list() });
+
 /** The account's own catalog items (archived included). */
 export function useCatalogItems() {
   const { userId } = useSession();
-  const { catalog } = useRepositories();
-  return useQuery({ queryKey: queryKeys.catalogItems(userId), queryFn: () => catalog.list() });
+  return useQuery(catalogItemsQuery(useRepositories(), userId));
 }
 
 function useInvalidateCatalogItems() {

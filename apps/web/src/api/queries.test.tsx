@@ -83,5 +83,6 @@ describe('server state (TanStack Query)', () => {
     await waitSaved();
     expect(control.saveCalls.at(-1)?.expectedVersion).toBe(savedVersion);
     expect(editorStore().getState().saveStatus).toBe('saved');
-  });
+    // Two debounced autosaves (1 s each) plus two project loads.
+  }, 15_000);
 });

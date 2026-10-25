@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
-import { useFetchProjectRecord, useProjectSaved } from '@/api/projectRecord';
+import { Link } from 'react-router';
+import { useProjectSaved } from '@/api/projectRecord';
 import { useRepositories } from '@/lib/repositories/provider';
+import type { ProjectRecord } from '@/lib/repositories/types';
 import { DocLoadError, loadDoc } from '@epd/domain/load';
 import { startAutosave, type Autosave } from '@/stores/editor/autosave';
 import { EditorProvider, useEditorServices } from '@/stores/editor/EditorContext';
@@ -30,41 +31,36 @@ export interface ProjectFrameProps {
 }
 
 /**
- * Loads and validates a project, then mounts the editor with its store and autosave.
+ * Validates a loaded project record, then mounts the editor with its store and autosave.
+ * The route loads the record and remounts this component per project (`key`); the store is
+ * created once from the record it mounted with, so a later record never re-seeds the editor.
  * The app supplies the frame (top bar, views, drawer), which composes several features.
  */
 export function ProjectLoader({
+  record: loaded,
   renderFrame,
 }: {
+  record: ProjectRecord | null;
   renderFrame: (props: ProjectFrameProps) => ReactNode;
 }) {
   const { t } = useTranslation();
-  const { id = '' } = useParams();
+  const [record] = useState(loaded);
   const repos = useRepositories();
-  const fetchRecord = useFetchProjectRecord();
   const onSaved = useProjectSaved();
   const { unsaved, exposeTestHandle } = useEditorServices();
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [state, setState] = useState<LoadState>(() =>
+    record ? { status: 'loading' } : { status: 'not_found' },
+  );
 
   useEffect(() => {
+    if (!record) return;
+    const id = record.meta.id;
     let active = true;
     let cleanup: (() => void) | undefined;
     void (async () => {
-      let record;
+      let loadedDoc;
       try {
-        record = await fetchRecord(id);
-      } catch {
-        if (active) setState({ status: 'failed' });
-        return;
-      }
-      if (!active) return;
-      if (!record) {
-        setState({ status: 'not_found' });
-        return;
-      }
-      let loaded;
-      try {
-        loaded = loadDoc(record.rawDoc);
+        loadedDoc = loadDoc(record.rawDoc);
       } catch (e) {
         if (!(e instanceof DocLoadError)) throw e;
         setState({ status: 'invalid', error: e, raw: record.rawDoc, name: record.meta.name });
@@ -75,8 +71,8 @@ export function ProjectLoader({
       const store = createEditorStore({
         projectId: id,
         meta: record.meta,
-        data: { doc: loaded.doc, settings: record.settings, quote: record.quote },
-        readOnly: loaded.readOnly,
+        data: { doc: loadedDoc.doc, settings: record.settings, quote: record.quote },
+        readOnly: loadedDoc.readOnly,
       });
       const autosave = startAutosave(store, {
         projects: repos.projects,
@@ -93,7 +89,8 @@ export function ProjectLoader({
         status: 'ready',
         store,
         autosave,
-        restore: !loaded.readOnly && shouldOfferRestore(copy, record.meta.version) ? copy! : null,
+        restore:
+          !loadedDoc.readOnly && shouldOfferRestore(copy, record.meta.version) ? copy! : null,
       });
     })().catch((e: unknown) => {
       // An unexpected error (not a DocLoadError) must not leave the page on "Loading".
@@ -104,7 +101,7 @@ export function ProjectLoader({
       active = false;
       cleanup?.();
     };
-  }, [id, repos, unsaved, exposeTestHandle, fetchRecord, onSaved]);
+  }, [record, repos, unsaved, exposeTestHandle, onSaved]);
 
   if (state.status === 'loading')
     return <p className="p-4 text-text-muted">{t('common.loading')}</p>;

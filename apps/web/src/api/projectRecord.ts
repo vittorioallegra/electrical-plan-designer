@@ -1,31 +1,22 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import type { ProjectMeta } from '@epd/domain/types';
 import { useSession } from '@/lib/auth/AuthProvider';
-import { useRepositories } from '@/lib/repositories/provider';
-import type { ProjectRecord } from '@/lib/repositories/types';
+import type { ProjectRecord, Repositories } from '@/lib/repositories/types';
 import type { EditorData } from '@/stores/editor/editorStore';
 import { queryKeys } from './keys';
 
 /**
- * Reads a project record, always from the server: autosave advances the record version, so a
- * cached record could make the first save fail with `version_conflict`. `null` = not found.
- * The editor store is created once from the result; nothing re-seeds an open editor.
+ * A project record, always read from the server (`staleTime: 0`): autosave advances the record
+ * version, so a cached record could make the first save fail with `version_conflict`.
+ * `null` = not found. The editor store is created once from it; nothing re-seeds an open editor.
  */
-export function useFetchProjectRecord(): (projectId: string) => Promise<ProjectRecord | null> {
-  const { userId } = useSession();
-  const { projects } = useRepositories();
-  const queryClient = useQueryClient();
-  return useCallback(
-    (projectId: string) =>
-      queryClient.fetchQuery({
-        queryKey: queryKeys.project(userId, projectId),
-        queryFn: () => projects.get(projectId),
-        staleTime: 0,
-      }),
-    [queryClient, projects, userId],
-  );
-}
+export const projectRecordQuery = (repos: Repositories, userId: string, projectId: string) =>
+  queryOptions({
+    queryKey: queryKeys.project(userId, projectId),
+    queryFn: () => repos.projects.get(projectId),
+    staleTime: 0,
+  });
 
 /** After an autosave: the cached record takes the saved data and version, the list refetches. */
 export function useProjectSaved(): (meta: ProjectMeta, data: EditorData) => void {

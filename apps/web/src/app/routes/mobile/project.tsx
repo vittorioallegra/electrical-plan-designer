@@ -1,8 +1,8 @@
 import { Maximize, Minus, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
-import { useFetchProjectRecord } from '@/api/projectRecord';
+import { Link, useLoaderData, useParams } from 'react-router';
+import type { ProjectRecord } from '@/lib/repositories/types';
 import { loadDoc } from '@epd/domain/load';
 import type { Point } from '@epd/domain/types';
 import type { Autosave } from '@/stores/editor/autosave';
@@ -17,38 +17,36 @@ import { Checklist } from '@/features/bom/components/Checklist';
 
 const noAutosave: Autosave = { flush: () => undefined, stop: () => undefined };
 
-type State =
-  { status: 'loading' | 'not_found' | 'failed' } | { status: 'ready'; store: EditorStore };
+type State = { status: 'not_found' | 'failed' } | { status: 'ready'; store: EditorStore };
+
+/** Mobile project route: the loader's record, remounted per project. */
+export function MobileProjectRoute() {
+  const record = useLoaderData<ProjectRecord | null>();
+  const { id = '' } = useParams();
+  return <MobileProjectPage key={id} record={record} />;
+}
+
+function initialState(record: ProjectRecord | null): State {
+  if (!record) return { status: 'not_found' };
+  try {
+    const { doc } = loadDoc(record.rawDoc);
+    const store = createEditorStore({
+      projectId: record.meta.id,
+      meta: record.meta,
+      data: { doc, settings: record.settings, quote: record.quote },
+      readOnly: true,
+    });
+    return { status: 'ready', store };
+  } catch {
+    return { status: 'failed' };
+  }
+}
 
 /** Mobile light view of one project: purchase checklist and read-only plan. */
-export function MobileProjectPage() {
+function MobileProjectPage({ record }: { record: ProjectRecord | null }) {
   const { t } = useTranslation();
-  const { id = '' } = useParams();
-  const fetchRecord = useFetchProjectRecord();
-  const [state, setState] = useState<State>({ status: 'loading' });
+  const [state] = useState(() => initialState(record));
 
-  useEffect(() => {
-    let active = true;
-    fetchRecord(id)
-      .then((record) => {
-        if (!active) return;
-        if (!record) return setState({ status: 'not_found' });
-        const { doc } = loadDoc(record.rawDoc);
-        const store = createEditorStore({
-          projectId: id,
-          meta: record.meta,
-          data: { doc, settings: record.settings, quote: record.quote },
-          readOnly: true,
-        });
-        setState({ status: 'ready', store });
-      })
-      .catch(() => active && setState({ status: 'failed' }));
-    return () => {
-      active = false;
-    };
-  }, [fetchRecord, id]);
-
-  if (state.status === 'loading') return <p className="text-text-muted">{t('common.loading')}</p>;
   if (state.status !== 'ready') {
     return (
       <div className="flex flex-col gap-3">

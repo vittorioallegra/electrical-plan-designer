@@ -291,7 +291,7 @@ Approved: yes (2026-10-25)
 - [x] 8. Move files to the target layout — `refactor: move files to the Bulletproof React layout`
 - [x] 9. Remove cross-feature imports, import-boundary lint rules — `refactor: enforce feature import boundaries`
 - [x] 10. TanStack Query for server state — `feat: move server state to TanStack Query`
-- [ ] 11. Route loaders, error elements, lazy routes
+- [x] 11. Route loaders, error elements, lazy routes — `feat: load routes with loaders, error boundaries and lazy modules`
 - [ ] 12. Split PlanCanvas
 - [ ] 13. Split CircuitsTab, PanelView, QuotePage
 - [ ] 14. CLAUDE.md, full verify, bundle sizes
@@ -353,6 +353,14 @@ Approved: yes (2026-10-25)
   `notifyManager.setScheduler(queueMicrotask)`: the default `setTimeout(0)` notification made a
   controlled checkbox show its old value right after the click (caught by the mobile E2E).
   Exports still download logo/backgrounds on demand at export time (action, not page data).
+- Step 11: loaders live in `app/router.tsx` (lazy is per `Component`, so data loads in parallel
+  with the chunk); the project route revalidates only on a new id or Retry, and `ProjectLoader`
+  is keyed by id and keeps the record it mounted with. The query cache is cleared only when a
+  known user signs out or changes (clearing on the first session cancelled the loader's fetch).
+  New i18n key `errors.unexpected`. Bundle after step 11 (`vite build`): initial JS `index`
+  449 kB + shared chunks (react-dom, supabase, query, i18n) = ~275 kB gzip loaded on `/login`
+  and `/projects` (baseline main chunk 1,646 kB / 506 kB gzip); `PlanCanvas` 354 kB, `pdfKit`
+  402 kB, `pdf` 430 kB are lazy.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -366,11 +374,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 11: route modules with loaders (project record via `fetchQuery`, shared catalog/profile
-prefetch), the auth middleware on the protected route, `ErrorBoundary` on every route + root,
-shared `ErrorState`/`RouteError` (link to projects + Retry), lazy route modules (PDF/export code
-and the canvas out of the initial bundle), `createRoutes({ repos, queryClient })`; `renderApp()`
-awaits the first navigation. Tests per the plan.
+Step 12: split `PlanCanvas` (layers: background/grid, walls, segments, nodes, overlays; hooks:
+viewport, pointer/drag, picking, keyboard), keeping `window.__epd`, `pickHandlers` and the
+Playwright canvas specs unchanged; then step 13 (CircuitsTab, PanelView, QuotePage).
 
 ## Review record
 

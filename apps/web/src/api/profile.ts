@@ -1,14 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/lib/auth/AuthProvider';
 import { useRepositories } from '@/lib/repositories/provider';
-import type { Bucket, Profile, ProfilePatch } from '@/lib/repositories/types';
+import type { Bucket, Profile, ProfilePatch, Repositories } from '@/lib/repositories/types';
 import { queryKeys } from './keys';
+
+export const profileQuery = (repos: Repositories, userId: string) =>
+  queryOptions({ queryKey: queryKeys.profile(userId), queryFn: () => repos.profile.get() });
 
 /** Account profile (business data, price list, box presets). */
 export function useProfile() {
   const { userId } = useSession();
-  const { profile } = useRepositories();
-  return useQuery({ queryKey: queryKeys.profile(userId), queryFn: () => profile.get() });
+  return useQuery(profileQuery(useRepositories(), userId));
 }
 
 /** Saves a profile patch and merges it into the shared profile query. */

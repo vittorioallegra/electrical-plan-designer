@@ -14,18 +14,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { auth } = useRepositories();
   const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>({ status: 'loading', session: null });
-  // User of the data in the query cache; it is dropped on sign-out or a change of user.
-  const cachedUser = useRef<string | null>(null);
+  // Last user seen (undefined = not known yet). The query cache is dropped when that user signs
+  // out or another user signs in; never on the first session (route loaders may already be
+  // fetching for it) nor on a sign-in after a sign-out (the cache is already empty).
+  const lastUser = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     let active = true;
     const apply = (session: Session | null) => {
       if (!active) return;
       const userId = session?.userId ?? null;
-      if (userId !== cachedUser.current) {
-        queryClient.clear();
-        cachedUser.current = userId;
-      }
+      if (lastUser.current && userId !== lastUser.current) queryClient.clear();
+      lastUser.current = userId;
       setState(session ? { status: 'signedIn', session } : { status: 'signedOut', session: null });
     };
     void auth.getSession().then(apply);

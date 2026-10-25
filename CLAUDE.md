@@ -46,9 +46,11 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
 - `packages/domain/` — `@epd/domain`, pure TypeScript (model, defaults, geometry, lengths, routing,
   BOM, checks, quote, built-in catalog); source-only, imported as `@epd/domain/<module>` (no barrel);
   its tests run in the `node` environment
-- `src/app/` — entry (`main.tsx`), `provider.tsx`, `router.tsx` (routes), `layouts/` (AppShell,
-  MobileShell, ProjectFrame, RequireAuth), `routes/` (route modules that compose features),
-  `styles.css`
+- `src/app/` — entry (`main.tsx`), `provider.tsx`, `router.tsx` (`createRoutes({ repos,
+queryClient })`: loaders, lazy route modules, error boundaries), `auth.ts` (auth middleware
+  - session context for loaders), `layouts/` (AppShell,
+    MobileShell, ProjectFrame, RequireAuth), `routes/` (route modules that compose features),
+    `styles.css`
 - `src/features/<name>/` — UI by feature (auth, projects, editor, panel, circuits, catalog, bom,
   checks, quote, exports, mobile, profile, settings), split into `components/`, `hooks/`,
   `utils/` (and `api/`) as needed
@@ -102,5 +104,11 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
   (`lib/query-client.ts`). The project record is always fetched fresh (`fetchQuery`,
   `staleTime: 0`) and never re-seeds an open editor. Component tests get a fresh client from
   `renderApp()` (returned as `queryClient`).
+- Routes: the protected route's middleware checks the session before any loader runs; route
+  loaders read data through the query client (`queryOptions` factories in `src/api`), side
+  effects (editor store, autosave) stay in components. Every route has an `ErrorBoundary`
+  (`components/ui/RouteError`, Retry = revalidate). Editor, canvas and PDF code are lazy route
+  modules. `renderApp()` waits for the first navigation; its `prepare` option installs spies
+  before loaders run.
 - `useEditor(selector)` must return stable references: select raw store fields and derive
   arrays with `useMemo`, never `.filter()/.map()` inside the selector (render loop).
