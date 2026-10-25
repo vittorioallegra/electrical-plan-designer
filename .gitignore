@@ -3,3 +3,8 @@ node_modules/
 dist/
 .env
 .env.local
+playwright-report/
+test-results/
+supabase/.temp/
+supabase/.branches/
+*.tsbuildinfo

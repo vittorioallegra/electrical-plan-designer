@@ -1,0 +1,54 @@
+# Electrical Plan Designer
+
+Web app for electricians: draw a residential electrical system on a floor plan, design
+the panel, route circuits through conduits, and get a computed BOM, checks, PDF/CSV
+exports, a quote and a phone checklist. Spec and plan: docs/specs/electrical-plan-designer.md,
+docs/plans/electrical-plan-designer.md.
+
+## Commands
+
+Node 24 via nvm (`export PATH=~/.nvm/versions/node/v24.22.1/bin:$PATH` if `node` is
+missing), pnpm 12.
+
+- `pnpm setup` — install, start local Supabase, write `.env.local`, reset DB, install Chromium
+- `pnpm dev` — dev server on :5173 against local Supabase (runs `scripts/check-env.mjs` first)
+- `pnpm dev:mem` — dev server with in-memory repositories, no Docker needed
+- `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm format`
+- `pnpm test` — unit + component tests (Vitest, jsdom). Quiet, failures only:
+  `pnpm exec vitest run --reporter=dot --silent`
+- Single test file: `pnpm exec vitest run src/domain/lengths.test.ts --reporter=dot`;
+  single test by name: add `-t "riser"`
+- `pnpm test:db` — integration tests against local Supabase (`src/**/*.db.test.ts`)
+- `pnpm test:e2e` — Playwright (`tests/e2e`); quiet: `pnpm exec playwright test --reporter=dot`
+- `pnpm verify` — typecheck, lint, test, test:db, test:e2e (the gate; no CI yet)
+- `pnpm db:start | db:stop | db:reset | db:types`, `pnpm env:local`
+
+Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:local`,
+`setup`. Everything else runs without it.
+
+## Layout
+
+- `src/domain/` — pure TypeScript: model, defaults, geometry, lengths, routing, BOM, checks, quote, built-in catalog
+- `src/data/` — repository interfaces + Supabase and in-memory implementations (only place that talks to Supabase)
+- `src/state/` — editor store (zustand + immer patches), undo/redo, autosave
+- `src/features/` — UI by feature (shell, auth, projects, editor, panel, circuits, catalog, bom, ...)
+- `src/ui/` — design tokens, shared Radix-based components, symbols, number input/format
+- `src/i18n/` — i18next setup; `locales/en.json` (base) and `locales/it.json`
+- `src/config.ts` — zod-validated Vite env
+- `supabase/` — config, migrations, seed (local stack)
+- `scripts/` — `check-env.mjs`, `env-local.mjs`
+- `tests/` — `setup.ts`, `e2e/` (Playwright), `fixtures/` (shared JSON fixtures)
+
+## Conventions
+
+- Everything in the repo is English. User-facing strings only via i18n keys
+  (`t('...')`); ESLint `i18next/no-literal-string` enforces it in `src/features`, `src/ui`.
+  Every key must exist in both `en.json` and `it.json` (test enforces).
+- Dependency rule: `features → state → domain`, `features/state → data → domain`,
+  `features → ui`. `src/domain` imports nothing from the app (ESLint enforced).
+- Import alias `@/` = `src/`.
+- Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
+  `// protects=...; fails_when=...; no_claim=...`.
+- Lengths are integer millimeters inside the domain; meters only at the edges.
+- Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
+- Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).

@@ -1,0 +1,33 @@
+{
+  "app": {
+    "name": "Electrical Plan Designer"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "it": "Italiano"
+  },
+  "nav": {
+    "projects": "Projects",
+    "catalog": "Catalog",
+    "profile": "Profile",
+    "plan": "Plan",
+    "panel": "Panel",
+    "quote": "Quote",
+    "settings": "Settings"
+  },
+  "pages": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "projects": "Projects",
+    "plan": "Plan",
+    "panel": "Panel designer",
+    "quote": "Quote",
+    "settings": "Project settings",
+    "catalog": "Catalog",
+    "profile": "Business profile",
+    "mobileProjects": "Projects",
+    "mobileProject": "Project",
+    "notFound": "Page not found"
+  }
+}

@@ -360,7 +360,7 @@ Approved: yes (2026-10-25)
 
 ### Steps
 - [x] 1. Docs commit (spec + plan) — `docs: add electrical plan designer spec and plan`
-- [ ] 2. Scaffold, dev environment scripts, i18n, CLAUDE.md
+- [x] 2. Scaffold, dev environment scripts, i18n, CLAUDE.md — `chore: scaffold app, dev environment scripts and i18n`
 - [ ] 3. UI foundations (tokens, components, symbols, number input)
 - [ ] 4. Domain model, defaults, schema, built-in catalog, fixture
 - [ ] 5. Domain geometry and lengths
@@ -407,12 +407,15 @@ Approved: yes (2026-10-25)
 - Tablets 768–1023 px get the editor with a notice (user).
 - Pack sizes (coils/rolls) deferred after v1 (user).
 - Riser rule and persistence changes accepted and written into the spec (user).
+- `check-env.mjs` is chained explicitly in `dev`, `test:db`, `test:e2e` instead of `pre*`
+  scripts (pnpm does not run pre/post scripts reliably).
 
 ### Open questions
 - None.
 
 ### Next
-Step 2: scaffold (pnpm + Vite React TS, dev environment scripts, i18n en/it, CLAUDE.md) on branch feat/electrical-plan-designer.
+Step 3: UI foundations (tokens, Radix components, NumberInput + formatNumber/formatMoney, symbol set,
+editor layout shell) on branch feat/electrical-plan-designer.
 
 ## Review record
 
