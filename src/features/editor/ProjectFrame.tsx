@@ -17,6 +17,7 @@ import { LanguageSwitch } from '../shell/LanguageSwitch';
 import { BomTab } from '../bom/BomTab';
 import { WarningsBadge, WarningsTab } from '../checks/WarningsTab';
 import { CircuitsTab } from '../circuits/CircuitsTab';
+import { ProgressStrip } from './ProgressStrip';
 import { SaveStatus } from './SaveStatus';
 
 const viewTabs = [
@@ -194,6 +195,7 @@ export function ProjectFrame({
         </div>
       ) : null}
 
+      <ProgressStrip />
       <div className="min-h-0 flex-1">
         <Outlet />
       </div>

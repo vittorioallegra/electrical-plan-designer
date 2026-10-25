@@ -5,6 +5,20 @@ import { useCatalog } from '../catalog/useCatalog';
 import { describeBomLine } from './describe';
 import { useAnalysis } from './useAnalysis';
 
+/** Sum of a category's quantities, when every line shares one unit. */
+function CategoryTotal({ lines }: { lines: readonly BomLine[] }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'it' ? 'it' : 'en';
+  const unit = lines[0]!.unit;
+  if (lines.some((l) => l.unit !== unit)) return null;
+  const total = lines.reduce((sum, l) => sum + l.quantity, 0);
+  return (
+    <span className="tabular-nums" data-testid="bom-total">
+      {formatNumber(total, locale)} {t(`bom.units.${unit}`)}
+    </span>
+  );
+}
+
 export function BomTab() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
@@ -21,7 +35,10 @@ export function BomTab() {
       <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-x-6 gap-y-2">
         {groups.map(([category, lines]) => (
           <section key={category} aria-label={t(`bom.categories.${category}`)}>
-            <h3 className="mb-0.5 font-medium">{t(`bom.categories.${category}`)}</h3>
+            <h3 className="mb-0.5 flex justify-between border-b border-border font-medium">
+              {t(`bom.categories.${category}`)}
+              <CategoryTotal lines={lines} />
+            </h3>
             <table className="w-full">
               <tbody>
                 {lines.map((line: BomLine) => (

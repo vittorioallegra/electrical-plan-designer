@@ -378,7 +378,8 @@ Approved: yes (2026-10-25)
 - [x] 17. Panel designer — `feat: add panel designer with DIN rails, slots and upstream groups`
 - [x] 18. Circuits UI and routing — `feat: add circuits tab, target picking, manual routes and extra runs`,
   `test: cover circuits tab creation, target picking, manual routes and occupancy`
-- [ ] 19. Checks panel, full BOM, dogfood checkpoint
+- [ ] 19. Checks panel, full BOM, dogfood checkpoint — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
+  `feat: add BOM category totals and the progress strip`
 - [ ] 20. Exports and quote
 - [ ] 21. Mobile light view and purchase checklist
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
@@ -436,8 +437,9 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 19: checks panel (Warnings tab, grouped, click-to-select, hide connectivity filter), full
-BOM grouped with totals, first-project E2E, then the dogfood checkpoint (needs the user).
+Step 19, remaining: E2E first-project path following the progress strip
+(`tests/e2e/first-project.spec.ts`), then the dogfood checkpoint (needs the user: draw one real
+floor, compare BOM with the hand count, record time and differences here).
 
 ## Review record
 
