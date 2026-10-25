@@ -373,7 +373,7 @@ Approved: yes (2026-10-25)
 - [x] 12. Editor shell, store, undo/redo, save status, floors, settings — `feat: add editor store, autosave, floors and project settings`
 - [x] 13. Canvas base, walls, background import, calibration — `feat: add plan canvas, walls, background import and calibration`
 - [x] 14. Nodes and conduit segments — `feat: add nodes, conduit tool, selection, move, copy/paste and risers`
-- [ ] 15. Catalog, box contents, presets
+- [x] 15. Catalog, box contents, presets — `feat: add catalog page, box contents editor and box presets`
 - [ ] 16. Minimal BOM drawer tab
 - [ ] 17. Panel designer
 - [ ] 18. Circuits UI and routing
@@ -427,14 +427,16 @@ Approved: yes (2026-10-25)
 - Canvas selection uses our own world-space hit test (`canvas/hitTest.ts`: node > segment >
   wall, Tab cycles), not Konva shape events. Ending a conduit on empty space (Enter or clicking
   the last bend again) creates a junction box there.
+- `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
+  list, box presets) once per session; built-in prices are set from the catalog page as account
+  price overrides.
 
 ### Open questions
 - None.
 
 ### Next
-Step 15: catalog page (built-ins read-only, user items CRUD/duplicate/archive), terminal box
-contents editor (devices, covers, plate, modules counter), provision toggle, box presets in
-`profiles.box_presets` applied on placement.
+Step 16: minimal BOM drawer tab (live `computeBom` of boxes, devices, plates, conduit; cable
+lines once circuits exist), grouped by category with item names from the catalog.
 
 ## Review record
 

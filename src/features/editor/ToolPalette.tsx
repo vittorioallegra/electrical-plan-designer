@@ -5,6 +5,7 @@ import { useEditor, useEditorContext } from '@/state/EditorContext';
 import type { Tool } from '@/state/editorStore';
 import { cn } from '@/ui/cn';
 import { ElectricalSymbol } from '@/ui/ElectricalSymbol';
+import { useCatalog } from '../catalog/useCatalog';
 
 const tools: { tool: Tool; icon: ReactNode; key: string; shortcut: string }[] = [
   { tool: 'select', icon: <MousePointer2 size={16} />, key: 'tools.select', shortcut: 'V' },
@@ -50,8 +51,28 @@ export function ToolPalette() {
     (s) => !!s.data.doc.floors.find((f) => f.id === s.ui.floorId)?.background,
   );
   const hasPanel = useEditor((s) => s.data.doc.panels.length > 0);
+  const presetId = useEditor((s) => s.ui.presetId);
+  const { profile } = useCatalog();
+  const presets = profile?.boxPresets ?? [];
   return (
     <div role="toolbar" aria-label={t('editor.tools')} className="flex flex-col gap-0.5">
+      {active === 'terminal_box' && presets.length > 0 ? (
+        <label className="order-last mt-2 flex flex-col gap-1">
+          {t('contents.placeWith')}
+          <select
+            className="h-[var(--control-height)] rounded border border-border px-1"
+            value={presetId ?? ''}
+            onChange={(e) => store.getState().setUi({ presetId: e.target.value || null })}
+          >
+            <option value="">{t('contents.plainBox')}</option>
+            {presets.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {tools.map(({ tool, icon, key, shortcut }) => {
         const disabled =
           (readOnly && tool !== 'select') ||

@@ -17,6 +17,7 @@ import { createLengthContext } from '@/domain/lengths';
 import { newId } from '@/domain/ids';
 import type { Floor, PlanNode, Point, RunElevation } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
+import { useCatalog } from '../../catalog/useCatalog';
 import { formatLength } from '@/ui/format';
 import { provisionDash, symbolPaths, type SymbolKind } from '@/ui/symbols';
 import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode } from '../commands';
@@ -86,6 +87,8 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
   const settings = useEditor((s) => s.data.settings);
   const floor = doc.floors.find((f) => f.id === floorId);
   const { image } = useBackgroundImage(floor?.background?.storagePath);
+  const { profile } = useCatalog();
+  const presetId = useEditor((s) => s.ui.presetId);
 
   const [cursor, setCursor] = useState<SnapResult | null>(null);
   const [wallStart, setWallStart] = useState<Point | null>(null);
@@ -415,7 +418,9 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
         tool === 'junction_box'
           ? hitTest(doc, floorId, snap.point, view.scale).find((h) => h.kind === 'segment')?.id
           : undefined;
-      placeNode(store, tool, snap.point, onSegment);
+      const preset =
+        tool === 'terminal_box' ? profile?.boxPresets.find((p) => p.id === presetId) : undefined;
+      placeNode(store, tool, snap.point, onSegment, preset);
     }
   }
 

@@ -1,5 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router';
 import { AuthForm } from './features/auth/AuthForm';
+import { CatalogPage } from './features/catalog/CatalogPage';
 import { RequireAuth } from './features/auth/RequireAuth';
 import { PlanView } from './features/editor/PlanView';
 import { ProjectLoader } from './features/editor/ProjectLoader';
@@ -36,7 +37,7 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <Navigate to="/projects" replace /> },
           { path: 'projects', element: <ProjectsPage /> },
-          { path: 'catalog', element: <PlaceholderPage titleKey="pages.catalog" /> },
+          { path: 'catalog', element: <CatalogPage /> },
           { path: 'profile', element: <ProfilePage /> },
           { path: 'm/projects', element: <ProjectsPage basePath="/m/projects" /> },
           { path: 'm/projects/:id', element: <PlaceholderPage titleKey="pages.mobileProject" /> },

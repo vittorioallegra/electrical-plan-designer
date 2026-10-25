@@ -16,7 +16,8 @@ export async function renderApp(
     lng = 'en',
     signedIn = true,
     seed = true,
-  }: { lng?: Language; signedIn?: boolean; seed?: boolean } = {},
+    exposeTestHandle = false,
+  }: { lng?: Language; signedIn?: boolean; seed?: boolean; exposeTestHandle?: boolean } = {},
 ) {
   const memory = createMemoryRepositories();
   if (seed) seedMemory(memory.control);
@@ -30,7 +31,7 @@ export async function renderApp(
     <AppProviders
       repos={memory.repos}
       i18n={createI18n(lng)}
-      services={{ unsaved, exposeTestHandle: false }}
+      services={{ unsaved, exposeTestHandle }}
     >
       <RouterProvider router={router} />
     </AppProviders>,

@@ -9,6 +9,7 @@ import { Button } from '@/ui/Button';
 import { formatLength } from '@/ui/format';
 import { NumberInput } from '@/ui/NumberInput';
 import { useItemName, useItemsOf } from '../catalog/useCatalog';
+import { BoxContents } from './BoxContents';
 
 const mountings: Mounting[] = ['socket', 'switch', 'ceiling', 'custom'];
 
@@ -205,6 +206,8 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
           ) : null}
         </div>
       ) : null}
+
+      {node.kind === 'terminal_box' ? <BoxContents node={node} /> : null}
 
       <Button variant="danger" disabled={readOnly} onClick={onDelete}>
         <Trash2 size={16} />

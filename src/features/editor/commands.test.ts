@@ -70,3 +70,22 @@ describe('plan commands', () => {
     expect(store.getState().data.doc).toEqual(before);
   });
 });
+
+describe('box presets on placement', () => {
+  // protects=presets applied on placement; fails_when=a placed box ignores the active preset; no_claim=preset storage
+  it('places a terminal box with the preset box, mounting and contents', async () => {
+    const { store } = await demoStore();
+    const id = placeNode(store, 'terminal_box', { x: 30, y: 30 }, undefined, {
+      id: 'p1',
+      name: 'Switch 503',
+      mounting: 'switch',
+      boxItemId: 'builtin:box_503',
+      contents: [{ itemId: 'builtin:switch', qty: 1 }],
+    })!;
+    expect(store.getState().data.doc.nodes.find((n) => n.id === id)).toMatchObject({
+      mounting: 'switch',
+      boxItemId: 'builtin:box_503',
+      contents: [{ itemId: 'builtin:switch', qty: 1 }],
+    });
+  });
+});

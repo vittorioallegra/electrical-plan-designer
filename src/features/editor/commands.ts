@@ -11,7 +11,7 @@ import {
 import { distance, projectOnPolyline } from '@/domain/geometry';
 import { newId } from '@/domain/ids';
 import { splitSegment } from '@/domain/routing';
-import type { NodeKind, PlanNode, Point, ProjectDoc } from '@/domain/types';
+import type { BoxPreset, NodeKind, PlanNode, Point, ProjectDoc } from '@/domain/types';
 import type { EditorStore } from '@/state/editorStore';
 import { segmentPolyline } from './canvas/hitTest';
 
@@ -51,11 +51,13 @@ export function placeNode(
   kind: NodeKind,
   position: Point,
   onSegmentId?: string,
+  preset?: BoxPreset,
 ): string | null {
   const s = store.getState();
   const floorId = s.ui.floorId;
   if (kind === 'panel' && s.data.doc.panels.length > 0) return null;
   const node = createNode(s.data.doc, kind, floorId, position);
+  if (kind === 'terminal_box' && preset) applyPresetTo(node, preset);
   const result = s.applyCommand(`place ${kind}`, (d) => {
     if (kind === 'junction_box' && onSegmentId) {
       const line = segmentPolyline(d.doc, onSegmentId);
@@ -189,4 +191,11 @@ export function nodeAt(
   tolerance: number,
 ): PlanNode | undefined {
   return doc.nodes.find((n) => n.floorId === floorId && distance(n.position, p) <= tolerance);
+}
+
+export function applyPresetTo(node: PlanNode, preset: BoxPreset): void {
+  if (preset.mounting) node.mounting = preset.mounting;
+  if (preset.boxItemId) node.boxItemId = preset.boxItemId;
+  else delete node.boxItemId;
+  node.contents = structuredClone(preset.contents);
 }

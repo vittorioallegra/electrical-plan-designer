@@ -40,6 +40,8 @@ export interface EditorUi {
   tool: Tool;
   /** Canvas view: px per meter and screen offset. */
   view: { scale: number; x: number; y: number };
+  /** Box preset applied when placing terminal boxes (null = plain box). */
+  presetId: string | null;
 }
 
 export interface EditorState {
@@ -113,6 +115,7 @@ export function createEditorStore(init: EditorInit): EditorStore {
         selection: [],
         tool: 'select',
         view: { scale: 50, x: 80, y: 80 },
+        presetId: null,
       },
 
       applyCommand(label, recipe) {

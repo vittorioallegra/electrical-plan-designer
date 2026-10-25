@@ -12,6 +12,7 @@ import { useRepositories } from '@/data';
 import { builtinCatalog } from '@/domain/catalog/builtin';
 import { createCatalogLookup, type CatalogLookup } from '@/domain/catalog/lookup';
 import type { CatalogCategory, CatalogItem } from '@/domain/catalog/types';
+import type { Profile, ProfilePatch } from '@/data/types';
 
 interface CatalogState {
   /** Built-ins + the account's user items (archived included). */
@@ -19,14 +20,35 @@ interface CatalogState {
   userItems: CatalogItem[];
   lookup: CatalogLookup;
   reload: () => void;
+  /** Account profile (price list, box presets); null while loading. */
+  profile: Profile | null;
+  updateProfile: (patch: ProfilePatch) => Promise<void>;
 }
 
 const CatalogContext = createContext<CatalogState | null>(null);
 
 /** Loads the account catalog once per signed-in session and shares it. */
 export function CatalogProvider({ children }: { children: ReactNode }) {
-  const { catalog } = useRepositories();
+  const { catalog, profile: profileRepo } = useRepositories();
   const [userItems, setUserItems] = useState<CatalogItem[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  useEffect(() => {
+    let active = true;
+    profileRepo
+      .get()
+      .then((p) => active && setProfile(p))
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [profileRepo]);
+  const updateProfile = useCallback(
+    async (patch: ProfilePatch) => {
+      await profileRepo.update(patch);
+      setProfile((p) => (p ? { ...p, ...patch } : p));
+    },
+    [profileRepo],
+  );
   const [generation, setGeneration] = useState(0);
   useEffect(() => {
     let active = true;
@@ -45,8 +67,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       userItems,
       lookup: createCatalogLookup(userItems),
       reload,
+      profile,
+      updateProfile,
     }),
-    [userItems, reload],
+    [userItems, reload, profile, updateProfile],
   );
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
 }
