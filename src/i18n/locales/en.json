@@ -661,6 +661,17 @@
     "vatRate": "VAT {{percent}}%",
     "exportCsv": "CSV",
     "exportPdf": "PDF",
-    "exportLive": "Export the current quote"
+    "exportLive": "Export the current quote",
+    "exportFailed": "Could not create the PDF. Try again."
+  },
+  "pdf": {
+    "vatNumber": "VAT no. {{value}}",
+    "quoteTitle": "Quote {{number}}",
+    "quoteDraft": "Quote (draft)",
+    "date": "Date: {{date}}",
+    "client": "Client: {{name}}",
+    "siteAddress": "Site: {{address}}",
+    "project": "Project: {{name}}",
+    "adjustment": "Markup / discount {{percent}}%"
   }
 }

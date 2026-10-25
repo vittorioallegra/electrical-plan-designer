@@ -1,4 +1,4 @@
-import { FileSpreadsheet, Plus, Stamp, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, FileText, Plus, Stamp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
@@ -66,6 +66,14 @@ export function QuotePage() {
     }
   }
 
+  async function exportPdf(q: Parameters<typeof exporter.pdf>[0]) {
+    try {
+      await exporter.pdf(q);
+    } catch {
+      toast(t('quote.exportFailed'), 'error');
+    }
+  }
+
   const money = (cents: number | null) => (cents === null ? '—' : formatMoney(cents, locale));
 
   return (
@@ -77,6 +85,10 @@ export function QuotePage() {
             <Button onClick={() => exporter.csv({ ...quote, settings })}>
               <FileSpreadsheet size={16} />
               {t('quote.exportCsv')}
+            </Button>
+            <Button onClick={() => void exportPdf({ ...quote, settings })}>
+              <FileText size={16} />
+              {t('quote.exportPdf')}
             </Button>
           </div>
           <Button variant="primary" disabled={readOnly || issuing} onClick={() => void issue()}>
@@ -194,6 +206,14 @@ export function QuotePage() {
                   >
                     <FileSpreadsheet size={14} />
                     {t('quote.exportCsv')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    aria-label={`${t('quote.exportPdf')} ${formatQuoteNumber(q)}`}
+                    onClick={() => void exportPdf(q)}
+                  >
+                    <FileText size={14} />
+                    {t('quote.exportPdf')}
                   </Button>
                 </li>
               ))}

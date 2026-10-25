@@ -661,6 +661,17 @@
     "vatRate": "IVA {{percent}}%",
     "exportCsv": "CSV",
     "exportPdf": "PDF",
-    "exportLive": "Esporta il preventivo attuale"
+    "exportLive": "Esporta il preventivo attuale",
+    "exportFailed": "Impossibile creare il PDF. Riprova."
+  },
+  "pdf": {
+    "vatNumber": "P. IVA {{value}}",
+    "quoteTitle": "Preventivo {{number}}",
+    "quoteDraft": "Preventivo (bozza)",
+    "date": "Data: {{date}}",
+    "client": "Cliente: {{name}}",
+    "siteAddress": "Cantiere: {{address}}",
+    "project": "Progetto: {{name}}",
+    "adjustment": "Ricarico / sconto {{percent}}%"
   }
 }
