@@ -23,10 +23,15 @@ interface HistoryEntry {
   inverse: Patch[];
 }
 
+export type Tool = 'select' | 'wall' | 'calibrate';
+
 export interface EditorUi {
   floorId: string;
   /** Selected element ids (nodes, segments, walls, panel devices). */
   selection: string[];
+  tool: Tool;
+  /** Canvas view: px per meter and screen offset. */
+  view: { scale: number; x: number; y: number };
 }
 
 export interface EditorState {
@@ -95,7 +100,12 @@ export function createEditorStore(init: EditorInit): EditorStore {
       saveError: null,
       past: [],
       future: [],
-      ui: { floorId: firstFloor?.id ?? '', selection: [] },
+      ui: {
+        floorId: firstFloor?.id ?? '',
+        selection: [],
+        tool: 'select',
+        view: { scale: 50, x: 80, y: 80 },
+      },
 
       applyCommand(label, recipe) {
         const s = get();
@@ -159,5 +169,5 @@ function keepUiValid(ui: EditorUi, doc: ProjectDoc): EditorUi {
     ...doc.panels.flatMap((p) => p.devices.map((d) => d.id)),
   ]);
   const selection = ui.selection.filter((id) => ids.has(id));
-  return floorOk && selection.length === ui.selection.length ? ui : { floorId, selection };
+  return floorOk && selection.length === ui.selection.length ? ui : { ...ui, floorId, selection };
 }

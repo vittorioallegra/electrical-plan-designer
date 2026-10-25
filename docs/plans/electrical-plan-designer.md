@@ -371,7 +371,7 @@ Approved: yes (2026-10-25)
 - [x] 10. Supabase local schema, RLS, save RPC, storage, seed, deploy doc — `feat: add Supabase schema, RLS, save RPC, storage and seed`
 - [x] 11. Auth, profile, project list — `feat: add repositories, auth, profile and project list`
 - [x] 12. Editor shell, store, undo/redo, save status, floors, settings — `feat: add editor store, autosave, floors and project settings`
-- [ ] 13. Canvas base, walls, background import, calibration
+- [x] 13. Canvas base, walls, background import, calibration — `feat: add plan canvas, walls, background import and calibration`
 - [ ] 14. Nodes and conduit segments
 - [ ] 15. Catalog, box contents, presets
 - [ ] 16. Minimal BOM drawer tab
@@ -422,14 +422,16 @@ Approved: yes (2026-10-25)
   the doc. Floor reorder/delete rebuild riser segments (`src/domain/risers.ts`); structural
   deletes keep dangling manual-route ids so the circuit shows as invalid.
 - E2E runs its own Vite server on :5174 (`--mode e2e`), never reusing a dev server.
+- Uncalibrated backgrounds show at 1 px = 1 cm. Konva's dblclick is not used (it fires for two
+  quick clicks at different points); clicking a chain's last point again ends it.
 
 ### Open questions
 - None.
 
 ### Next
-Step 13: canvas base (`src/features/editor/canvas/`): Konva stage in meters, pan/zoom, grid,
-snapping, walls tool, background import (PDF page picker via pdfjs, images; upload to
-`backgrounds`), calibration tool, opacity/offset, empty-canvas prompt; E2E AC 2 and AC 3.
+Step 14: nodes + conduit segments on the canvas: place panel/junction/terminal/riser points,
+conduit tool, run-elevation styling, length labels, selection (Tab cycling, multi-select), move,
+cascade delete, copy/paste, riser linking, properties panel.
 
 ## Review record
 

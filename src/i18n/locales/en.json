@@ -96,7 +96,8 @@
       "delete": "Delete floor",
       "deleteTitle": "Delete {{name}}?",
       "deleteBody": "Removes {{nodes}} elements and {{segments}} conduit segments; {{circuits}} circuits are affected. Undo restores them."
-    }
+    },
+    "emptyCanvas": "Start from the floor plan: import a PDF or image, or draw the walls."
   },
   "catalog": {
     "builtin": {
@@ -231,5 +232,60 @@
     "floor": "At floor",
     "ceiling": "At ceiling",
     "direct": "Direct (in the wall)"
+  },
+  "tools": {
+    "select": "Select",
+    "wall": "Walls",
+    "calibrate": "Calibrate",
+    "drawWalls": "Draw walls"
+  },
+  "inspector": {
+    "multiple": "{{count}} elements selected",
+    "delete": "Delete",
+    "wall": {
+      "title": "Wall",
+      "length": "Length",
+      "lengthValue": "Length {{length}}",
+      "thickness": "Thickness",
+      "ax": "Start X",
+      "ay": "Start Y",
+      "bx": "End X",
+      "by": "End Y"
+    }
+  },
+  "background": {
+    "title": "Background plan",
+    "import": "Import plan",
+    "importTitle": "Import floor plan",
+    "importHint": "PDF, PNG or JPG up to 20 MB. A PDF page is converted to an image.",
+    "file": "File",
+    "reading": "Reading the file…",
+    "uploading": "Uploading…",
+    "retryUpload": "Retry upload",
+    "pages": "Pages",
+    "page": "Page {{page}}",
+    "usePage": "Use page {{page}}",
+    "calibrate": "Calibrate",
+    "recalibrate": "Recalibrate",
+    "calibrateTitle": "Calibrate the plan",
+    "calibrateHint": "Type the real distance between the two points you clicked.",
+    "calibrateClick": "Click two points on the plan whose real distance you know.",
+    "realDistance": "Real distance",
+    "calibrated": "Calibrated on a known distance of {{length}}.",
+    "notCalibrated": "Not calibrated: lengths on this plan are not to scale yet.",
+    "opacity": "Opacity",
+    "offsetX": "Offset X",
+    "offsetY": "Offset Y",
+    "rotation": "Rotation",
+    "replace": "Replace",
+    "remove": "Remove",
+    "errors": {
+      "oversize": "The file is larger than 20 MB.",
+      "unsupported": "Use a PDF, PNG or JPG file.",
+      "encrypted": "This PDF is password-protected. Remove the protection and retry.",
+      "corrupt": "The file cannot be read. It may be damaged.",
+      "render_failed": "The page could not be rendered.",
+      "upload_failed": "Upload failed. Check the connection and retry."
+    }
   }
 }

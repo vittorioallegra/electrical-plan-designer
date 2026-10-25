@@ -13,6 +13,8 @@ export interface NumberInputProps extends Omit<
   decimals?: number;
   min?: number;
   max?: number;
+  /** Report every valid value while typing (dialog fields), not only on blur/Enter. */
+  live?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ export function NumberInput({
   decimals = 2,
   min,
   max,
+  live = false,
   className,
   id,
   ...props
@@ -38,10 +41,13 @@ export function NumberInput({
   const [draft, setDraft] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
 
+  const valid = (n: number | null): n is number =>
+    n !== null && (min === undefined || n >= min) && (max === undefined || n <= max);
+
   function commit() {
     if (draft === null) return;
     const n = parseNumber(draft, locale);
-    const ok = n !== null && (min === undefined || n >= min) && (max === undefined || n <= max);
+    const ok = valid(n);
     setInvalid(!ok);
     if (!ok) return;
     setDraft(null);
@@ -65,7 +71,13 @@ export function NumberInput({
         className="w-full min-w-0 bg-transparent text-right tabular-nums outline-none"
         value={draft ?? show(value)}
         onFocus={() => setDraft((d) => d ?? show(value))}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          if (live) {
+            const n = parseNumber(e.target.value, locale);
+            if (valid(n) && n !== value) onValueChange(n);
+          }
+        }}
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') commit();

@@ -96,7 +96,8 @@
       "delete": "Elimina piano",
       "deleteTitle": "Eliminare {{name}}?",
       "deleteBody": "Rimuove {{nodes}} elementi e {{segments}} tratti di tubo; {{circuits}} circuiti sono coinvolti. Annulla li ripristina."
-    }
+    },
+    "emptyCanvas": "Parti dalla pianta: importa un PDF o un'immagine, oppure disegna i muri."
   },
   "catalog": {
     "builtin": {
@@ -231,5 +232,60 @@
     "floor": "A pavimento",
     "ceiling": "A soffitto",
     "direct": "Diretto (in parete)"
+  },
+  "tools": {
+    "select": "Seleziona",
+    "wall": "Muri",
+    "calibrate": "Calibra",
+    "drawWalls": "Disegna muri"
+  },
+  "inspector": {
+    "multiple": "{{count}} elementi selezionati",
+    "delete": "Elimina",
+    "wall": {
+      "title": "Muro",
+      "length": "Lunghezza",
+      "lengthValue": "Lunghezza {{length}}",
+      "thickness": "Spessore",
+      "ax": "Inizio X",
+      "ay": "Inizio Y",
+      "bx": "Fine X",
+      "by": "Fine Y"
+    }
+  },
+  "background": {
+    "title": "Pianta di sfondo",
+    "import": "Importa pianta",
+    "importTitle": "Importa pianta",
+    "importHint": "PDF, PNG o JPG fino a 20 MB. Una pagina PDF viene convertita in immagine.",
+    "file": "File",
+    "reading": "Lettura del file…",
+    "uploading": "Caricamento…",
+    "retryUpload": "Riprova caricamento",
+    "pages": "Pagine",
+    "page": "Pagina {{page}}",
+    "usePage": "Usa pagina {{page}}",
+    "calibrate": "Calibra",
+    "recalibrate": "Ricalibra",
+    "calibrateTitle": "Calibra la pianta",
+    "calibrateHint": "Scrivi la distanza reale tra i due punti cliccati.",
+    "calibrateClick": "Clicca due punti della pianta di cui conosci la distanza reale.",
+    "realDistance": "Distanza reale",
+    "calibrated": "Calibrata su una distanza nota di {{length}}.",
+    "notCalibrated": "Non calibrata: le lunghezze su questa pianta non sono ancora in scala.",
+    "opacity": "Opacità",
+    "offsetX": "Spostamento X",
+    "offsetY": "Spostamento Y",
+    "rotation": "Rotazione",
+    "replace": "Sostituisci",
+    "remove": "Rimuovi",
+    "errors": {
+      "oversize": "Il file supera i 20 MB.",
+      "unsupported": "Usa un file PDF, PNG o JPG.",
+      "encrypted": "Questo PDF è protetto da password. Rimuovi la protezione e riprova.",
+      "corrupt": "Il file non si può leggere. Potrebbe essere danneggiato.",
+      "render_failed": "Impossibile convertire la pagina.",
+      "upload_failed": "Caricamento non riuscito. Controlla la connessione e riprova."
+    }
   }
 }

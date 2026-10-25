@@ -37,3 +37,17 @@ describe('NumberInput', () => {
     expect(input).toHaveAttribute('aria-invalid', 'true');
   });
 });
+
+describe('NumberInput live mode', () => {
+  // protects=dialog fields; fails_when=a typed value is only reported after blur, leaving the confirm button disabled; no_claim=—
+  it('reports valid values while typing', async () => {
+    const onValueChange = vi.fn();
+    render(
+      <I18nextProvider i18n={createI18n('en')}>
+        <NumberInput aria-label="d" value={null} live min={0.01} onValueChange={onValueChange} />
+      </I18nextProvider>,
+    );
+    await userEvent.type(screen.getByLabelText('d'), '4.2');
+    expect(onValueChange).toHaveBeenLastCalledWith(4.2);
+  });
+});

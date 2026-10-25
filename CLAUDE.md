@@ -59,5 +59,7 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 - Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
   `// protects=...; fails_when=...; no_claim=...`.
 - Lengths are integer millimeters inside the domain; meters only at the edges.
+- jsdom has no canvas: `tests/setup.ts` stubs `react-konva`, so canvas behavior is tested
+  in Playwright, driving the store through `window.__epd` (`tests/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).

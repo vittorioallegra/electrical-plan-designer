@@ -48,3 +48,16 @@ export function backgroundToWorld(background: Background, px: Point): Point | nu
     y: background.offset.y + x * Math.sin(rad) + y * Math.cos(rad),
   };
 }
+
+/** Inverse of backgroundToWorld: world meters → background pixel. */
+export function worldToBackground(background: Background, world: Point): Point | null {
+  const scale = background.calibration ? metersPerPixel(background.calibration) : null;
+  if (scale === null) return null;
+  const rad = (-background.rotation * Math.PI) / 180;
+  const dx = world.x - background.offset.x;
+  const dy = world.y - background.offset.y;
+  return {
+    x: (dx * Math.cos(rad) - dy * Math.sin(rad)) / scale,
+    y: (dx * Math.sin(rad) + dy * Math.cos(rad)) / scale,
+  };
+}
