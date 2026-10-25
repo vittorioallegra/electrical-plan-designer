@@ -379,7 +379,8 @@ Approved: yes (2026-10-25)
 - [x] 18. Circuits UI and routing — `feat: add circuits tab, target picking, manual routes and extra runs`,
   `test: cover circuits tab creation, target picking, manual routes and occupancy`
 - [ ] 19. Checks panel, full BOM, dogfood checkpoint — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
-  `feat: add BOM category totals and the progress strip`
+  `feat: add BOM category totals and the progress strip`,
+  `test: add first-project E2E following the progress strip`
 - [ ] 20. Exports and quote
 - [ ] 21. Mobile light view and purchase checklist
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
@@ -429,6 +430,10 @@ Approved: yes (2026-10-25)
 - Canvas selection uses our own world-space hit test (`canvas/hitTest.ts`: node > segment >
   wall, Tab cycles), not Konva shape events. Ending a conduit on empty space (Enter or clicking
   the last bend again) creates a junction box there.
+- Drawer tab, connectivity filter and canvas focus requests live in the editor UI state
+  (`drawerTab`, `hideConnectivity`, `focus`), so warnings and the progress strip can drive them.
+- Progress strip stages: Plan = walls or background, Panel = at least one panel device,
+  Circuits = a circuit with a target, BOM = a cable line (so routing a circuit completes it).
 - `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
   list, box presets) once per session; built-in prices are set from the catalog page as account
   price overrides.
@@ -437,9 +442,9 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 19, remaining: E2E first-project path following the progress strip
-(`tests/e2e/first-project.spec.ts`), then the dogfood checkpoint (needs the user: draw one real
-floor, compare BOM with the hand count, record time and differences here).
+Step 19, remaining: the dogfood checkpoint (needs the user: draw one real floor of the house,
+compare the BOM with the hand count, record the time taken and every difference here). Then
+step 20 (exports and quote).
 
 ## Review record
 
