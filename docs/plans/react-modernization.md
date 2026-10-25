@@ -271,7 +271,7 @@ Phase F — wrap-up
 
 ## Progress
 
-Phase: implementation
+Phase: verification
 Branch: feat/react-modernization
 Base: main
 Spec: docs/specs/react-modernization.md
@@ -294,7 +294,7 @@ Approved: yes (2026-10-25)
 - [x] 11. Route loaders, error elements, lazy routes — `feat: load routes with loaders, error boundaries and lazy modules`
 - [x] 12. Split PlanCanvas — `refactor: split PlanCanvas into layers, hooks and scene helpers`
 - [x] 13. Split CircuitsTab, PanelView, QuotePage — `refactor: split CircuitsTab, PanelView and QuotePage into smaller components`
-- [ ] 14. CLAUDE.md, full verify, bundle sizes
+- [x] 14. CLAUDE.md, full verify, bundle sizes — `docs: finish the modernization with CLAUDE.md and bundle sizes`
 
 ### Verification
 - qa: pending
@@ -371,6 +371,12 @@ Approved: yes (2026-10-25)
   LayoutInspector, DeviceInspector, `hooks/usePanelKeyboard`, `utils/rcdGroups` (pure, tested);
   QuotePage → QuotePage, QuoteMaterials, QuoteSettingsForm, QuoteTotals, LaborLines,
   IssuedQuotes, `hooks/useIssueQuote`. No component file over 210 lines in these features.
+- Step 14: `pnpm verify` green (typecheck, lint, Vitest 45 files / 234 tests, test:db 10,
+  Playwright 10). Bundle after (`vite build`): JS loaded by the first page (index + shared
+  chunks) 275 kB gzip vs 506 kB gzip before (main chunk 1,646 kB → `index` 449 kB); lazy:
+  PlanCanvas 355 kB, pdfKit 402 kB, pdf 430 kB, html2canvas 199 kB; `dist/assets` 3.8 MB
+  (3.6 MB before: more chunks, same libraries). CLAUDE.md rewritten to 79 lines. Browser check
+  in `dev:mem`: plan with circuit highlight, panel front, quote; no console errors.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -384,9 +390,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 14: CLAUDE.md final pass (layout, commands, import rules, data layer), full `pnpm verify`,
-bundle sizes before/after in Progress, a browser check of plan/panel/quote; then set
-`Phase: verification` and run qa, then review (Phase 4).
+Phase 4: run the qa subagent (spec docs/specs/react-modernization.md as reference), then the
+review subagent on `main..feat/react-modernization`; one commit per issue, each updating
+Verification above.
 
 ## Review record
 

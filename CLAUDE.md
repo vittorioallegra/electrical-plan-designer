@@ -15,11 +15,9 @@ missing), pnpm 12.
 - `pnpm dev:mem` — dev server with in-memory repositories, no Docker needed
 - `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm format`. `typecheck` runs TypeScript 7
   (`typescript7` npm alias); `typescript` stays 6.0 because typescript-eslint needs its API
-- `pnpm test` — unit + component tests (Vitest, jsdom). Quiet, failures only:
-  `pnpm exec vitest run --reporter=dot --silent`
-- Single test file (from the repo root):
-  `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot`;
-  single test by name: add `-t "riser"`
+- `pnpm test` — Vitest (projects: web/jsdom, domain/node, repo). Quiet, failures only:
+  `pnpm exec vitest run --reporter=dot --silent`. One file, from the root:
+  `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot` (one test: `-t "riser"`)
 - `pnpm test:db` — integration tests against local Supabase (`apps/web/src/**/*.db.test.ts`)
 - `pnpm test:e2e` — Playwright (`apps/web/e2e`, own Vite server on :5174 in `e2e` mode);
   quiet: `pnpm exec playwright test --reporter=dot`
@@ -28,87 +26,54 @@ missing), pnpm 12.
 - `pnpm db:seed` — regenerate `supabase/seed.sql` from `tests/fixtures/demo-project.json`
   (a unit test fails when they drift), then `pnpm db:reset`
 
-Local seed login (local stack only): `dev@example.test` / `devpassword`, with the
-"Demo house" project. Schema changes: add a new file in `supabase/migrations/`, then
-`pnpm db:reset && pnpm db:types`. Cloud deploy: docs/deploy.md.
-
-Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:local`,
-`setup`. Everything else runs without it.
+Local seed login (local stack only): `dev@example.test` / `devpassword` ("Demo house").
+Schema changes: new file in `supabase/migrations/`, then `pnpm db:reset && pnpm db:types`.
+Cloud deploy: docs/deploy.md. Docker is needed by `dev`, `test:db`, `test:e2e`, `db:*`,
+`env:local`, `setup`; E2E share the demo project, so `pnpm db:reset` after a failed run.
 
 ## Layout
 
-pnpm workspace: root scripts proxy to the app with `pnpm --filter @epd/web …`; one root ESLint
-config, root `vitest.config.ts` (`test.projects`: web, domain, repo = `scripts/` + `tests/`), `tsconfig.base.json` shared.
-`.env*` files stay at the root (Vite `envDir`). The app lives in `apps/web/` (package
-`@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`). Folder convention:
-Bulletproof React. Paths below under `src/` are `apps/web/src/`.
+pnpm workspace (Bulletproof React folders). Root: scripts proxying to `pnpm --filter @epd/web`,
+one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` (Vite `envDir`).
+Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright configs, `e2e/`).
 
-- `packages/domain/` — `@epd/domain`, pure TypeScript (model, defaults, geometry, lengths, routing,
-  BOM, checks, quote, built-in catalog); source-only, imported as `@epd/domain/<module>` (no barrel);
-  its tests run in the `node` environment
-- `src/app/` — entry (`main.tsx`), `provider.tsx`, `router.tsx` (`createRoutes({ repos,
-queryClient })`: loaders, lazy route modules, error boundaries), `auth.ts` (auth middleware
-  - session context for loaders), `layouts/` (AppShell,
-    MobileShell, ProjectFrame, RequireAuth), `routes/` (route modules that compose features),
-    `styles.css`
-- `src/features/<name>/` — UI by feature (auth, projects, editor, panel, circuits, catalog, bom,
-  checks, quote, exports, mobile, profile, settings), split into `components/`, `hooks/`,
-  `utils/` (and `api/`) as needed
-- `src/components/` — shared UI: `ui/` (Radix-based components, number input), `symbols/`
-- `src/api/` — TanStack Query hooks shared by several features (`keys.ts`, catalog, profile,
-  project record); feature-only queries live in `features/<name>/api/`
-- `src/hooks/` — hooks shared by several features (`useAnalysis`, `useItemName`, `useItemsOf`)
-- `src/lib/` — `repositories/` (repository interfaces + Supabase and in-memory implementations,
-  provider; the only place that talks to Supabase), `auth/`, `i18n/` (`locales/en.json` base,
-  `it.json`), formatting, colors, download, BOM/check descriptions, view mode
+- `packages/domain/` — `@epd/domain`: pure TS (model, geometry, lengths, routing, BOM, checks,
+  quote, built-in catalog); source-only, imported as `@epd/domain/<module>`, no barrel
+- `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes({ repos, queryClient })`),
+  `auth.ts` (auth middleware), `layouts/`, `routes/` (route modules composing features)
+- `src/features/<name>/` — auth, projects, editor, panel, circuits, catalog, bom, checks, quote,
+  exports, mobile, profile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
+- `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, catalog, profile, record)
+- `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks), `src/config/env.ts`
+- `src/lib/` — `repositories/` (interfaces, Supabase + in-memory; the only Supabase code),
+  `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `query-client.ts`, formatting helpers
 - `src/stores/editor/` — editor store (zustand + immer patches), undo/redo, autosave
-- `src/config/env.ts` — zod-validated Vite env
-- `supabase/` — config, migrations, generated seed (local stack)
-- `scripts/` — `check-env.mjs`, `env-local.mjs`, `build-seed.mjs`
-- `src/testing/` — `setup.ts` (Vitest), `renderApp.tsx` (component tests), `editor.ts` (store
-  helpers), `pdfText.ts` (PDF text via pdfjs, Node env)
-- `apps/web/e2e/` — Playwright specs + `helpers.ts` (`fixture(name)` resolves `tests/fixtures`)
-- `tests/fixtures/` — shared fixtures at the repo root (domain, web, seed and its test);
-  `tests/lint/` — tests of the ESLint import rules
+- `src/testing/` — `setup.ts`, `renderApp.tsx`, `editor.ts`, `pdfText.ts`
+- `supabase/` (config, migrations, seed), `scripts/` (check-env, env-local, build-seed),
+  `tests/fixtures/` (shared fixtures; e2e uses `fixture(name)`), `tests/lint/` (lint rule tests)
 
 ## Conventions
 
-- Everything in the repo is English. User-facing strings only via i18n keys
-  (`t('...')`); ESLint `i18next/no-literal-string` enforces it in `.tsx` files of `src/app`,
-  `src/components`, `src/features`, `src/lib`.
-  Every key must exist in both `en.json` and `it.json` (test enforces).
-- Dependency rule: `app → features → stores → domain`, `features/stores → lib → domain`,
-  `features → components`. `@epd/domain` imports nothing from the app (ESLint enforced).
-- Import boundaries (ESLint `import-x/no-restricted-paths`): a feature never imports another
-  feature; `api`, `components`, `config`, `hooks`, `lib`, `stores` never import `features` or
-  `app`; `testing` may import `app` only. Code used by two features moves to a shared folder,
-  or `src/app` composes the features (props, render props, injected handlers). No re-export
-  barrels in `index.ts`.
-- Import alias `@/` = `src/`. Components get persistence only via `useRepositories()`
-  (`src/lib/repositories/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
-  (real routes + in-memory repositories, seeded like `supabase/seed.sql`).
-- Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
-  `// protects=...; fails_when=...; no_claim=...`.
-- Lengths are integer millimeters inside the domain; meters only at the edges. Money is integer
-  cents.
-- PDFs (jsPDF, built-in Helvetica) must only contain WinAnsi characters (no `→`, emoji);
-  PDF tests run with `// @vitest-environment node`.
+- Repo in English; UI strings only via `t('...')` (`i18next/no-literal-string` on `.tsx` in
+  `app`, `components`, `features`, `lib`); every key in both `en.json` and `it.json` (tested).
+- Imports (ESLint): features never import other features; the shared folders (`api`,
+  `components`, `config`, `hooks`, `lib`, `stores`) never import `features` or `app`; `testing`
+  may import `app`; no `index.ts` barrels; `@epd/domain` imports nothing from the app. Shared
+  code moves to a shared folder, or `src/app` composes features (props, render props, injected
+  handlers). Alias `@/` = `src/`.
+- Server data: TanStack Query over `useRepositories()`, never `useEffect` fetches. Keys from
+  `src/api/keys.ts` start with the user id; cache cleared when a user signs out or changes; no
+  retries or refetch on focus. The project record is fetched fresh and never re-seeds an open
+  editor.
+- Routes: auth middleware before loaders; loaders read via the query client, side effects stay
+  in components; every route has an `ErrorBoundary` (`components/ui/RouteError`); editor,
+  canvas and PDF code are lazy. `renderApp()` (real routes, in-memory repos, fresh query client)
+  waits for the first navigation; `prepare` installs spies before loaders run.
+- Tests next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
+- Lengths: integer mm in the domain, meters at the edges. Money: integer cents.
+- PDFs (jsPDF Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
 - Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).
-- jsdom has no canvas: `src/testing/setup.ts` stubs `react-konva`, so canvas behavior is
-  tested in Playwright, driving the store through `window.__epd` (`apps/web/e2e/helpers.ts`).
-- Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
-- Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
-- Server data goes through TanStack Query hooks (`useQuery`/`useMutation` over
-  `useRepositories()`), never `useEffect` fetches. Keys come from `src/api/keys.ts` and start
-  with the user id; the cache is cleared when the user changes. No retries, no refetch on focus
-  (`lib/query-client.ts`). The project record is always fetched fresh (`fetchQuery`,
-  `staleTime: 0`) and never re-seeds an open editor. Component tests get a fresh client from
-  `renderApp()` (returned as `queryClient`).
-- Routes: the protected route's middleware checks the session before any loader runs; route
-  loaders read data through the query client (`queryOptions` factories in `src/api`), side
-  effects (editor store, autosave) stay in components. Every route has an `ErrorBoundary`
-  (`components/ui/RouteError`, Retry = revalidate). Editor, canvas and PDF code are lazy route
-  modules. `renderApp()` waits for the first navigation; its `prepare` option installs spies
-  before loaders run.
-- `useEditor(selector)` must return stable references: select raw store fields and derive
-  arrays with `useMemo`, never `.filter()/.map()` inside the selector (render loop).
+- jsdom has no canvas (`src/testing/setup.ts` stubs `react-konva`): canvas behavior is tested
+  in Playwright via `window.__epd` (env `.env.e2e`; `.env.memory` for `dev:mem`).
+- `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
+- Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).
