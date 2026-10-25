@@ -5,6 +5,7 @@ import { RequireAuth } from './features/auth/RequireAuth';
 import { PlanView } from './features/editor/PlanView';
 import { ProjectLoader } from './features/editor/ProjectLoader';
 import { SettingsPage } from './features/editor/SettingsPage';
+import { QuotePage } from './features/quote/QuotePage';
 import { PanelView } from './features/panel/PanelView';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { ProjectsPage } from './features/projects/ProjectsPage';
@@ -29,7 +30,7 @@ export const routes: RouteObject[] = [
           { index: true, element: <Navigate to="plan" replace /> },
           { path: 'plan', element: <PlanView /> },
           { path: 'panel', element: <PanelView /> },
-          { path: 'quote', element: <PlaceholderPage titleKey="pages.quote" /> },
+          { path: 'quote', element: <QuotePage /> },
           { path: 'settings', element: <SettingsPage /> },
         ],
       },

@@ -616,5 +616,44 @@
       "circuits": "Circuits",
       "bom": "BOM"
     }
+  },
+  "quote": {
+    "issue": "Issue quote",
+    "issuedToast": "Quote {{number}} issued",
+    "issueFailed": "Could not issue the quote. Try again.",
+    "unpriced": "{{count}} lines have no price: they count as zero until you set one.",
+    "materials": "Materials",
+    "code": "Code",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "lineTotal": "Total",
+    "priceFor": "Price of {{name}}",
+    "settings": "Quote settings",
+    "adjustment": "Material markup / discount",
+    "vat": "VAT",
+    "totalsTitle": "Totals",
+    "totals": {
+      "materialsBeforeAdjustment": "Materials",
+      "adjustment": "Markup / discount",
+      "materials": "Materials after markup",
+      "labor": "Labor",
+      "taxable": "Taxable amount",
+      "vat": "VAT",
+      "total": "Grand total"
+    },
+    "labor": "Labor",
+    "noLabor": "No labor lines yet.",
+    "laborDescription": "Labor description",
+    "amount": "Amount",
+    "hours": "Hours",
+    "hourlyRate": "Hourly rate",
+    "removeLabor": "Remove labor line",
+    "defaultLump": "Installation",
+    "defaultHourly": "Labor",
+    "addLump": "Lump sum",
+    "addHourly": "Hourly",
+    "issuedTitle": "Issued quotes",
+    "noIssued": "No quote issued yet. Issuing freezes the current lines and prices under a number."
   }
 }

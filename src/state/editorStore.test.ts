@@ -68,4 +68,36 @@ describe('editor store', () => {
     });
     expect(store.getState().ui.selection).toEqual([]);
   });
+
+  // protects=issued quotes outside undo; fails_when=undo removes an issued quote or issuing is not saved; no_claim=numbering (repository)
+  it('keeps issued quotes when undoing quote setting edits', async () => {
+    const { store } = await demoStore();
+    store.getState().applyCommand('vat', (d) => {
+      d.quote.settings.vatPercent = 10;
+    });
+    const issued = {
+      number: 1,
+      issuedAt: '2026-10-25T10:00:00.000Z',
+      language: 'en',
+      lines: [],
+      settings: store.getState().data.quote.settings,
+      totals: {
+        materialsBeforeAdjustment: 0,
+        adjustment: 0,
+        materials: 0,
+        labor: 0,
+        taxable: 0,
+        vat: 0,
+        total: 0,
+        unpricedCount: 0,
+      },
+    };
+    expect(store.getState().appendIssuedQuote(issued)).toEqual({ ok: true });
+    expect(store.getState().saveStatus).toBe('dirty');
+    store.getState().undo();
+    expect(store.getState().data.quote.settings.vatPercent).toBe(22);
+    expect(store.getState().data.quote.issued).toEqual([issued]);
+    store.getState().redo();
+    expect(store.getState().data.quote.issued).toHaveLength(1);
+  });
 });

@@ -616,5 +616,44 @@
       "circuits": "Circuiti",
       "bom": "Distinta"
     }
+  },
+  "quote": {
+    "issue": "Emetti preventivo",
+    "issuedToast": "Preventivo {{number}} emesso",
+    "issueFailed": "Impossibile emettere il preventivo. Riprova.",
+    "unpriced": "{{count}} righe senza prezzo: valgono zero finché non lo imposti.",
+    "materials": "Materiali",
+    "code": "Codice",
+    "description": "Descrizione",
+    "quantity": "Quantità",
+    "unitPrice": "Prezzo unitario",
+    "lineTotal": "Totale",
+    "priceFor": "Prezzo di {{name}}",
+    "settings": "Impostazioni preventivo",
+    "adjustment": "Ricarico / sconto materiali",
+    "vat": "IVA",
+    "totalsTitle": "Totali",
+    "totals": {
+      "materialsBeforeAdjustment": "Materiali",
+      "adjustment": "Ricarico / sconto",
+      "materials": "Materiali dopo ricarico",
+      "labor": "Manodopera",
+      "taxable": "Imponibile",
+      "vat": "IVA",
+      "total": "Totale"
+    },
+    "labor": "Manodopera",
+    "noLabor": "Nessuna voce di manodopera.",
+    "laborDescription": "Descrizione manodopera",
+    "amount": "Importo",
+    "hours": "Ore",
+    "hourlyRate": "Tariffa oraria",
+    "removeLabor": "Rimuovi voce di manodopera",
+    "defaultLump": "Installazione",
+    "defaultHourly": "Manodopera",
+    "addLump": "A corpo",
+    "addHourly": "A ore",
+    "issuedTitle": "Preventivi emessi",
+    "noIssued": "Nessun preventivo emesso. L’emissione congela righe e prezzi attuali con un numero."
   }
 }

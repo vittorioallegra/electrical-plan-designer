@@ -4,7 +4,14 @@ import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { SaveErrorCode } from '@/data/types';
 import { docIntegrityIssues } from '@/domain/schema';
-import type { Point, ProjectDoc, ProjectMeta, ProjectQuote, ProjectSettings } from '@/domain/types';
+import type {
+  IssuedQuote,
+  Point,
+  ProjectDoc,
+  ProjectMeta,
+  ProjectQuote,
+  ProjectSettings,
+} from '@/domain/types';
 
 enablePatches();
 
@@ -71,6 +78,8 @@ export interface EditorState {
   future: HistoryEntry[];
   ui: EditorUi;
   applyCommand(label: string, recipe: (draft: Draft<EditorData>) => void): CommandResult;
+  /** Appends an issued quote outside undo/redo: issued quotes are append-only. */
+  appendIssuedQuote(quote: IssuedQuote): CommandResult;
   undo(): void;
   redo(): void;
   setUi(patch: Partial<EditorUi>): void;
@@ -152,6 +161,17 @@ export function createEditorStore(init: EditorInit): EditorStore {
           past: [...s.past, { label, patches, inverse }].slice(-HISTORY_LIMIT),
           future: [],
         });
+        return { ok: true };
+      },
+
+      appendIssuedQuote(quote) {
+        const s = get();
+        if (s.readOnly) return { ok: false, reason: 'read_only' };
+        const data = {
+          ...s.data,
+          quote: { ...s.data.quote, issued: [...s.data.quote.issued, quote] },
+        };
+        changed(data, {});
         return { ok: true };
       },
 

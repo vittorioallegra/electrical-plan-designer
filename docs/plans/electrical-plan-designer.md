@@ -381,7 +381,7 @@ Approved: yes (2026-10-25)
 - [x] 19. Checks panel, full BOM, dogfood checkpoint (checkpoint deferred, see Open questions) — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
   `feat: add BOM category totals and the progress strip`,
   `test: add first-project E2E following the progress strip`
-- [ ] 20. Exports and quote
+- [ ] 20. Exports and quote — `feat: add quote page with labor lines, inline prices and issued quotes`
 - [ ] 21. Mobile light view and purchase checklist
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
 
@@ -434,6 +434,10 @@ Approved: yes (2026-10-25)
   (`drawerTab`, `hideConnectivity`, `focus`), so warnings and the progress strip can drive them.
 - Progress strip stages: Plan = walls or background, Panel = at least one panel device,
   Circuits = a circuit with a target, BOM = a cable line (so routing a circuit completes it).
+- Issued quotes are appended with `appendIssuedQuote`, outside undo/redo. Inline prices on the
+  quote page are saved as account price overrides keyed by the BOM line key.
+- PDFs use jsPDF's built-in Helvetica: its WinAnsi encoding covers €, ², Ø and Italian
+  accented letters (checked by extracting the text with pdfjs), so no font is embedded.
 - `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
   list, box presets) once per session; built-in prices are set from the catalog page as account
   price overrides.
@@ -443,7 +447,9 @@ Approved: yes (2026-10-25)
   the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 20: quote page, "Issue quote" snapshot, project PDF, quote PDF, CSV (see step 20 above).
+Step 20, remaining: CSV export of the live and issued quotes (`;`, UTF-8 BOM, locale decimals,
+snapshot tests en/it), quote PDF with business header, project PDF (floors with background,
+panel, circuits, segments, BOM, warnings), export menu entries, PDF smoke tests.
 
 ## Review record
 
