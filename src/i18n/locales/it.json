@@ -33,7 +33,16 @@
   "editor": {
     "untitledProject": "Progetto senza nome",
     "saveStatus": {
-      "saved": "Salvato"
+      "saved": "Salvato",
+      "dirty": "Modifiche non salvate",
+      "saving": "Salvataggio…",
+      "conflict": "Conflitto",
+      "error_network": "Offline — nuovo tentativo in corso",
+      "error_auth_expired": "Sessione scaduta — accedi di nuovo",
+      "error_forbidden": "Nessun permesso di salvare",
+      "error_invalid_doc": "Salvataggio rifiutato",
+      "error_version_conflict": "Conflitto",
+      "retry": "Riprova"
     },
     "undo": "Annulla",
     "redo": "Ripeti",
@@ -53,7 +62,41 @@
     },
     "tools": "Strumenti",
     "floors": "Piani",
-    "inspector": "Proprietà"
+    "inspector": "Proprietà",
+    "notFound": "Progetto non trovato.",
+    "loadFailed": "Impossibile caricare il progetto. Controlla la connessione e riprova.",
+    "readOnly": "Questo progetto è stato salvato da una versione più recente dell'app. Si apre in sola lettura; aggiorna l'app per modificarlo.",
+    "recovery": {
+      "title": "Questo progetto non si può aprire",
+      "body": "Il documento salvato non ha superato la validazione. Scarica i dati grezzi per conservarli; nulla viene sovrascritto.",
+      "download": "Scarica JSON grezzo"
+    },
+    "restore": {
+      "body": "Su questo dispositivo ci sono modifiche non salvate del {{date}}.",
+      "restore": "Ripristina",
+      "discard": "Scarta"
+    },
+    "conflict": {
+      "title": "Progetto modificato altrove",
+      "body": "Un'altra scheda o un altro dispositivo ha salvato questo progetto. Scarica la tua versione per conservarla, poi ricarica per vedere la più recente.",
+      "download": "Scarica la mia versione (JSON)",
+      "reload": "Ricarica"
+    },
+    "exportJson": "Scarica JSON del progetto",
+    "importJson": "Importa JSON del progetto",
+    "importDone": "Progetto importato. Annulla ripristina la versione precedente.",
+    "importFailed": "Questo file non è un progetto valido.",
+    "floor": {
+      "defaultName": "Piano {{n}}",
+      "add": "Aggiungi piano",
+      "name": "Nome piano",
+      "height": "Altezza piano",
+      "moveUp": "Sposta piano su",
+      "moveDown": "Sposta piano giù",
+      "delete": "Elimina piano",
+      "deleteTitle": "Eliminare {{name}}?",
+      "deleteBody": "Rimuove {{nodes}} elementi e {{segments}} tratti di tubo; {{circuits}} circuiti sono coinvolti. Annulla li ripristina."
+    }
   },
   "catalog": {
     "builtin": {
@@ -169,5 +212,24 @@
     "logoType": "Il logo deve essere un'immagine PNG o JPG.",
     "logoTooLarge": "Il logo deve essere al massimo 2 MB.",
     "logoFailed": "Impossibile caricare il logo."
+  },
+  "settings": {
+    "hint": "Questi valori valgono solo per questo progetto.",
+    "mounting": {
+      "socket": "Altezza scatola prese",
+      "switch": "Altezza scatola interruttori",
+      "junctionBox": "Altezza scatola di derivazione",
+      "panel": "Altezza quadro"
+    },
+    "defaultFloorHeight": "Altezza piano predefinita",
+    "terminationSlack": "Scorta conduttore per estremità",
+    "wastePercent": "Sfrido su cavo e tubo",
+    "conduitFillFactor": "Fattore di riempimento tubo",
+    "defaultRunElevation": "Quota tubi predefinita"
+  },
+  "runElevation": {
+    "floor": "A pavimento",
+    "ceiling": "A soffitto",
+    "direct": "Diretto (in parete)"
   }
 }

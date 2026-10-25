@@ -33,7 +33,16 @@
   "editor": {
     "untitledProject": "Untitled project",
     "saveStatus": {
-      "saved": "Saved"
+      "saved": "Saved",
+      "dirty": "Unsaved changes",
+      "saving": "Saving…",
+      "conflict": "Conflict",
+      "error_network": "Offline — will retry",
+      "error_auth_expired": "Session expired — log in again",
+      "error_forbidden": "No permission to save",
+      "error_invalid_doc": "Save rejected",
+      "error_version_conflict": "Conflict",
+      "retry": "Retry"
     },
     "undo": "Undo",
     "redo": "Redo",
@@ -53,7 +62,41 @@
     },
     "tools": "Tools",
     "floors": "Floors",
-    "inspector": "Inspector"
+    "inspector": "Inspector",
+    "notFound": "Project not found.",
+    "loadFailed": "Could not load the project. Check the connection and retry.",
+    "readOnly": "This project was saved by a newer version of the app. It opens read-only; update the app to edit it.",
+    "recovery": {
+      "title": "This project cannot be opened",
+      "body": "The stored document failed validation. Download the raw data to keep it safe; nothing is overwritten.",
+      "download": "Download raw JSON"
+    },
+    "restore": {
+      "body": "Unsaved changes from {{date}} were found on this device.",
+      "restore": "Restore",
+      "discard": "Discard"
+    },
+    "conflict": {
+      "title": "Project changed elsewhere",
+      "body": "Another tab or device saved this project. Download your version to keep it, then reload to see the latest one.",
+      "download": "Download my version (JSON)",
+      "reload": "Reload"
+    },
+    "exportJson": "Download project JSON",
+    "importJson": "Import project JSON",
+    "importDone": "Project imported. Undo restores the previous version.",
+    "importFailed": "This file is not a valid project.",
+    "floor": {
+      "defaultName": "Floor {{n}}",
+      "add": "Add floor",
+      "name": "Floor name",
+      "height": "Floor height",
+      "moveUp": "Move floor up",
+      "moveDown": "Move floor down",
+      "delete": "Delete floor",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteBody": "Removes {{nodes}} elements and {{segments}} conduit segments; {{circuits}} circuits are affected. Undo restores them."
+    }
   },
   "catalog": {
     "builtin": {
@@ -169,5 +212,24 @@
     "logoType": "The logo must be a PNG or JPG image.",
     "logoTooLarge": "The logo must be at most 2 MB.",
     "logoFailed": "Could not upload the logo."
+  },
+  "settings": {
+    "hint": "These values apply to this project only.",
+    "mounting": {
+      "socket": "Socket box height",
+      "switch": "Switch box height",
+      "junctionBox": "Junction box height",
+      "panel": "Panel height"
+    },
+    "defaultFloorHeight": "Default floor height",
+    "terminationSlack": "Termination slack per segment end",
+    "wastePercent": "Waste on cable and conduit",
+    "conduitFillFactor": "Conduit fill factor",
+    "defaultRunElevation": "Default run elevation"
+  },
+  "runElevation": {
+    "floor": "At floor",
+    "ceiling": "At ceiling",
+    "direct": "Direct (in the wall)"
   }
 }

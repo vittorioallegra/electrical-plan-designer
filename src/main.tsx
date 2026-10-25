@@ -6,6 +6,7 @@ import { AppProviders } from './AppProviders';
 import { getConfig } from './config';
 import { createRepositories } from './data';
 import { createI18n } from './i18n';
+import { createIndexedDbUnsavedStore } from './state/unsavedStore';
 import './styles.css';
 
 const config = getConfig();
@@ -20,7 +21,11 @@ const router = createBrowserRouter(routes);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppProviders repos={repos} i18n={i18n}>
+    <AppProviders
+      repos={repos}
+      i18n={i18n}
+      services={{ unsaved: createIndexedDbUnsavedStore(), exposeTestHandle: config.testHandle }}
+    >
       <RouterProvider router={router} />
     </AppProviders>
   </StrictMode>,

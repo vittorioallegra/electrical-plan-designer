@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { loadDoc } from '@/domain/load';
@@ -16,7 +16,9 @@ describe('projects page', () => {
     expect(stored!.meta.name).toBe('Casa Rossi');
     expect(stored!.settings.mountingHeights.socket).toBe(0.3);
     expect(loadDoc(stored!.doc).doc.floors.map((f) => f.name)).toEqual(['Floor 1']);
-    expect(router.state.location.pathname).toBe(`/projects/${stored!.meta.id}/plan`);
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`/projects/${stored!.meta.id}/plan`),
+    );
   });
 
   // protects=rename and delete; fails_when=rename is lost or delete skips the confirm; no_claim=storage cleanup on Supabase
