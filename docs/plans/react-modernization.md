@@ -293,7 +293,7 @@ Approved: yes (2026-10-25)
 - [x] 10. TanStack Query for server state — `feat: move server state to TanStack Query`
 - [x] 11. Route loaders, error elements, lazy routes — `feat: load routes with loaders, error boundaries and lazy modules`
 - [x] 12. Split PlanCanvas — `refactor: split PlanCanvas into layers, hooks and scene helpers`
-- [ ] 13. Split CircuitsTab, PanelView, QuotePage
+- [x] 13. Split CircuitsTab, PanelView, QuotePage — `refactor: split CircuitsTab, PanelView and QuotePage into smaller components`
 - [ ] 14. CLAUDE.md, full verify, bundle sizes
 
 ### Verification
@@ -366,6 +366,11 @@ Approved: yes (2026-10-25)
   useTouchNavigation, usePlanPointer for mouse + drawing tools + picking, useCanvasKeyboard),
   `planScene.ts` (pure scene helpers, unit-tested) and `canvasColors.ts`. `CanvasPickHandlers`
   now lives in `hooks/usePlanPointer`.
+- Step 13: CircuitsTab → CircuitsTab (list), CircuitEditor, ExtraRunEditor, RoutingControls,
+  RouteStatus, `hooks/useShowPlan`; PanelView → PanelView, DevicePalette, PanelFront,
+  LayoutInspector, DeviceInspector, `hooks/usePanelKeyboard`, `utils/rcdGroups` (pure, tested);
+  QuotePage → QuotePage, QuoteMaterials, QuoteSettingsForm, QuoteTotals, LaborLines,
+  IssuedQuotes, `hooks/useIssueQuote`. No component file over 210 lines in these features.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -379,9 +384,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 13: split `CircuitsTab` (537 lines), `PanelView` (458), `QuotePage` (383) into list vs
-editor sub-components and hooks, no behavior change; then step 14 (CLAUDE.md final pass, full
-`pnpm verify`, bundle sizes).
+Step 14: CLAUDE.md final pass (layout, commands, import rules, data layer), full `pnpm verify`,
+bundle sizes before/after in Progress, a browser check of plan/panel/quote; then set
+`Phase: verification` and run qa, then review (Phase 4).
 
 ## Review record
 
