@@ -19,12 +19,24 @@ describe('quote page', () => {
 
     await typeNumber(screen.getByLabelText('Price of Wall box 503 (3 modules)'), '1.5');
     const row = (await screen.findByText('Wall box 503 (3 modules)')).closest('tr')!;
-    expect(row).toHaveTextContent('€1.50');
+    expect(within(row).getByLabelText('Price of Wall box 503 (3 modules)')).toHaveValue('1.5');
     expect(row).toHaveTextContent('€6.00');
     // €6.00 + 22% VAT
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€7.32');
     expect((await repos.profile.get()).priceOverrides['builtin:box_503']).toEqual({
       unitPrice: 150,
+    });
+  });
+
+  // protects=correcting an inline price; fails_when=a price typed on the quote page can no longer be changed there; no_claim=prices of user catalog items (edited in the catalog)
+  it('keeps an inline price editable after it is set', async () => {
+    const { repos } = await renderApp(quotePath);
+    await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '1.5');
+    await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '2');
+    const row = (await screen.findByText('Wall box 503 (3 modules)')).closest('tr')!;
+    expect(row).toHaveTextContent('€8.00');
+    expect((await repos.profile.get()).priceOverrides['builtin:box_503']).toEqual({
+      unitPrice: 200,
     });
   });
 

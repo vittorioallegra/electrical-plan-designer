@@ -6,6 +6,7 @@ import { formatQuoteNumber, issueQuote, type QuoteResult } from '@/domain/quote'
 import type { QuoteLine, QuoteSettings } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
+import { cn } from '@/ui/cn';
 import { formatMoney, formatNumber, type Locale } from '@/ui/format';
 import { NumberInput } from '@/ui/NumberInput';
 import { Table } from '@/ui/Table';
@@ -121,12 +122,14 @@ export function QuotePage() {
                   key: 'unitPrice',
                   header: t('quote.unitPrice'),
                   align: 'right',
-                  cell: (l) =>
-                    l.unitPrice === null ? (
+                  cell: (l) => {
+                    // Prices typed here are account overrides of this line: keep them editable.
+                    const own = profile?.priceOverrides[l.key]?.unitPrice;
+                    return l.unitPrice === null || own === l.unitPrice ? (
                       <NumberInput
                         aria-label={t('quote.priceFor', { name: l.description })}
-                        className="w-28 border-warning"
-                        value={null}
+                        className={cn('w-28', l.unitPrice === null && 'border-warning')}
+                        value={l.unitPrice === null ? null : l.unitPrice / 100}
                         unit="€"
                         min={0}
                         disabled={readOnly || !profile}
@@ -134,7 +137,8 @@ export function QuotePage() {
                       />
                     ) : (
                       money(l.unitPrice)
-                    ),
+                    );
+                  },
                 },
                 {
                   key: 'total',

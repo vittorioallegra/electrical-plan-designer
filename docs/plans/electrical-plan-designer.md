@@ -389,11 +389,12 @@ Approved: yes (2026-10-25)
 - [x] 22. i18n completeness, full test run, CLAUDE.md update — `docs: update CLAUDE.md for checks, quote, exports and mobile`
 
 ### Verification
-- qa: in progress
+- qa: done
   - Catalog price of a built-in cable never priced the quote's cable lines — `fix: price cable lines from the built-in cable catalog price`
   - Delete confirmation counted selected nodes as conduit segments (deleting one box with 2 segments said 3) — `fix: count nodes and segments separately in the delete confirmation`
   - "Done" button in the target/route picking banner was white text on white (secondary buttons inherited the banner's text color) — `fix: give secondary buttons their own text color`
   - "Pick targets/segments on the plan" from the Panel, Quote or Settings page started picking with the plan hidden — `fix: open the plan when circuit picking starts elsewhere`
+  - A price typed inline on the quote page turned into plain text and could not be corrected anywhere (cable-color lines have no catalog row) — `fix: keep inline quote prices editable after they are set`
 - review: pending
 
 ### Decisions
