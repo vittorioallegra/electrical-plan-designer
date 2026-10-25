@@ -79,7 +79,7 @@ describe('quote math', () => {
       code: 'BR-123',
       source: 'item',
     });
-    const noPrice = { ...userSocket, unitPrice: undefined };
+    const { unitPrice: _unitPrice, ...noPrice } = userSocket;
     expect(lookupPrice(line, ctx({ u1: { unitPrice: 999 } }, [noPrice])).source).toBe('override');
     expect(lookupPrice(line, ctx({}, [noPrice])).source).toBe('none');
   });

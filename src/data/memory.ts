@@ -48,7 +48,7 @@ export interface MemoryControl {
   marks: Map<string, Map<string, number | null>>;
   files: Map<string, Blob>;
   /** Runs before every save; throw a SaveError to simulate a failure, await to delay. */
-  beforeSave?: (projectId: string) => Promise<void> | void;
+  beforeSave?: ((projectId: string) => Promise<void> | void) | undefined;
   /** Simulates session expiry: listeners get null. */
   expireSession(): void;
   saveCalls: { projectId: string; expectedVersion: number }[];

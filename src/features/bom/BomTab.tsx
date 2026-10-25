@@ -22,7 +22,13 @@ function CategoryTotal({ lines }: { lines: readonly BomLine[] }) {
   );
 }
 
-function PartialNote({ line, purchased }: { line: BomLine; purchased?: PurchaseLineStatus }) {
+function PartialNote({
+  line,
+  purchased,
+}: {
+  line: BomLine;
+  purchased?: PurchaseLineStatus | undefined;
+}) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
   if (purchased?.status !== 'partial') return null;

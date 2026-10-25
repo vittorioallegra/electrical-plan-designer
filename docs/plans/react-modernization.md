@@ -282,9 +282,10 @@ Approved: yes (2026-10-25)
 - [x] 2. React 19 + react-konva 19 — `feat: upgrade to React 19.3 and react-konva 19`
 - [x] 3. React Router 8 — `feat: upgrade to React Router 8`
 - [x] 4. ESLint 10 — `chore: upgrade to ESLint 10`
-- [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
+- [x] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
   - [x] 5a. TypeScript 6.0 — `chore: upgrade to TypeScript 6.0`
   - [x] 5b. TypeScript 7 typecheck — `chore: typecheck with TypeScript 7`
+  - [x] 5c. exactOptionalPropertyTypes — `chore: enable exactOptionalPropertyTypes`
 - [ ] 6. pnpm workspace, app in apps/web
 - [ ] 7. packages/domain (@epd/domain)
 - [ ] 8. Move files to the target layout
@@ -335,9 +336,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 5c: set `exactOptionalPropertyTypes: true` in `tsconfig.json`, fix the reported errors
-(domain, repositories; handle generated `database.types.ts` if needed), run typecheck, lint,
-Vitest, Playwright, then commit and tick step 5.
+Step 6 (Phase B): pnpm workspace with the Vite app in `apps/web` (details in plan step 6): git mv,
+`envDir` at the repo root, Vitest root `test.projects`, Playwright `testDir`, `db:types` path,
+root scripts keep their names via `pnpm --filter @epd/web`; verify `pnpm setup` and `dev:mem`.
 
 ## Review record
 

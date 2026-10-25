@@ -172,18 +172,17 @@ export function CatalogPage() {
                     <Button
                       variant="ghost"
                       aria-label={t('catalog.duplicate', { name: itemName(item) })}
-                      onClick={() =>
+                      onClick={() => {
+                        const { id: _id, ownerId: _ownerId, ...copy } = item;
                         setEditing({
                           title: t('catalog.duplicateTitle'),
                           initial: {
-                            ...item,
-                            id: undefined,
-                            ownerId: undefined,
+                            ...copy,
                             archived: false,
                             name: t('catalog.copyOf', { name: itemName(item) }),
                           },
-                        })
-                      }
+                        });
+                      }}
                     >
                       <Copy size={16} />
                     </Button>

@@ -15,7 +15,7 @@ export function AppProviders({
 }: {
   repos: Repositories;
   i18n: i18n;
-  services?: EditorServices;
+  services?: EditorServices | undefined;
   children: ReactNode;
 }) {
   return (

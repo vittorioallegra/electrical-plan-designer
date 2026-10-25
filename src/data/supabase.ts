@@ -83,7 +83,11 @@ function toSaveError(error: PostgrestError | Error): SaveError {
   return new SaveError('network', e.message);
 }
 
-function toAuthError(error: { message: string; code?: string; status?: number }): AuthError {
+function toAuthError(error: {
+  message: string;
+  code?: string | undefined;
+  status?: number | undefined;
+}): AuthError {
   const code = error.code ?? '';
   if (code === 'invalid_credentials' || /invalid login/i.test(error.message)) {
     return new AuthError('invalid_credentials');

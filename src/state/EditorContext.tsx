@@ -19,7 +19,7 @@ export function EditorServicesProvider({
   services,
   children,
 }: {
-  services?: EditorServices;
+  services?: EditorServices | undefined;
   children: ReactNode;
 }) {
   defaultServices ??= { unsaved: createIndexedDbUnsavedStore(), exposeTestHandle: false };

@@ -697,7 +697,7 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
                   strokeWidth={2.5}
                   strokeScaleEnabled={false}
                   lineJoin="round"
-                  dash={s.runElevation === 'ceiling' ? [px(8), px(4)] : undefined}
+                  {...(s.runElevation === 'ceiling' ? { dash: [px(8), px(4)] } : {})}
                 />
                 {view.scale >= LABEL_MIN_SCALE ? (
                   <Text
@@ -734,8 +734,8 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
                   stroke={n.kind === 'riser_point' ? colors.riser : colors.node}
                   strokeWidth={1.6}
                   strokeScaleEnabled={false}
-                  fill={n.kind === 'panel' ? colors.node : undefined}
-                  dash={n.status === 'provision' ? provisionDash : undefined}
+                  {...(n.kind === 'panel' ? { fill: colors.node } : {})}
+                  {...(n.status === 'provision' ? { dash: provisionDash } : {})}
                 />
                 {n.kind === 'riser_point' && !linkedRisers.has(n.id) ? (
                   <Circle radius={px(3)} x={px(10)} y={px(-10)} fill={colors.riser} />
