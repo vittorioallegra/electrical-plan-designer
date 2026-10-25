@@ -1,5 +1,6 @@
 // Quote math in integer cents. Material lines come from the BOM; labor is typed by hand.
 import type { BomLine } from './bom';
+import { builtinCableId } from './catalog/builtin';
 import type { CatalogLookup } from './catalog/lookup';
 import type { CatalogItem } from './catalog/types';
 import type { IssuedQuote, PriceOverrides, QuoteLine, QuoteSettings, QuoteTotals } from './types';
@@ -17,7 +18,11 @@ export interface ResolvedPrice {
   source: 'item' | 'override' | 'none';
 }
 
-/** Lookup order: user item price → account override → unpriced. */
+/**
+ * Lookup order: user item price → account override → unpriced. A cable line without its
+ * own override falls back to the override of the built-in cable of its cross-section, which
+ * is the price the catalog page edits.
+ */
 export function lookupPrice(line: BomLine, ctx: PriceContext): ResolvedPrice {
   let item: CatalogItem | undefined;
   if (line.itemId !== undefined) {
@@ -36,7 +41,9 @@ export function lookupPrice(line: BomLine, ctx: PriceContext): ResolvedPrice {
   if (item && item.ownerId !== null && item.unitPrice !== undefined) {
     return { unitPrice: item.unitPrice, ...(item.code ? { code: item.code } : {}), source: 'item' };
   }
-  const override = ctx.overrides[line.key];
+  const override =
+    ctx.overrides[line.key] ??
+    (line.cable ? ctx.overrides[builtinCableId(line.cable.crossSection)] : undefined);
   if (override) {
     const code = override.code ?? item?.code;
     return { unitPrice: override.unitPrice, ...(code ? { code } : {}), source: 'override' };

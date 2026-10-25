@@ -125,6 +125,23 @@ describe('quote math', () => {
     };
     expect(lookupPrice(line, ctx({}, [cable])).unitPrice).toBe(60);
   });
+
+  // protects=catalog price of a built-in cable; fails_when=a price set on the built-in 2.5 mm² cable leaves its cable lines unpriced; no_claim=catalog page UI
+  it('a built-in cable price prices every color of its section, below a line override', () => {
+    const bom = computeBom(ac4Doc(), defaultProjectSettings(), createCatalogLookup());
+    const { lines } = computeQuote(
+      bom,
+      ctx({
+        'builtin:cable_h07vk_2_5': { unitPrice: 40 },
+        'cable:2.5:brown': { unitPrice: 55 },
+      }),
+      defaultQuoteSettings(),
+      describeLine,
+    );
+    expect(lines.find((l) => l.key === 'cable:2.5:blue')?.unitPrice).toBe(40);
+    expect(lines.find((l) => l.key === 'cable:2.5:yellow_green')?.unitPrice).toBe(40);
+    expect(lines.find((l) => l.key === 'cable:2.5:brown')?.unitPrice).toBe(55);
+  });
 });
 
 describe('issued quotes', () => {

@@ -389,7 +389,8 @@ Approved: yes (2026-10-25)
 - [x] 22. i18n completeness, full test run, CLAUDE.md update — `docs: update CLAUDE.md for checks, quote, exports and mobile`
 
 ### Verification
-- qa: pending
+- qa: in progress
+  - Catalog price of a built-in cable never priced the quote's cable lines — `fix: price cable lines from the built-in cable catalog price`
 - review: pending
 
 ### Decisions

@@ -68,6 +68,11 @@ export const cableOuterDiameters: Record<string, number> = {
   '10': 6.3,
 };
 
+/** Id of the built-in H07V-K cable of a cross-section (its price applies to every color). */
+export function builtinCableId(crossSection: number): string {
+  return `builtin:cable_h07vk_${String(crossSection).replace('.', '_')}`;
+}
+
 const cables = Object.entries(cableOuterDiameters).map(([section, outer]) =>
   item(`cable_h07vk_${section.replace('.', '_')}`, 'cable', 'm', {
     crossSection: Number(section),
