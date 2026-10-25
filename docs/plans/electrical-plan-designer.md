@@ -396,6 +396,7 @@ Approved: yes (2026-10-25)
   - "Pick targets/segments on the plan" from the Panel, Quote or Settings page started picking with the plan hidden — `fix: open the plan when circuit picking starts elsewhere`
   - A price typed inline on the quote page turned into plain text and could not be corrected anywhere (cable-color lines have no catalog row) — `fix: keep inline quote prices editable after they are set`
 - review: pending
+  - Edits made during an in-flight save kept a local copy based on the old version, so after that save landed and the next one failed offline, a reload never offered them for restore — `fix: rebase the local unsaved copy after a save that raced with edits`
 
 ### Decisions
 - Users: professional electrician, single account, projects per client (spec Phase 1).

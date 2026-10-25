@@ -141,6 +141,26 @@ describe('autosave', () => {
     expect(await unsaved.get(store.getState().projectId)).toBeUndefined();
   });
 
+  // protects=offline loss after a partial save; fails_when=an edit made during an in-flight save is not offered for restore once that save lands and the next one fails; no_claim=browser IndexedDB ordering
+  it('rebases the local copy on the new version when edits arrived during a save', async () => {
+    const { store, control, unsaved } = await setup();
+    let release!: () => void;
+    control.beforeSave = () => new Promise<void>((r) => (release = r));
+    edit(store, 'a');
+    await vi.advanceTimersByTimeAsync(1000);
+    edit(store, 'b');
+    control.beforeSave = () => {
+      throw new SaveError('network');
+    };
+    release();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(store.getState()).toMatchObject({ version: 2, saveStatus: 'error' });
+    // "Reload": the server has version 2 (edit a); edit b only lives in the local copy.
+    const copy = await unsaved.get(store.getState().projectId);
+    expect(copy?.data.doc.nodes[0]!.label).toBe('b');
+    expect(shouldOfferRestore(copy, 2)).toBe(true);
+  });
+
   // protects=beforeunload guard; fails_when=closing the tab with unsaved edits gives no warning; no_claim=browser dialog text
   it('guards beforeunload while not saved', async () => {
     const { store, target } = await setup();

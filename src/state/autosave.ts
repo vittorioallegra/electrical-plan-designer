@@ -59,8 +59,21 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
         saveError: null,
         meta: { ...now.meta, version },
       });
-      if (clean) void options.unsaved?.delete(s.projectId).catch(() => undefined);
-      else schedule();
+      if (clean) {
+        void options.unsaved?.delete(s.projectId).catch(() => undefined);
+      } else {
+        // Edits made during the save now sit on top of the new version: rebase the local
+        // copy, or a reload would see it as stale and never offer it.
+        void options.unsaved
+          ?.put({
+            projectId: s.projectId,
+            baseVersion: version,
+            data: now.data,
+            savedAt: new Date().toISOString(),
+          })
+          .catch(() => undefined);
+        schedule();
+      }
     } catch (e) {
       const code = e instanceof SaveError ? e.code : 'network';
       if (code === 'version_conflict') {
