@@ -283,6 +283,7 @@ Approved: yes (2026-10-25)
 - [x] 3. React Router 8 — `feat: upgrade to React Router 8`
 - [x] 4. ESLint 10 — `chore: upgrade to ESLint 10`
 - [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
+  - [x] 5a. TypeScript 6.0 — `chore: upgrade to TypeScript 6.0`
 - [ ] 6. pnpm workspace, app in apps/web
 - [ ] 7. packages/domain (@epd/domain)
 - [ ] 8. Move files to the target layout
@@ -331,9 +332,8 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 5a: `typescript@6.0`; fix whatever `tsc` 6 reports as deprecated (expected `baseUrl`,
-relative `paths`); then 5b (TS 7 alias for typecheck) and 5c (`exactOptionalPropertyTypes`),
-one commit each.
+Step 5b: add `typescript7: npm:typescript@7` and point `typecheck`/`build` at its `tsc` by
+explicit path; `typescript` stays 6.0 for typescript-eslint. If it fails, stay on 6.0 and record.
 
 ## Review record
 
