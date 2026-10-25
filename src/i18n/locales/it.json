@@ -450,5 +450,25 @@
     "presetFailed": "Impossibile salvare il preset.",
     "placeWith": "Posiziona scatole come",
     "plainBox": "Scatola vuota"
+  },
+  "bom": {
+    "cableLine": "Cavo H07V-K {{section}} mm² {{color}}",
+    "noCableYet": "Le righe dei cavi compaiono quando i circuiti sono instradati.",
+    "units": {
+      "pcs": "pz",
+      "m": "m"
+    },
+    "categories": {
+      "cable": "Cavi",
+      "conduit": "Tubi",
+      "box": "Scatole da incasso",
+      "junction_box": "Scatole di derivazione",
+      "device": "Frutti",
+      "blanking_cover": "Coprifori",
+      "plate": "Placche",
+      "enclosure": "Centralino",
+      "panel_device": "Apparecchi da quadro",
+      "missing": "Articoli di catalogo mancanti"
+    }
   }
 }

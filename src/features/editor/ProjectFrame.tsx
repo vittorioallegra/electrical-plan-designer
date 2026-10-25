@@ -13,6 +13,7 @@ import { Tabs } from '@/ui/Tabs';
 import { cn } from '@/ui/cn';
 import { useToast } from '@/ui/Toast';
 import { LanguageSwitch } from '../shell/LanguageSwitch';
+import { BomTab } from '../bom/BomTab';
 import { SaveStatus } from './SaveStatus';
 
 const viewTabs = [
@@ -216,7 +217,10 @@ export function ProjectFrame({
 function BottomDrawer() {
   const { t } = useTranslation();
   return (
-    <section className="h-48 border-t border-border px-3" aria-label={t('editor.drawer')}>
+    <section
+      className="h-56 overflow-y-auto border-t border-border px-3"
+      aria-label={t('editor.drawer')}
+    >
       <Tabs
         tabs={[
           {
@@ -227,7 +231,7 @@ function BottomDrawer() {
           {
             value: 'bom',
             label: t('editor.tabs.bom'),
-            content: <Empty text={t('editor.empty.bom')} />,
+            content: <BomTab />,
           },
           {
             value: 'warnings',

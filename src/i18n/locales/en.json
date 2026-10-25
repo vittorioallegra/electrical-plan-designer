@@ -450,5 +450,25 @@
     "presetFailed": "Could not save the preset.",
     "placeWith": "Place boxes as",
     "plainBox": "Plain box"
+  },
+  "bom": {
+    "cableLine": "Cable H07V-K {{section}} mm² {{color}}",
+    "noCableYet": "Cable lines appear once circuits are routed.",
+    "units": {
+      "pcs": "pcs",
+      "m": "m"
+    },
+    "categories": {
+      "cable": "Cable",
+      "conduit": "Conduit",
+      "box": "Wall boxes",
+      "junction_box": "Junction boxes",
+      "device": "Devices",
+      "blanking_cover": "Blanking covers",
+      "plate": "Plates",
+      "enclosure": "Enclosure",
+      "panel_device": "Panel devices",
+      "missing": "Missing catalog items"
+    }
   }
 }

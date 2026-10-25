@@ -374,7 +374,7 @@ Approved: yes (2026-10-25)
 - [x] 13. Canvas base, walls, background import, calibration — `feat: add plan canvas, walls, background import and calibration`
 - [x] 14. Nodes and conduit segments — `feat: add nodes, conduit tool, selection, move, copy/paste and risers`
 - [x] 15. Catalog, box contents, presets — `feat: add catalog page, box contents editor and box presets`
-- [ ] 16. Minimal BOM drawer tab
+- [x] 16. Minimal BOM drawer tab — `feat: add live BOM drawer tab`
 - [ ] 17. Panel designer
 - [ ] 18. Circuits UI and routing
 - [ ] 19. Checks panel, full BOM, dogfood checkpoint
@@ -435,8 +435,9 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 16: minimal BOM drawer tab (live `computeBom` of boxes, devices, plates, conduit; cable
-lines once circuits exist), grouped by category with item names from the catalog.
+Step 17: panel designer (`/projects/:id/panel`): DIN rails front view, device palette, slot
+placement by drag and keyboard/inspector, upstream assignment, labels, overflow/overlap
+hatching, total modules + suggested enclosure; AC 12 and check 8.
 
 ## Review record
 
