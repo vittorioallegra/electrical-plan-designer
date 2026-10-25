@@ -279,7 +279,7 @@ Approved: yes (2026-10-25)
 
 ### Steps
 - [x] 1. Docs: spec and plan — `docs: add react modernization spec and plan`
-- [ ] 2. React 19 + react-konva 19
+- [x] 2. React 19 + react-konva 19 — `feat: upgrade to React 19.3 and react-konva 19`
 - [ ] 3. React Router 8
 - [ ] 4. ESLint 10
 - [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
@@ -328,9 +328,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 2: React 19.3 + react-dom + @types/react(-dom) 19 + react-konva 19.3; fix `forwardRef` in
-`ui/Button.tsx`, `useRef` typing, the react-konva stub in `tests/setup.ts`; run typecheck, lint,
-Vitest and Playwright (canvas specs), then commit.
+Step 3: React Router 8. On 7.x enable `future.v8_middleware` and fix warnings, then bump to 8;
+`RouterProvider` from `react-router/dom` in `main.tsx` and `src/testing/renderApp.tsx`; run
+typecheck, lint, Vitest, Playwright, then commit.
 
 ## Review record
 
