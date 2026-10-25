@@ -565,5 +565,56 @@
       "cycle": "Route has a loop",
       "dead_end": "Route has a dead end"
     }
+  },
+  "checks": {
+    "hideConnectivity": "Hide connectivity warnings while drawing",
+    "hiddenCount": "{{count}} hidden",
+    "segment": "Conduit segment",
+    "titles": {
+      "no_rcd": "No RCD protection",
+      "rating_section": "Device rating too high for the cross-section",
+      "section_type": "Cross-section too small for the circuit type",
+      "conduit_fill": "Conduit too full",
+      "panel_capacity": "Panel does not fit",
+      "box_modules": "Box contents exceed the box",
+      "route_invalid": "Invalid routes",
+      "target_unreachable": "Unreachable targets",
+      "box_not_reached": "Boxes not reached by a circuit",
+      "not_connected": "Not connected to the panel",
+      "box_empty": "Boxes without plate or devices",
+      "riser_mixed_elevation": "Risers with mixed run elevations",
+      "height_clamped": "Heights above the floor height",
+      "missing_item": "Missing catalog items"
+    },
+    "messages": {
+      "no_rcd": "{{name}} has no RCD or RCBO upstream",
+      "rating_section": "{{name}}: {{rating}} A device on {{section}} mm² (max {{max}} A)",
+      "section_type": "{{name}}: {{section}} mm² is below {{min}} mm² for {{type}}",
+      "conduit_fill": "{{conductors}} conductors need {{required}} mm inner diameter, the conduit has {{inner}} mm",
+      "panel_overflow": "{{name}} does not fit on the DIN rails",
+      "panel_overlap": "{{name}} overlaps another device",
+      "box_modules": "{{name}}: {{used}} of {{available}} modules used",
+      "route_invalid": "{{name}}: {{problem}}",
+      "target_unreachable": "{{name}}: {{count}} targets unreachable",
+      "box_not_reached": "{{name}}",
+      "not_connected": "{{name}}",
+      "box_empty": "{{name}}",
+      "riser_mixed_elevation": "{{name}}: floor and ceiling runs meet here",
+      "height_clamped": "{{name}}: mounting height capped at the floor height",
+      "missing_item": "{{name}}: catalog item {{id}} no longer exists"
+    }
+  },
+  "progress": {
+    "label": "Progress",
+    "done": "done",
+    "next": "next",
+    "stages": {
+      "plan": "Plan",
+      "panel": "Panel",
+      "conduits": "Conduits",
+      "boxes": "Boxes",
+      "circuits": "Circuits",
+      "bom": "BOM"
+    }
   }
 }

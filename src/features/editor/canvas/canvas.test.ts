@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { backgroundToWorld, worldToBackground } from '@/domain/geometry';
 import type { Background } from '@/domain/types';
 import { snapPoint } from './snapping';
-import { fitView, gridStep, screenToWorld, worldToScreen, zoomAt } from './viewport';
+import { centerOn, fitView, gridStep, screenToWorld, worldToScreen, zoomAt } from './viewport';
 
 describe('viewport', () => {
   // protects=screen/world mapping; fails_when=a round trip drifts; no_claim=Konva rendering
@@ -22,6 +22,13 @@ describe('viewport', () => {
     const after = screenToWorld(zoomAt(view, anchor, 1.7), anchor);
     expect(after.x).toBeCloseTo(before.x, 10);
     expect(after.y).toBeCloseTo(before.y, 10);
+  });
+
+  // protects=warning focus panning; fails_when=the focused point is not centered or the zoom changes; no_claim=—
+  it('centers a world point without zooming', () => {
+    const view = centerOn({ scale: 40, x: 0, y: 0 }, { x: 5, y: 2 }, { width: 800, height: 600 });
+    expect(view.scale).toBe(40);
+    expect(worldToScreen(view, { x: 5, y: 2 })).toEqual({ x: 400, y: 300 });
   });
 
   // protects=fit to content; fails_when=the box is not fully visible; no_claim=—

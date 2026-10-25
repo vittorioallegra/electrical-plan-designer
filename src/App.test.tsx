@@ -28,7 +28,7 @@ describe('editor layout shell', () => {
     await renderApp(`/projects/${DEMO_PROJECT_ID}/plan`);
     expect(await screen.findByRole('tab', { name: 'Circuits' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'BOM' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Warnings' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Warnings/ })).toBeInTheDocument();
     expect(screen.getByText('Nothing selected.')).toBeInTheDocument();
   });
 });

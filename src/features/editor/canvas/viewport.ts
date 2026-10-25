@@ -26,6 +26,15 @@ export function zoomAt(view: View, anchor: Point, factor: number): View {
   return { scale, x: anchor.x - world.x * scale, y: anchor.y - world.y * scale };
 }
 
+/** Same scale, panned so the world point `p` sits in the middle of a screen of `size`. */
+export function centerOn(view: View, p: Point, size: { width: number; height: number }): View {
+  return {
+    scale: view.scale,
+    x: size.width / 2 - p.x * view.scale,
+    y: size.height / 2 - p.y * view.scale,
+  };
+}
+
 /** View fitting the world box into a screen of `size` with a margin. */
 export function fitView(
   box: { minX: number; minY: number; maxX: number; maxY: number },

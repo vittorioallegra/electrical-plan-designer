@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { loadDoc } from '@/domain/load';
 import { useEditor, useEditorContext, useEditorServices } from '@/state/EditorContext';
+import type { DrawerTab } from '@/state/editorStore';
 import type { UnsavedCopy } from '@/state/unsavedStore';
 import { Button } from '@/ui/Button';
 import { Dialog } from '@/ui/Dialog';
@@ -14,6 +15,7 @@ import { cn } from '@/ui/cn';
 import { useToast } from '@/ui/Toast';
 import { LanguageSwitch } from '../shell/LanguageSwitch';
 import { BomTab } from '../bom/BomTab';
+import { WarningsBadge, WarningsTab } from '../checks/WarningsTab';
 import { CircuitsTab } from '../circuits/CircuitsTab';
 import { SaveStatus } from './SaveStatus';
 
@@ -217,12 +219,16 @@ export function ProjectFrame({
 
 function BottomDrawer() {
   const { t } = useTranslation();
+  const { store } = useEditorContext();
+  const tab = useEditor((s) => s.ui.drawerTab);
   return (
     <section
       className="h-56 overflow-y-auto border-t border-border px-3"
       aria-label={t('editor.drawer')}
     >
       <Tabs
+        value={tab}
+        onValueChange={(value) => store.getState().setUi({ drawerTab: value as DrawerTab })}
         tabs={[
           {
             value: 'circuits',
@@ -236,15 +242,16 @@ function BottomDrawer() {
           },
           {
             value: 'warnings',
-            label: t('editor.tabs.warnings'),
-            content: <Empty text={t('editor.empty.warnings')} />,
+            label: (
+              <>
+                {t('editor.tabs.warnings')}
+                <WarningsBadge />
+              </>
+            ),
+            content: <WarningsTab />,
           },
         ]}
       />
     </section>
   );
-}
-
-function Empty({ text }: { text: string }) {
-  return <p className="text-text-muted">{text}</p>;
 }

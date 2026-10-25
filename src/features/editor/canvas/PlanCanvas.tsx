@@ -26,7 +26,7 @@ import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode }
 import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from './hitTest';
 import { snapPoint, type SnapResult } from './snapping';
 import { useBackgroundImage } from './useBackgroundImage';
-import { gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
+import { centerOn, gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
 
 /** Meters per background pixel before calibration (1 px = 1 cm). */
 export const UNCALIBRATED_MPP = 0.01;
@@ -129,6 +129,14 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // A focus request (e.g. from the warnings tab) pans the view to that point once.
+  const focus = useEditor((s) => s.ui.focus);
+  useEffect(() => {
+    if (!focus) return;
+    const state = store.getState();
+    state.setUi({ view: centerOn(state.ui.view, focus, size), focus: null });
+  }, [focus, size, store]);
 
   // Tool switches and floor switches reset the in-progress action.
   const actionKey = `${tool}|${floorId}`;

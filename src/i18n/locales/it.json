@@ -565,5 +565,56 @@
       "cycle": "Il percorso ha un anello",
       "dead_end": "Il percorso ha un vicolo cieco"
     }
+  },
+  "checks": {
+    "hideConnectivity": "Nascondi gli avvisi di collegamento mentre disegni",
+    "hiddenCount": "{{count}} nascosti",
+    "segment": "Tratto di tubo",
+    "titles": {
+      "no_rcd": "Senza protezione differenziale",
+      "rating_section": "Taratura troppo alta per la sezione",
+      "section_type": "Sezione troppo piccola per il tipo di circuito",
+      "conduit_fill": "Tubo troppo pieno",
+      "panel_capacity": "Il quadro non basta",
+      "box_modules": "Contenuto oltre i moduli della scatola",
+      "route_invalid": "Percorsi non validi",
+      "target_unreachable": "Destinazioni irraggiungibili",
+      "box_not_reached": "Scatole non raggiunte da un circuito",
+      "not_connected": "Non collegati al quadro",
+      "box_empty": "Scatole senza placca né apparecchi",
+      "riser_mixed_elevation": "Montanti con posa mista",
+      "height_clamped": "Altezze oltre l’altezza del piano",
+      "missing_item": "Articoli di catalogo mancanti"
+    },
+    "messages": {
+      "no_rcd": "{{name}} non ha un differenziale o un RCBO a monte",
+      "rating_section": "{{name}}: dispositivo da {{rating}} A su {{section}} mm² (max {{max}} A)",
+      "section_type": "{{name}}: {{section}} mm² è sotto i {{min}} mm² richiesti per {{type}}",
+      "conduit_fill": "{{conductors}} conduttori richiedono un diametro interno di {{required}} mm, il tubo ha {{inner}} mm",
+      "panel_overflow": "{{name}} non entra nelle guide DIN",
+      "panel_overlap": "{{name}} si sovrappone a un altro dispositivo",
+      "box_modules": "{{name}}: {{used}} di {{available}} moduli usati",
+      "route_invalid": "{{name}}: {{problem}}",
+      "target_unreachable": "{{name}}: {{count}} destinazioni irraggiungibili",
+      "box_not_reached": "{{name}}",
+      "not_connected": "{{name}}",
+      "box_empty": "{{name}}",
+      "riser_mixed_elevation": "{{name}}: qui si incontrano tratti a pavimento e a soffitto",
+      "height_clamped": "{{name}}: altezza di montaggio limitata all’altezza del piano",
+      "missing_item": "{{name}}: l’articolo {{id}} non esiste più"
+    }
+  },
+  "progress": {
+    "label": "Avanzamento",
+    "done": "fatto",
+    "next": "prossimo",
+    "stages": {
+      "plan": "Pianta",
+      "panel": "Quadro",
+      "conduits": "Tubi",
+      "boxes": "Scatole",
+      "circuits": "Circuiti",
+      "bom": "Distinta"
+    }
   }
 }

@@ -4,7 +4,7 @@ import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { SaveErrorCode } from '@/data/types';
 import { docIntegrityIssues } from '@/domain/schema';
-import type { ProjectDoc, ProjectMeta, ProjectQuote, ProjectSettings } from '@/domain/types';
+import type { Point, ProjectDoc, ProjectMeta, ProjectQuote, ProjectSettings } from '@/domain/types';
 
 enablePatches();
 
@@ -46,7 +46,14 @@ export interface EditorUi {
   activeOwner: { kind: 'circuit' | 'extra'; id: string } | null;
   /** Plan picking mode: clicking boxes toggles targets, clicking segments toggles the manual route. */
   pick: { mode: 'targets' | 'route'; owner: { kind: 'circuit' | 'extra'; id: string } } | null;
+  drawerTab: DrawerTab;
+  /** Hides connectivity warnings while drawing (presentation only). */
+  hideConnectivity: boolean;
+  /** World point (m) the plan canvas should center on, consumed by the canvas. */
+  focus: Point | null;
 }
+
+export type DrawerTab = 'circuits' | 'bom' | 'warnings';
 
 export interface EditorState {
   projectId: string;
@@ -122,6 +129,9 @@ export function createEditorStore(init: EditorInit): EditorStore {
         presetId: null,
         activeOwner: null,
         pick: null,
+        drawerTab: 'circuits',
+        hideConnectivity: false,
+        focus: null,
       },
 
       applyCommand(label, recipe) {
