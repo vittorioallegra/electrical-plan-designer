@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
 const quotePath = `/projects/${DEMO_PROJECT_ID}/quote`;
@@ -46,5 +46,21 @@ describe('quote page', () => {
     await typeNumber(screen.getByLabelText('VAT'), '22');
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€122.00');
     expect(issued).toHaveTextContent('€110.00');
+  });
+
+  // protects=CSV download wiring; fails_when=the button does not download the live quote as CSV; no_claim=CSV layout (quoteCsv tests)
+  it('downloads the live quote as CSV', async () => {
+    const blobs: Blob[] = [];
+    const create = vi.fn((b: Blob) => {
+      blobs.push(b);
+      return 'blob:quote';
+    });
+    Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
+    await renderApp(quotePath);
+    const live = await screen.findByRole('group', { name: 'Export the current quote' });
+    await userEvent.click(within(live).getByRole('button', { name: 'CSV' }));
+    expect(blobs).toHaveLength(1);
+    const text = await blobs[0]!.text();
+    expect(text).toContain('Wall box 503 (3 modules);4;pcs;;;No price');
   });
 });

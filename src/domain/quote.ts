@@ -52,6 +52,14 @@ function percentOf(cents: number, percent: number): number {
   return Math.round((cents * percent) / 100);
 }
 
+/** Labor lines in cents: lump sums as typed, hourly lines as hours × rate. */
+export function laborAmounts(settings: QuoteSettings): { description: string; amount: number }[] {
+  return settings.laborLines.map((l) => ({
+    description: l.description,
+    amount: l.kind === 'lump' ? toCents(l.amount) : Math.round(l.hours * toCents(l.hourlyRate)),
+  }));
+}
+
 export interface QuoteResult {
   lines: QuoteLine[];
   labor: { description: string; amount: number }[];
@@ -79,10 +87,7 @@ export function computeQuote(
   const materialsBeforeAdjustment = lines.reduce((sum, l) => sum + (l.total ?? 0), 0);
   const adjustment = percentOf(materialsBeforeAdjustment, settings.materialAdjustmentPercent);
   const materials = materialsBeforeAdjustment + adjustment;
-  const labor = settings.laborLines.map((l) => ({
-    description: l.description,
-    amount: l.kind === 'lump' ? toCents(l.amount) : Math.round(l.hours * toCents(l.hourlyRate)),
-  }));
+  const labor = laborAmounts(settings);
   const laborTotal = labor.reduce((sum, l) => sum + l.amount, 0);
   const taxable = materials + laborTotal;
   const vat = percentOf(taxable, settings.vatPercent);

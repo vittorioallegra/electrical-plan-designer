@@ -1,4 +1,4 @@
-import { Plus, Stamp, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, Plus, Stamp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
@@ -12,6 +12,7 @@ import { Table } from '@/ui/Table';
 import { useToast } from '@/ui/Toast';
 import { useAnalysis } from '../bom/useAnalysis';
 import { useCatalog } from '../catalog/useCatalog';
+import { useQuoteExport } from '../exports/useQuoteExport';
 import { useLiveQuote, usePriceContext } from './useQuote';
 
 type LaborLine = QuoteSettings['laborLines'][number];
@@ -31,6 +32,7 @@ export function QuotePage() {
   const ctx = usePriceContext();
   const { profile, updateProfile } = useCatalog();
   const [issuing, setIssuing] = useState(false);
+  const exporter = useQuoteExport();
 
   const editSettings = (label: string, fn: (s: QuoteSettings) => void) =>
     store.getState().applyCommand(label, (d) => {
@@ -71,6 +73,12 @@ export function QuotePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-xl font-semibold">{t('pages.quote')}</h1>
+          <div className="flex items-center gap-2" role="group" aria-label={t('quote.exportLive')}>
+            <Button onClick={() => exporter.csv({ ...quote, settings })}>
+              <FileSpreadsheet size={16} />
+              {t('quote.exportCsv')}
+            </Button>
+          </div>
           <Button variant="primary" disabled={readOnly || issuing} onClick={() => void issue()}>
             <Stamp size={16} />
             {t('quote.issue')}
@@ -179,6 +187,14 @@ export function QuotePage() {
                     )}
                   </span>
                   <span className="tabular-nums">{money(q.totals.total)}</span>
+                  <Button
+                    variant="ghost"
+                    aria-label={`${t('quote.exportCsv')} ${formatQuoteNumber(q)}`}
+                    onClick={() => exporter.csv(q)}
+                  >
+                    <FileSpreadsheet size={14} />
+                    {t('quote.exportCsv')}
+                  </Button>
                 </li>
               ))}
             </ul>

@@ -654,6 +654,13 @@
     "addLump": "Lump sum",
     "addHourly": "Hourly",
     "issuedTitle": "Issued quotes",
-    "noIssued": "No quote issued yet. Issuing freezes the current lines and prices under a number."
+    "noIssued": "No quote issued yet. Issuing freezes the current lines and prices under a number.",
+    "unit": "Unit",
+    "note": "Note",
+    "noPrice": "No price",
+    "vatRate": "VAT {{percent}}%",
+    "exportCsv": "CSV",
+    "exportPdf": "PDF",
+    "exportLive": "Export the current quote"
   }
 }

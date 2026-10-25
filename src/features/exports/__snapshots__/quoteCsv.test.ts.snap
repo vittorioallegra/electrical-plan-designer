@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`quote CSV > renders an English CSV 1`] = `
+"﻿Code;Description;Quantity;Unit;Unit price;Total;Note
+H07-25-BR;Cable H07V-K 2.5 mm² brown;52;m;0.45;23.40;
+;"Wall box 503; ""deep""";4;pcs;;;No price
+;Panel wiring;;;;150.00;Labor
+;Chasing;;;;75.00;Labor
+
+;Materials;;;;23.40;
+;Markup / discount;;;;2.34;
+;Materials after markup;;;;25.74;
+;Labor;;;;225.00;
+;Taxable amount;;;;250.74;
+;VAT 22%;;;;55.16;
+;Grand total;;;;305.90;
+"
+`;
+
+exports[`quote CSV > renders an Italian CSV with comma decimals 1`] = `
+"﻿Codice;Descrizione;Quantità;Unità;Prezzo unitario;Totale;Nota
+H07-25-BR;Cable H07V-K 2.5 mm² brown;52;m;0,45;23,40;
+;"Wall box 503; ""deep""";4;pz;;;Senza prezzo
+;Panel wiring;;;;150,00;Manodopera
+;Chasing;;;;75,00;Manodopera
+
+;Materiali;;;;23,40;
+;Ricarico / sconto;;;;2,34;
+;Materiali dopo ricarico;;;;25,74;
+;Manodopera;;;;225,00;
+;Imponibile;;;;250,74;
+;IVA 22%;;;;55,16;
+;Totale;;;;305,90;
+"
+`;

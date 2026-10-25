@@ -381,7 +381,8 @@ Approved: yes (2026-10-25)
 - [x] 19. Checks panel, full BOM, dogfood checkpoint (checkpoint deferred, see Open questions) — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
   `feat: add BOM category totals and the progress strip`,
   `test: add first-project E2E following the progress strip`
-- [ ] 20. Exports and quote — `feat: add quote page with labor lines, inline prices and issued quotes`
+- [ ] 20. Exports and quote — `feat: add quote page with labor lines, inline prices and issued quotes`,
+  `feat: add quote CSV export for live and issued quotes`
 - [ ] 21. Mobile light view and purchase checklist
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
 
@@ -447,8 +448,7 @@ Approved: yes (2026-10-25)
   the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 20, remaining: CSV export of the live and issued quotes (`;`, UTF-8 BOM, locale decimals,
-snapshot tests en/it), quote PDF with business header, project PDF (floors with background,
+Step 20, remaining: quote PDF with business header, project PDF (floors with background,
 panel, circuits, segments, BOM, warnings), export menu entries, PDF smoke tests.
 
 ## Review record

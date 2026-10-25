@@ -654,6 +654,13 @@
     "addLump": "A corpo",
     "addHourly": "A ore",
     "issuedTitle": "Preventivi emessi",
-    "noIssued": "Nessun preventivo emesso. L’emissione congela righe e prezzi attuali con un numero."
+    "noIssued": "Nessun preventivo emesso. L’emissione congela righe e prezzi attuali con un numero.",
+    "unit": "Unità",
+    "note": "Nota",
+    "noPrice": "Senza prezzo",
+    "vatRate": "IVA {{percent}}%",
+    "exportCsv": "CSV",
+    "exportPdf": "PDF",
+    "exportLive": "Esporta il preventivo attuale"
   }
 }
