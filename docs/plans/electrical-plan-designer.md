@@ -353,7 +353,7 @@ Every test carries a one-line card comment: `protects=...; fails_when=...; no_cl
 
 ## Progress
 
-Phase: implementation
+Phase: verification
 Branch: feat/electrical-plan-designer
 Spec: docs/specs/electrical-plan-designer.md
 Approved: yes (2026-10-25)
@@ -386,7 +386,7 @@ Approved: yes (2026-10-25)
   `feat: add quote PDF with business header and logo`,
   `feat: add project PDF export with floor plans, panel, tables and warnings`
 - [x] 21. Mobile light view and purchase checklist — `feat: add mobile light view with purchase checklist and read-only plan`
-- [ ] 22. i18n completeness, full test run, CLAUDE.md update
+- [x] 22. i18n completeness, full test run, CLAUDE.md update — `docs: update CLAUDE.md for checks, quote, exports and mobile`
 
 ### Verification
 - qa: pending
@@ -456,9 +456,9 @@ Approved: yes (2026-10-25)
   the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 22: i18n completeness check (every `en.json` key in `it.json`, no literal JSX strings),
-`pnpm verify` green, update `CLAUDE.md` (new folders: `features/checks`, `exports`, `mobile`,
-`quote`). Then Phase 4 (qa, then review).
+Phase 4: run the qa subagent against the spec (one commit per bug, each updating
+Verification), then the review subagent on the branch diff. Note: the repo has no `main`
+branch yet (history starts on `feat/electrical-plan-designer`).
 
 ## Review record
 

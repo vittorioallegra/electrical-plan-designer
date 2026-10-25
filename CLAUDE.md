@@ -38,12 +38,14 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 - `src/domain/` — pure TypeScript: model, defaults, geometry, lengths, routing, BOM, checks, quote, built-in catalog
 - `src/data/` — repository interfaces + Supabase and in-memory implementations (only place that talks to Supabase)
 - `src/state/` — editor store (zustand + immer patches), undo/redo, autosave
-- `src/features/` — UI by feature (shell, auth, projects, editor, panel, circuits, catalog, bom, ...)
+- `src/features/` — UI by feature (shell, auth, projects, editor, panel, circuits, catalog, bom,
+  checks, quote, exports (CSV/PDF), mobile, profile)
 - `src/ui/` — design tokens, shared Radix-based components, symbols, number input/format
 - `src/i18n/` — i18next setup; `locales/en.json` (base) and `locales/it.json`
 - `src/config.ts` — zod-validated Vite env
 - `supabase/` — config, migrations, generated seed (local stack)
 - `scripts/` — `check-env.mjs`, `env-local.mjs`, `build-seed.mjs`
+- `src/testing/` — `renderApp.tsx` (component tests), `pdfText.ts` (PDF text via pdfjs, Node env)
 - `tests/` — `setup.ts`, `e2e/` (Playwright), `fixtures/` (shared JSON fixtures)
 
 ## Conventions
@@ -58,7 +60,11 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
   (real routes + in-memory repositories, seeded like `supabase/seed.sql`).
 - Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
   `// protects=...; fails_when=...; no_claim=...`.
-- Lengths are integer millimeters inside the domain; meters only at the edges.
+- Lengths are integer millimeters inside the domain; meters only at the edges. Money is integer
+  cents.
+- PDFs (jsPDF, built-in Helvetica) must only contain WinAnsi characters (no `→`, emoji);
+  PDF tests run with `// @vitest-environment node`.
+- Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).
 - jsdom has no canvas: `tests/setup.ts` stubs `react-konva`, so canvas behavior is tested
   in Playwright, driving the store through `window.__epd` (`tests/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
