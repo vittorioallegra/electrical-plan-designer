@@ -288,7 +288,7 @@ Approved: yes (2026-10-25)
   - [x] 5c. exactOptionalPropertyTypes — `chore: enable exactOptionalPropertyTypes`
 - [x] 6. pnpm workspace, app in apps/web — `refactor: move the app into a pnpm workspace at apps/web`
 - [x] 7. packages/domain (@epd/domain) — `refactor: extract the domain into the @epd/domain package`
-- [ ] 8. Move files to the target layout
+- [x] 8. Move files to the target layout — `refactor: move files to the Bulletproof React layout`
 - [ ] 9. Remove cross-feature imports, import-boundary lint rules
 - [ ] 10. TanStack Query for server state
 - [ ] 11. Route loaders, error elements, lazy routes
@@ -330,6 +330,12 @@ Approved: yes (2026-10-25)
 - `@epd/domain`: `nanoid` moved to the domain package (web keeps `zod` for `config.ts`); domain
   tests run in the `node` environment; the purity lint rule now bans `@/*`, `@epd/web` and
   `apps/**` imports (checked with a probe file).
+- Step 8 also did the pure moves from the cross-feature mapping (useAnalysis → `hooks/`,
+  describe → `lib/describeBom|describeChecks`, viewMode → `lib/`, ConductorBadge → `components/`,
+  LanguageSwitch → `components/ui/`, AuthProvider → `lib/auth/`, shell/RequireAuth/MobileShell/
+  ProjectFrame → `app/layouts/`, SettingsPage → `features/settings`); `data/index.tsx` became
+  `lib/repositories/provider.tsx`, `state/testing.ts` became `testing/editor.ts`. Built CSS is
+  byte-identical to the previous commit (Tailwind source detection unaffected).
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -343,9 +349,10 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 8: move files to the target layout (pure `git mv` + import rewrites, no logic change):
-`app/`, `components/`, `lib/`, `stores/`, `config/`, `testing/` (incl. `tests/setup.ts`),
-feature sub-folders, per "Target layout"; i18n lint globs and CLAUDE.md layout in the same commit.
+Step 9: remove the remaining cross-feature imports (catalog `useCatalog` split into `api/` +
+`hooks/`, mobile Checklist into `bom`, MobileProjectPage into `app/routes/mobile/project`, canvas
+pick handlers from ProjectFrame, QuotePage export actions as props), then add the
+`import-x/no-restricted-paths` + no-barrel lint rules and a Vitest test running ESLint on fixtures.
 
 ## Review record
 

@@ -26,7 +26,7 @@
     "db:start": "supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > apps/web/src/data/database.types.ts && prettier --write apps/web/src/data/database.types.ts"
+    "db:types": "supabase gen types typescript --local > apps/web/src/lib/repositories/database.types.ts && prettier --write apps/web/src/lib/repositories/database.types.ts"
   },
   "devDependencies": {
     "@epd/domain": "workspace:*",

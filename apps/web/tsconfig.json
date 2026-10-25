@@ -4,5 +4,5 @@
     "types": ["vite/client", "node", "@testing-library/jest-dom/vitest"],
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "tests", "e2e", "*.ts"]
+  "include": ["src", "e2e", "*.ts"]
 }

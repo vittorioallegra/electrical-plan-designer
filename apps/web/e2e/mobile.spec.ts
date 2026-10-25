@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import type { EditorStore } from '../src/state/editorStore';
+import type { EditorStore } from '../src/stores/editor/editorStore';
 import { logIn } from './helpers';
 
 const DEMO = '00000000-0000-4000-8000-0000000000aa';

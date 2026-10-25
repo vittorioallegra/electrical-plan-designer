@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Point } from '@epd/domain/types';
-import { useEditorContext } from '@/state/EditorContext';
-import { Button } from '@/ui/Button';
-import { Dialog } from '@/ui/Dialog';
-import { NumberInput } from '@/ui/NumberInput';
+import { useEditorContext } from '@/stores/editor/EditorContext';
+import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
+import { NumberInput } from '@/components/ui/NumberInput';
 
 /** Asks the real distance between the two clicked background points, then calibrates. */
 export function CalibrationDialog({

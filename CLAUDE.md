@@ -40,34 +40,41 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 pnpm workspace: root scripts proxy to the app with `pnpm --filter @epd/web …`; one root ESLint
 config, root `vitest.config.ts` (`test.projects`: web, domain, scripts), `tsconfig.base.json` shared.
 `.env*` files stay at the root (Vite `envDir`). The app lives in `apps/web/` (package
-`@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`, `tests/setup.ts`).
-Paths below under `src/` are `apps/web/src/`.
+`@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`). Folder convention:
+Bulletproof React. Paths below under `src/` are `apps/web/src/`.
 
 - `packages/domain/` — `@epd/domain`, pure TypeScript (model, defaults, geometry, lengths, routing,
   BOM, checks, quote, built-in catalog); source-only, imported as `@epd/domain/<module>` (no barrel);
   its tests run in the `node` environment
-- `src/data/` — repository interfaces + Supabase and in-memory implementations (only place that talks to Supabase)
-- `src/state/` — editor store (zustand + immer patches), undo/redo, autosave
-- `src/features/` — UI by feature (shell, auth, projects, editor, panel, circuits, catalog, bom,
-  checks, quote, exports (CSV/PDF), mobile, profile)
-- `src/ui/` — design tokens, shared Radix-based components, symbols, number input/format
-- `src/i18n/` — i18next setup; `locales/en.json` (base) and `locales/it.json`
-- `src/config.ts` — zod-validated Vite env
+- `src/app/` — entry (`main.tsx`), `provider.tsx`, `router.tsx` (routes), `layouts/` (AppShell,
+  MobileShell, ProjectFrame, RequireAuth), `routes/`, `styles.css`
+- `src/features/<name>/` — UI by feature (auth, projects, editor, panel, circuits, catalog, bom,
+  checks, quote, exports, mobile, profile, settings), split into `components/`, `hooks/`,
+  `utils/` (and `api/`) as needed
+- `src/components/` — shared UI: `ui/` (Radix-based components, number input), `symbols/`
+- `src/hooks/` — hooks shared by several features (e.g. `useAnalysis`)
+- `src/lib/` — `repositories/` (repository interfaces + Supabase and in-memory implementations,
+  provider; the only place that talks to Supabase), `auth/`, `i18n/` (`locales/en.json` base,
+  `it.json`), formatting, colors, download, BOM/check descriptions, view mode
+- `src/stores/editor/` — editor store (zustand + immer patches), undo/redo, autosave
+- `src/config/env.ts` — zod-validated Vite env
 - `supabase/` — config, migrations, generated seed (local stack)
 - `scripts/` — `check-env.mjs`, `env-local.mjs`, `build-seed.mjs`
-- `src/testing/` — `renderApp.tsx` (component tests), `pdfText.ts` (PDF text via pdfjs, Node env)
+- `src/testing/` — `setup.ts` (Vitest), `renderApp.tsx` (component tests), `editor.ts` (store
+  helpers), `pdfText.ts` (PDF text via pdfjs, Node env)
 - `apps/web/e2e/` — Playwright specs + `helpers.ts` (`fixture(name)` resolves `tests/fixtures`)
 - `tests/fixtures/` — shared fixtures at the repo root (domain, web, seed and its test)
 
 ## Conventions
 
 - Everything in the repo is English. User-facing strings only via i18n keys
-  (`t('...')`); ESLint `i18next/no-literal-string` enforces it in `src/features`, `src/ui`.
+  (`t('...')`); ESLint `i18next/no-literal-string` enforces it in `.tsx` files of `src/app`,
+  `src/components`, `src/features`, `src/lib`.
   Every key must exist in both `en.json` and `it.json` (test enforces).
-- Dependency rule: `features → state → domain`, `features/state → data → domain`,
-  `features → ui`. `@epd/domain` imports nothing from the app (ESLint enforced).
+- Dependency rule: `app → features → stores → domain`, `features/stores → lib → domain`,
+  `features → components`. `@epd/domain` imports nothing from the app (ESLint enforced).
 - Import alias `@/` = `src/`. Components get persistence only via `useRepositories()`
-  (`src/data/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
+  (`src/lib/repositories/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
   (real routes + in-memory repositories, seeded like `supabase/seed.sql`).
 - Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
   `// protects=...; fails_when=...; no_claim=...`.
@@ -76,7 +83,7 @@ Paths below under `src/` are `apps/web/src/`.
 - PDFs (jsPDF, built-in Helvetica) must only contain WinAnsi characters (no `→`, emoji);
   PDF tests run with `// @vitest-environment node`.
 - Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).
-- jsdom has no canvas: `apps/web/tests/setup.ts` stubs `react-konva`, so canvas behavior is
+- jsdom has no canvas: `src/testing/setup.ts` stubs `react-konva`, so canvas behavior is
   tested in Playwright, driving the store through `window.__epd` (`apps/web/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).

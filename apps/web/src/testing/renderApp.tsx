@@ -2,12 +2,12 @@
 import { render } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { routes } from '@/App';
-import { AppProviders } from '@/AppProviders';
-import { createMemoryRepositories } from '@/data/memory';
-import { DEV_LOGIN, seedMemory } from '@/data/memorySeed';
-import { createI18n, type Language } from '@/i18n';
-import { createMemoryUnsavedStore } from '@/state/unsavedStore';
+import { routes } from '@/app/router';
+import { AppProviders } from '@/app/provider';
+import { createMemoryRepositories } from '@/lib/repositories/memory';
+import { DEV_LOGIN, seedMemory } from '@/lib/repositories/memorySeed';
+import { createI18n, type Language } from '@/lib/i18n';
+import { createMemoryUnsavedStore } from '@/stores/editor/unsavedStore';
 
 export const DEMO_PROJECT_ID = '00000000-0000-4000-8000-0000000000aa';
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import demo from '../../../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
 import type { ProjectDoc } from '@epd/domain/types';
-import type { EditorStore } from '@/state/editorStore';
+import type { EditorStore } from '@/stores/editor/editorStore';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
 const planPath = `/projects/${DEMO_PROJECT_ID}/plan`;

@@ -13,7 +13,7 @@ export default defineConfig(
       '**/node_modules',
       '**/playwright-report',
       '**/test-results',
-      'apps/web/src/data/database.types.ts',
+      'apps/web/src/lib/repositories/database.types.ts',
     ],
   },
   js.configs.recommended,
@@ -59,7 +59,12 @@ export default defineConfig(
   },
   {
     // User-facing strings go through i18n.
-    files: ['apps/web/src/features/**/*.tsx', 'apps/web/src/ui/**/*.tsx', 'apps/web/src/App.tsx'],
+    files: [
+      'apps/web/src/app/**/*.tsx',
+      'apps/web/src/components/**/*.tsx',
+      'apps/web/src/features/**/*.tsx',
+      'apps/web/src/lib/**/*.tsx',
+    ],
     ignores: ['**/*.test.tsx'],
     plugins: { i18next },
     rules: {

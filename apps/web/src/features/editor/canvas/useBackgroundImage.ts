@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useRepositories } from '@/data';
-import type { FileRepository } from '@/data/types';
+import { useRepositories } from '@/lib/repositories/provider';
+import type { FileRepository } from '@/lib/repositories/types';
 
 // Backgrounds are fetched as blobs and shown via object URLs (never cross-origin URLs),
 // so the canvas is never tainted and can be exported to PDF.

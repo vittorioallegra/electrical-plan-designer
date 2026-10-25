@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRepositories } from '@/data';
+import { useRepositories } from '@/lib/repositories/provider';
 import { newId } from '@epd/domain/ids';
 import type { Background } from '@epd/domain/types';
-import { useEditorContext } from '@/state/EditorContext';
-import { Button } from '@/ui/Button';
-import { Dialog } from '@/ui/Dialog';
-import { cn } from '@/ui/cn';
-import { useSession } from '../../auth/AuthProvider';
+import { useEditorContext } from '@/stores/editor/EditorContext';
+import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
+import { cn } from '@/lib/cn';
+import { useSession } from '@/lib/auth/AuthProvider';
 import { primeBackgroundImage } from '../canvas/useBackgroundImage';
 import { checkFile, ImportError, loadImage, openPdf, type PdfHandle } from './importFile';
 

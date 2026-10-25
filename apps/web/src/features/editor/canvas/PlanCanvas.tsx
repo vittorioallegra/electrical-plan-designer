@@ -20,13 +20,19 @@ import {
 import { createLengthContext } from '@epd/domain/lengths';
 import { newId } from '@epd/domain/ids';
 import type { Floor, PlanNode, Point, RunElevation } from '@epd/domain/types';
-import { useEditor, useEditorContext } from '@/state/EditorContext';
-import { useCatalog } from '../../catalog/useCatalog';
-import { useAnalysis } from '../../bom/useAnalysis';
-import { toggleRouteSegment, toggleTarget } from '../../circuits/commands';
-import { formatLength } from '@/ui/format';
-import { provisionDash, symbolPaths, type SymbolKind } from '@/ui/symbols';
-import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode } from '../commands';
+import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useAnalysis } from '@/hooks/useAnalysis';
+import { toggleRouteSegment, toggleTarget } from '@/features/circuits/utils/commands';
+import { formatLength } from '@/lib/format';
+import { provisionDash, symbolPaths, type SymbolKind } from '@/components/symbols/symbols';
+import {
+  addConduit,
+  addConduitToNewJunction,
+  moveSelection,
+  nodeAt,
+  placeNode,
+} from '@/features/editor/utils/commands';
 import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from './hitTest';
 import { LABEL_FONT_PX, nodeLabelBox, segmentLabelBox, type LabelBox } from './labels';
 import { snapPoint, type SnapResult } from './snapping';

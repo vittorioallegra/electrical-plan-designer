@@ -1,0 +1,34 @@
+import type { ComponentPropsWithRef } from 'react';
+import { cn } from '@/lib/cn';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
+const variants: Record<Variant, string> = {
+  primary: 'bg-accent text-accent-contrast hover:bg-accent-hover',
+  secondary: 'border border-border bg-surface text-text hover:bg-surface-muted',
+  ghost: 'hover:bg-surface-muted',
+  danger: 'bg-error text-white hover:opacity-90',
+};
+
+export interface ButtonProps extends ComponentPropsWithRef<'button'> {
+  variant?: Variant;
+}
+
+export function Button({
+  variant = 'secondary',
+  className,
+  type = 'button',
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        'inline-flex h-[var(--control-height,2rem)] items-center justify-center gap-1.5 rounded px-[var(--control-padding-x,0.625rem)] font-medium disabled:cursor-not-allowed disabled:opacity-50',
+        variants[variant],
+        className,
+      )}
+      {...props}
+    />
+  );
+}
