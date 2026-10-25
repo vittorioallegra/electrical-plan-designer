@@ -25,7 +25,8 @@ export function Tabs({
       onValueChange={onValueChange}
       className={className}
     >
-      <RadixTabs.List className="flex gap-1 border-b border-border">
+      {/* Sticky, so the tab bar stays reachable while a long tab scrolls its container. */}
+      <RadixTabs.List className="sticky top-0 z-10 flex gap-1 border-b border-border bg-surface">
         {tabs.map((tab) => (
           <RadixTabs.Trigger
             key={tab.value}
