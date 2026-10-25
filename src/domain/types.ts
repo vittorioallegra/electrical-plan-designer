@@ -29,6 +29,7 @@ import type {
   issuedQuoteSchema,
   projectQuoteSchema,
   priceOverridesSchema,
+  boxPresetSchema,
 } from './schema';
 
 export type Point = z.infer<typeof pointSchema>;
@@ -70,3 +71,4 @@ export type QuoteTotals = z.infer<typeof quoteTotalsSchema>;
 export type IssuedQuote = z.infer<typeof issuedQuoteSchema>;
 export type ProjectQuote = z.infer<typeof projectQuoteSchema>;
 export type PriceOverrides = z.infer<typeof priceOverridesSchema>;
+export type BoxPreset = z.infer<typeof boxPresetSchema>;

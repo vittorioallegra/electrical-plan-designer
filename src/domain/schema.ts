@@ -316,3 +316,12 @@ export const priceOverridesSchema = z.record(
   z.string(),
   z.object({ unitPrice: cents.nonnegative(), code: z.string().optional() }),
 );
+
+/** profiles.box_presets: a box with its contents, applied on placement. */
+export const boxPresetSchema = z.object({
+  id,
+  name: z.string(),
+  mounting: mountingSchema.optional(),
+  boxItemId: id.optional(),
+  contents: z.array(contentLineSchema),
+});

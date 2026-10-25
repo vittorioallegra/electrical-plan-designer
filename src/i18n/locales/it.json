@@ -114,5 +114,60 @@
       "two_way_switch": "Deviatore",
       "usb_charger": "Caricatore USB"
     }
+  },
+  "common": {
+    "loading": "Caricamento…",
+    "cancel": "Annulla",
+    "save": "Salva"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "logIn": "Accedi",
+    "signUp": "Crea account",
+    "logOut": "Esci",
+    "noAccount": "Non hai un account? Registrati",
+    "haveAccount": "Hai già un account? Accedi",
+    "errors": {
+      "invalid_credentials": "Email o password errate.",
+      "email_taken": "Esiste già un account con questa email.",
+      "weak_password": "Password troppo debole: usa almeno 6 caratteri.",
+      "network": "Server non raggiungibile. Controlla la connessione e riprova.",
+      "unknown": "Qualcosa è andato storto. Riprova."
+    }
+  },
+  "projects": {
+    "new": "Nuovo progetto",
+    "newTitle": "Nuovo progetto",
+    "renameTitle": "Rinomina progetto",
+    "create": "Crea",
+    "rename": "Rinomina",
+    "delete": "Elimina",
+    "actions": "Azioni per {{name}}",
+    "empty": "Nessun progetto. Crea il primo per iniziare a disegnare.",
+    "name": "Nome progetto",
+    "client": "Cliente",
+    "address": "Indirizzo",
+    "firstFloorName": "Piano 1",
+    "deleteTitle": "Eliminare \"{{name}}\"?",
+    "deleteBody": "Il progetto, le piante di sfondo e la lista acquisti vengono eliminati. L'operazione non si può annullare.",
+    "loadFailed": "Impossibile caricare i progetti.",
+    "saveFailed": "Impossibile salvare il progetto.",
+    "deleteFailed": "Impossibile eliminare il progetto."
+  },
+  "profile": {
+    "hint": "Compare nell'intestazione del preventivo PDF. I campi vuoti vengono omessi.",
+    "businessName": "Ragione sociale",
+    "vatNumber": "Partita IVA",
+    "address": "Indirizzo",
+    "phone": "Telefono",
+    "email": "Email",
+    "logo": "Logo",
+    "saved": "Profilo salvato.",
+    "saveFailed": "Impossibile salvare il profilo.",
+    "loadFailed": "Impossibile caricare il profilo.",
+    "logoType": "Il logo deve essere un'immagine PNG o JPG.",
+    "logoTooLarge": "Il logo deve essere al massimo 2 MB.",
+    "logoFailed": "Impossibile caricare il logo."
   }
 }

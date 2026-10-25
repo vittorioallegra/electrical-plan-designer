@@ -114,5 +114,60 @@
       "two_way_switch": "Two-way switch",
       "usb_charger": "USB charger"
     }
+  },
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "logIn": "Log in",
+    "signUp": "Create account",
+    "logOut": "Log out",
+    "noAccount": "No account yet? Sign up",
+    "haveAccount": "Already have an account? Log in",
+    "errors": {
+      "invalid_credentials": "Wrong email or password.",
+      "email_taken": "An account with this email already exists.",
+      "weak_password": "Password too weak: use at least 6 characters.",
+      "network": "Cannot reach the server. Check the connection and retry.",
+      "unknown": "Something went wrong. Retry."
+    }
+  },
+  "projects": {
+    "new": "New project",
+    "newTitle": "New project",
+    "renameTitle": "Rename project",
+    "create": "Create",
+    "rename": "Rename",
+    "delete": "Delete",
+    "actions": "Actions for {{name}}",
+    "empty": "No projects yet. Create the first one to start drawing.",
+    "name": "Project name",
+    "client": "Client",
+    "address": "Address",
+    "firstFloorName": "Floor 1",
+    "deleteTitle": "Delete \"{{name}}\"?",
+    "deleteBody": "The project, its background plans and its purchase checklist are deleted. This cannot be undone.",
+    "loadFailed": "Could not load projects.",
+    "saveFailed": "Could not save the project.",
+    "deleteFailed": "Could not delete the project."
+  },
+  "profile": {
+    "hint": "Shown in the quote PDF header. Empty fields are left out.",
+    "businessName": "Business name",
+    "vatNumber": "VAT number",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "logo": "Logo",
+    "saved": "Profile saved.",
+    "saveFailed": "Could not save the profile.",
+    "loadFailed": "Could not load the profile.",
+    "logoType": "The logo must be a PNG or JPG image.",
+    "logoTooLarge": "The logo must be at most 2 MB.",
+    "logoFailed": "Could not upload the logo."
   }
 }

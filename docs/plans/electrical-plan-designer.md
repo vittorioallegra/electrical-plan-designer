@@ -369,7 +369,7 @@ Approved: yes (2026-10-25)
 - [x] 8. Domain checks and conduit fill — `feat: add basic checks and conduit fill`
 - [x] 9. Domain quote math — `feat: add quote math, price lookup and issued snapshots`
 - [x] 10. Supabase local schema, RLS, save RPC, storage, seed, deploy doc — `feat: add Supabase schema, RLS, save RPC, storage and seed`
-- [ ] 11. Auth, profile, project list
+- [x] 11. Auth, profile, project list — `feat: add repositories, auth, profile and project list`
 - [ ] 12. Editor shell, store, undo/redo, save status, floors, settings
 - [ ] 13. Canvas base, walls, background import, calibration
 - [ ] 14. Nodes and conduit segments
@@ -423,9 +423,9 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 11: auth (sign up / log in / log out, protected routes, session expiry), profile form with
-logo upload, project list (create/rename/delete). Needs repository interfaces in `src/data`
-(Supabase + in-memory) first.
+Step 12: editor shell + store (`src/state`): load/validate doc with `DocLoadError` recovery screen,
+`applyCommand` + undo/redo, save status machine (single in-flight save, retry, conflict dialog,
+IndexedDB copy, beforeunload), JSON export/import, floors, project settings page.
 
 ## Review record
 

@@ -19,7 +19,8 @@ missing), pnpm 12.
 - Single test file: `pnpm exec vitest run src/domain/lengths.test.ts --reporter=dot`;
   single test by name: add `-t "riser"`
 - `pnpm test:db` — integration tests against local Supabase (`src/**/*.db.test.ts`)
-- `pnpm test:e2e` — Playwright (`tests/e2e`); quiet: `pnpm exec playwright test --reporter=dot`
+- `pnpm test:e2e` — Playwright (`tests/e2e`, own Vite server on :5174 in `e2e` mode);
+  quiet: `pnpm exec playwright test --reporter=dot`
 - `pnpm verify` — typecheck, lint, test, test:db, test:e2e (the gate; no CI yet)
 - `pnpm db:start | db:stop | db:reset | db:types`, `pnpm env:local`
 - `pnpm db:seed` — regenerate `supabase/seed.sql` from `tests/fixtures/demo-project.json`
@@ -52,7 +53,9 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
   Every key must exist in both `en.json` and `it.json` (test enforces).
 - Dependency rule: `features → state → domain`, `features/state → data → domain`,
   `features → ui`. `src/domain` imports nothing from the app (ESLint enforced).
-- Import alias `@/` = `src/`.
+- Import alias `@/` = `src/`. Components get persistence only via `useRepositories()`
+  (`src/data/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
+  (real routes + in-memory repositories, seeded like `supabase/seed.sql`).
 - Tests sit next to the code (`*.test.ts(x)`); each test carries a card comment
   `// protects=...; fails_when=...; no_claim=...`.
 - Lengths are integer millimeters inside the domain; meters only at the edges.
