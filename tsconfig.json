@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"],
-    "paths": { "@/*": ["./apps/web/src/*"] }
+    "types": ["node"]
   },
   "include": ["scripts", "*.ts"]
 }

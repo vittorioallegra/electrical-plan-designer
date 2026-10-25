@@ -1,7 +1,7 @@
 // Circuit and extra-run commands.
-import { newId } from '@/domain/ids';
-import type { RoutingResult } from '@/domain/routing';
-import type { Circuit, ExtraConductorRun, ProjectDoc, Routing } from '@/domain/types';
+import { newId } from '@epd/domain/ids';
+import type { RoutingResult } from '@epd/domain/routing';
+import type { Circuit, ExtraConductorRun, ProjectDoc, Routing } from '@epd/domain/types';
 import type { EditorStore } from '@/state/editorStore';
 
 export const SECTIONS = [1.5, 2.5, 4, 6, 10] as const;

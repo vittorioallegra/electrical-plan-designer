@@ -1,12 +1,12 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import demo from '../../../../../tests/fixtures/demo-project.json';
-import { computeBom } from '@/domain/bom';
-import { createCatalogLookup } from '@/domain/catalog/lookup';
-import { runChecks } from '@/domain/checks';
-import { defaultProjectSettings } from '@/domain/defaults';
-import { routeDoc } from '@/domain/routing';
-import type { ProjectDoc } from '@/domain/types';
+import { computeBom } from '@epd/domain/bom';
+import { createCatalogLookup } from '@epd/domain/catalog/lookup';
+import { runChecks } from '@epd/domain/checks';
+import { defaultProjectSettings } from '@epd/domain/defaults';
+import { routeDoc } from '@epd/domain/routing';
+import type { ProjectDoc } from '@epd/domain/types';
 import { createI18n } from '@/i18n';
 import { pdfText } from '@/testing/pdfText';
 import { buildProjectPdf, rotatedImageBox } from './projectPdf';

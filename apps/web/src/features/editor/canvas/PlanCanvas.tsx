@@ -12,10 +12,14 @@ import {
   Stage,
   Text,
 } from 'react-konva';
-import { backgroundMetersPerPixel, UNCALIBRATED_MPP, worldToBackground } from '@/domain/geometry';
-import { createLengthContext } from '@/domain/lengths';
-import { newId } from '@/domain/ids';
-import type { Floor, PlanNode, Point, RunElevation } from '@/domain/types';
+import {
+  backgroundMetersPerPixel,
+  UNCALIBRATED_MPP,
+  worldToBackground,
+} from '@epd/domain/geometry';
+import { createLengthContext } from '@epd/domain/lengths';
+import { newId } from '@epd/domain/ids';
+import type { Floor, PlanNode, Point, RunElevation } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { useCatalog } from '../../catalog/useCatalog';
 import { useAnalysis } from '../../bom/useAnalysis';

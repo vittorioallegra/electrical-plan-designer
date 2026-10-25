@@ -1,5 +1,5 @@
 // Editor commands for plan elements. Each one is a single undoable applyCommand.
-import { DEFAULT_CONDUIT_ID } from '@/domain/catalog/builtin';
+import { DEFAULT_CONDUIT_ID } from '@epd/domain/catalog/builtin';
 import {
   cascadeOf,
   copyNodes,
@@ -9,11 +9,11 @@ import {
   pasteNodes,
   type CascadeSummary,
   type Clipboard,
-} from '@/domain/edits';
-import { distance, projectOnPolyline } from '@/domain/geometry';
-import { newId } from '@/domain/ids';
-import { splitSegment } from '@/domain/routing';
-import type { BoxPreset, NodeKind, PlanNode, Point, ProjectDoc } from '@/domain/types';
+} from '@epd/domain/edits';
+import { distance, projectOnPolyline } from '@epd/domain/geometry';
+import { newId } from '@epd/domain/ids';
+import { splitSegment } from '@epd/domain/routing';
+import type { BoxPreset, NodeKind, PlanNode, Point, ProjectDoc } from '@epd/domain/types';
 import type { EditorStore } from '@/state/editorStore';
 import { segmentPolyline } from './canvas/hitTest';
 

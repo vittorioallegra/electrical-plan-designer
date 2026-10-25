@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import type { ProjectDoc } from '@/domain/types';
+import type { ProjectDoc } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import type { EditorUi } from '@/state/editorStore';
 import { cn } from '@/ui/cn';

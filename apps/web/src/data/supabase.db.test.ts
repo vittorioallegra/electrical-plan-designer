@@ -2,7 +2,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import demo from '../../../../tests/fixtures/demo-project.json';
-import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
+import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
 import type { Database } from './database.types';
 
 const url = process.env.VITE_SUPABASE_URL!;

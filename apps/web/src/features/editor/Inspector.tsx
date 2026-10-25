@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { distance } from '@/domain/geometry';
-import type { Wall } from '@/domain/types';
+import { distance } from '@epd/domain/geometry';
+import type { Wall } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { formatLength } from '@/ui/format';

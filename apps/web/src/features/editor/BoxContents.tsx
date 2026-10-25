@@ -1,8 +1,8 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { newId } from '@/domain/ids';
-import type { PlanNode } from '@/domain/types';
+import { newId } from '@epd/domain/ids';
+import type { PlanNode } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { cn } from '@/ui/cn';

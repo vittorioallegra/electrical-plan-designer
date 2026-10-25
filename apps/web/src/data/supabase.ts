@@ -5,14 +5,14 @@ import {
   type Session as SupabaseSession,
   type SupabaseClient,
 } from '@supabase/supabase-js';
-import type { CatalogItem } from '@/domain/catalog/types';
+import type { CatalogItem } from '@epd/domain/catalog/types';
 import {
   boxPresetSchema,
   priceOverridesSchema,
   projectQuoteSchema,
   projectSettingsSchema,
-} from '@/domain/schema';
-import type { ProjectMeta } from '@/domain/types';
+} from '@epd/domain/schema';
+import type { ProjectMeta } from '@epd/domain/types';
 import type { Database, Json } from './database.types';
 import {
   AuthError,

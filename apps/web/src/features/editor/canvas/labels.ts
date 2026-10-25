@@ -1,4 +1,4 @@
-import type { Point } from '@/domain/types';
+import type { Point } from '@epd/domain/types';
 
 /** Text box of a canvas label in screen pixels, relative to its anchor (a node or a segment midpoint). */
 export interface LabelBox {

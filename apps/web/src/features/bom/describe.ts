@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next';
-import type { BomLine } from '@/domain/bom';
-import type { CableColor } from '@/domain/types';
-import type { CatalogLookup } from '@/domain/catalog/lookup';
-import type { CatalogItem } from '@/domain/catalog/types';
+import type { BomLine } from '@epd/domain/bom';
+import type { CableColor } from '@epd/domain/types';
+import type { CatalogLookup } from '@epd/domain/catalog/lookup';
+import type { CatalogItem } from '@epd/domain/catalog/types';
 import { formatNumber, type Locale } from '@/ui/format';
 
 /** Human description of a BOM line in the UI language. */

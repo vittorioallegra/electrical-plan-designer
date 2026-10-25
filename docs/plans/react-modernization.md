@@ -287,7 +287,7 @@ Approved: yes (2026-10-25)
   - [x] 5b. TypeScript 7 typecheck — `chore: typecheck with TypeScript 7`
   - [x] 5c. exactOptionalPropertyTypes — `chore: enable exactOptionalPropertyTypes`
 - [x] 6. pnpm workspace, app in apps/web — `refactor: move the app into a pnpm workspace at apps/web`
-- [ ] 7. packages/domain (@epd/domain)
+- [x] 7. packages/domain (@epd/domain) — `refactor: extract the domain into the @epd/domain package`
 - [ ] 8. Move files to the target layout
 - [ ] 9. Remove cross-feature imports, import-boundary lint rules
 - [ ] 10. TanStack Query for server state
@@ -327,6 +327,9 @@ Approved: yes (2026-10-25)
   `src/testing`); e2e fixture files are resolved with `fixture(name)` in `e2e/helpers.ts`;
   `tsconfig.base.json` holds shared compiler options, root `tsconfig.json` covers `scripts/`.
   Checked: `pnpm setup` from a clean copy of the tracked files, `dev:mem` in the browser.
+- `@epd/domain`: `nanoid` moved to the domain package (web keeps `zod` for `config.ts`); domain
+  tests run in the `node` environment; the purity lint rule now bans `@/*`, `@epd/web` and
+  `apps/**` imports (checked with a probe file).
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -340,10 +343,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 7: `packages/domain` as `@epd/domain` (git mv `apps/web/src/domain`, package.json with zod
-+ nanoid, `exports: { "./*": "./src/*.ts" }`, own tsconfig + Vitest project, purity lint rule
-moved); web imports `@epd/domain/<module>`; `scripts/build-seed.test.ts` imports
-`@epd/domain/defaults`.
+Step 8: move files to the target layout (pure `git mv` + import rewrites, no logic change):
+`app/`, `components/`, `lib/`, `stores/`, `config/`, `testing/` (incl. `tests/setup.ts`),
+feature sub-folders, per "Target layout"; i18n lint globs and CLAUDE.md layout in the same commit.
 
 ## Review record
 

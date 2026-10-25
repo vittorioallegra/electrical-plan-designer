@@ -2,16 +2,16 @@
 // tables, BOM and open warnings. Drawn as vectors from the document, never from the canvas.
 import type { TFunction } from 'i18next';
 import { GState } from 'jspdf';
-import { bomCategoryOrder, type BomLine } from '@/domain/bom';
-import type { CatalogLookup } from '@/domain/catalog/lookup';
-import type { Warning } from '@/domain/checks';
+import { bomCategoryOrder, type BomLine } from '@epd/domain/bom';
+import type { CatalogLookup } from '@epd/domain/catalog/lookup';
+import type { Warning } from '@epd/domain/checks';
 import {
   backgroundMetersPerPixel,
   backgroundToWorld,
   mmToM,
   polylineLength,
-} from '@/domain/geometry';
-import type { RoutingResult } from '@/domain/routing';
+} from '@epd/domain/geometry';
+import type { RoutingResult } from '@epd/domain/routing';
 import type {
   Background,
   Floor,
@@ -19,7 +19,7 @@ import type {
   ProjectDoc,
   ProjectMeta,
   RunElevation,
-} from '@/domain/types';
+} from '@epd/domain/types';
 import { formatLength, formatNumber, type Locale } from '@/ui/format';
 import { describeBomLine } from '../bom/describe';
 import { checkOrder, describeWarning } from '../checks/describe';

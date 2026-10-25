@@ -1,6 +1,6 @@
 // Snapping priority: node > vertex > wall end > grid. Tolerance is in screen pixels.
-import { distance } from '@/domain/geometry';
-import type { Point } from '@/domain/types';
+import { distance } from '@epd/domain/geometry';
+import type { Point } from '@epd/domain/types';
 
 export type SnapKind = 'node' | 'vertex' | 'wall' | 'grid' | 'none';
 

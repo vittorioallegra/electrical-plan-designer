@@ -1,6 +1,6 @@
 // Hit testing in world coordinates, so selection and Tab cycling do not depend on Konva.
-import { distance, projectOnPolyline } from '@/domain/geometry';
-import type { Point, ProjectDoc } from '@/domain/types';
+import { distance, projectOnPolyline } from '@epd/domain/geometry';
+import type { Point, ProjectDoc } from '@epd/domain/types';
 
 export type HitKind = 'node' | 'segment' | 'wall';
 

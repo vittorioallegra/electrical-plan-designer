@@ -2,7 +2,7 @@ import { Download, Redo2, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useNavigate } from 'react-router';
-import { loadDoc } from '@/domain/load';
+import { loadDoc } from '@epd/domain/load';
 import { useEditor, useEditorContext, useEditorServices } from '@/state/EditorContext';
 import type { DrawerTab } from '@/state/editorStore';
 import type { UnsavedCopy } from '@/state/unsavedStore';

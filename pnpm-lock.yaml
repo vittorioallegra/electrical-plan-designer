@@ -166,6 +166,9 @@ importers:
 
   .:
     devDependencies:
+      '@epd/domain':
+        specifier: workspace:*
+        version: link:packages/domain
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))
@@ -205,6 +208,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@epd/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@radix-ui/react-dialog':
         specifier: ^1.3.1
         version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -238,9 +244,6 @@ importers:
       lucide-react:
         specifier: ^1.61.0
         version: 1.61.0(@types/react@19.3.0)(react@19.3.1)
-      nanoid:
-        specifier: ^6.0.2
-        version: 6.0.2
       pdfjs-dist:
         specifier: ^6.4.299
         version: 6.4.299
@@ -305,6 +308,19 @@ importers:
       vite:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@26.6.5)(jiti@2.7.0)
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@26.6.5)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0))
+
+  packages/domain:
+    dependencies:
+      nanoid:
+        specifier: ^6.0.2
+        version: 6.0.2
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
       vitest:
         specifier: ^5.0.5
         version: 5.0.5(@types/node@26.6.5)(jsdom@30.1.3(@noble/hashes@1.8.0))(vite@8.3.5(@types/node@26.6.5)(jiti@2.7.0))

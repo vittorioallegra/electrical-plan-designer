@@ -1,5 +1,5 @@
 // Click-to-select: brings the element a warning points at into view.
-import type { ElementRef } from '@/domain/checks';
+import type { ElementRef } from '@epd/domain/checks';
 import type { EditorStore } from '@/state/editorStore';
 
 export type FocusTarget = 'plan' | 'panel';

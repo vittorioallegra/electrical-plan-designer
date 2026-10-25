@@ -13,7 +13,7 @@
     "dev:mem": "pnpm --filter @epd/web dev:mem",
     "build": "pnpm typecheck && pnpm --filter @epd/web build",
     "preview": "pnpm --filter @epd/web preview",
-    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p . && node node_modules/typescript7/bin/tsc --noEmit -p apps/web",
+    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p . && node node_modules/typescript7/bin/tsc --noEmit -p apps/web && node node_modules/typescript7/bin/tsc --noEmit -p packages/domain",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -29,6 +29,7 @@
     "db:types": "supabase gen types typescript --local > apps/web/src/data/database.types.ts && prettier --write apps/web/src/data/database.types.ts"
   },
   "devDependencies": {
+    "@epd/domain": "workspace:*",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
     "eslint": "^10.13.0",

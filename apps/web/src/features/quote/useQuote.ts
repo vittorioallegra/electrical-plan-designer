@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { computeQuote, type PriceContext, type QuoteResult } from '@/domain/quote';
+import { computeQuote, type PriceContext, type QuoteResult } from '@epd/domain/quote';
 import { useEditor } from '@/state/EditorContext';
 import type { Locale } from '@/ui/format';
 import { describeBomLine } from '../bom/describe';

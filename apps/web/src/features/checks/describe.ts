@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
-import type { CheckId, Warning } from '@/domain/checks';
-import type { ProjectDoc } from '@/domain/types';
+import type { CheckId, Warning } from '@epd/domain/checks';
+import type { ProjectDoc } from '@epd/domain/types';
 import { formatNumber, type Locale } from '@/ui/format';
 
 /** Display order of the warning groups: electrical safety first, data quality last. */

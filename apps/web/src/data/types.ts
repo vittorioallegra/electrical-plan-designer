@@ -1,12 +1,12 @@
 // Repository interfaces: the app's only view of persistence.
-import type { CatalogItem } from '@/domain/catalog/types';
+import type { CatalogItem } from '@epd/domain/catalog/types';
 import type {
   BoxPreset,
   PriceOverrides,
   ProjectMeta,
   ProjectQuote,
   ProjectSettings,
-} from '@/domain/types';
+} from '@epd/domain/types';
 
 export interface Session {
   userId: string;

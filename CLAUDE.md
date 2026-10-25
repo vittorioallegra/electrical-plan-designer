@@ -18,7 +18,7 @@ missing), pnpm 12.
 - `pnpm test` — unit + component tests (Vitest, jsdom). Quiet, failures only:
   `pnpm exec vitest run --reporter=dot --silent`
 - Single test file (from the repo root):
-  `pnpm exec vitest run apps/web/src/domain/lengths.test.ts --reporter=dot`;
+  `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot`;
   single test by name: add `-t "riser"`
 - `pnpm test:db` — integration tests against local Supabase (`apps/web/src/**/*.db.test.ts`)
 - `pnpm test:e2e` — Playwright (`apps/web/e2e`, own Vite server on :5174 in `e2e` mode);
@@ -38,12 +38,14 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 ## Layout
 
 pnpm workspace: root scripts proxy to the app with `pnpm --filter @epd/web …`; one root ESLint
-config, root `vitest.config.ts` (`test.projects`: web, scripts), `tsconfig.base.json` shared.
+config, root `vitest.config.ts` (`test.projects`: web, domain, scripts), `tsconfig.base.json` shared.
 `.env*` files stay at the root (Vite `envDir`). The app lives in `apps/web/` (package
 `@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`, `tests/setup.ts`).
 Paths below under `src/` are `apps/web/src/`.
 
-- `src/domain/` — pure TypeScript: model, defaults, geometry, lengths, routing, BOM, checks, quote, built-in catalog
+- `packages/domain/` — `@epd/domain`, pure TypeScript (model, defaults, geometry, lengths, routing,
+  BOM, checks, quote, built-in catalog); source-only, imported as `@epd/domain/<module>` (no barrel);
+  its tests run in the `node` environment
 - `src/data/` — repository interfaces + Supabase and in-memory implementations (only place that talks to Supabase)
 - `src/state/` — editor store (zustand + immer patches), undo/redo, autosave
 - `src/features/` — UI by feature (shell, auth, projects, editor, panel, circuits, catalog, bom,
@@ -63,7 +65,7 @@ Paths below under `src/` are `apps/web/src/`.
   (`t('...')`); ESLint `i18next/no-literal-string` enforces it in `src/features`, `src/ui`.
   Every key must exist in both `en.json` and `it.json` (test enforces).
 - Dependency rule: `features → state → domain`, `features/state → data → domain`,
-  `features → ui`. `src/domain` imports nothing from the app (ESLint enforced).
+  `features → ui`. `@epd/domain` imports nothing from the app (ESLint enforced).
 - Import alias `@/` = `src/`. Components get persistence only via `useRepositories()`
   (`src/data/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
   (real routes + in-memory repositories, seeded like `supabase/seed.sql`).

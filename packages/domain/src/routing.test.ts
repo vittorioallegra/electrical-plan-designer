@@ -201,8 +201,7 @@ describe('manual routing', () => {
 describe('risers in routing', () => {
   // protects=AC 10 riser conductors; fails_when=a circuit to the upper floor skips the riser; no_claim=—
   it('routes through a riser to the upper floor', async () => {
-    const demo = (await import('../../../../tests/fixtures/demo-project.json'))
-      .default as ProjectDoc;
+    const demo = (await import('../../../tests/fixtures/demo-project.json')).default as ProjectDoc;
     const result = routeDoc(demo, settings);
     expect(okSegments(result.circuitRoutes.get('c3'))).toEqual(['s05', 's06', 's07', 's08']);
     expect(result.occupancy.get('s06')).toHaveLength(3);

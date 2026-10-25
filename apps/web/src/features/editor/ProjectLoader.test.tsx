@@ -1,9 +1,9 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type * as Load from '@/domain/load';
+import type * as Load from '@epd/domain/load';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
-vi.mock('@/domain/load', async (importOriginal) => ({
+vi.mock('@epd/domain/load', async (importOriginal) => ({
   ...(await importOriginal<typeof Load>()),
   loadDoc: () => {
     throw new TypeError('unexpected');

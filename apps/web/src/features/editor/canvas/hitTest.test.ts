@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import demo from '../../../../../../tests/fixtures/demo-project.json';
-import type { ProjectDoc } from '@/domain/types';
+import type { ProjectDoc } from '@epd/domain/types';
 import { boxSelect, hitTest } from './hitTest';
 
 const doc = demo as ProjectDoc;

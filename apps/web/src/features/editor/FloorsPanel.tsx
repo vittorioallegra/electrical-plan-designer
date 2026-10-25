@@ -1,9 +1,9 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { newFloor } from '@/domain/defaults';
-import { cascadeOf, deleteFloor, moveFloor } from '@/domain/edits';
-import { newId } from '@/domain/ids';
+import { newFloor } from '@epd/domain/defaults';
+import { cascadeOf, deleteFloor, moveFloor } from '@epd/domain/edits';
+import { newId } from '@epd/domain/ids';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { Dialog } from '@/ui/Dialog';

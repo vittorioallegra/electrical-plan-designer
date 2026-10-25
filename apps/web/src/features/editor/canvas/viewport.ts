@@ -1,5 +1,5 @@
 // Screen ↔ world transform of the plan canvas. World units are meters; `scale` is px per meter.
-import type { Point } from '@/domain/types';
+import type { Point } from '@epd/domain/types';
 
 export interface View {
   scale: number;

@@ -1,8 +1,8 @@
 // Quote PDF: business header, client, numbered lines, labor and totals.
 import type { TFunction } from 'i18next';
 import type { Profile } from '@/data/types';
-import { formatQuoteNumber, laborAmounts } from '@/domain/quote';
-import type { IssuedQuote, ProjectMeta } from '@/domain/types';
+import { formatQuoteNumber, laborAmounts } from '@epd/domain/quote';
+import type { IssuedQuote, ProjectMeta } from '@epd/domain/types';
 import { formatMoney, formatNumber, type Locale } from '@/ui/format';
 import { CONTENT_WIDTH, PAGE, PdfWriter, type ImageData } from './pdfKit';
 import type { QuoteDocument } from './quoteCsv';

@@ -1,9 +1,9 @@
 import { ArrowDown, ArrowUp, Link2Off, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { linkRiser, unlinkRiser } from '@/domain/edits';
-import { newId } from '@/domain/ids';
-import { createLengthContext } from '@/domain/lengths';
-import type { Mounting, PlanNode } from '@/domain/types';
+import { linkRiser, unlinkRiser } from '@epd/domain/edits';
+import { newId } from '@epd/domain/ids';
+import { createLengthContext } from '@epd/domain/lengths';
+import type { Mounting, PlanNode } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { formatLength } from '@/ui/format';

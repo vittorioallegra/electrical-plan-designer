@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { connectivityCheckIds, type Warning } from '@/domain/checks';
+import { connectivityCheckIds, type Warning } from '@epd/domain/checks';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { useAnalysis } from '../bom/useAnalysis';
 import { checkOrder, describeWarning } from './describe';

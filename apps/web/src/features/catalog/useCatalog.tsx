@@ -9,9 +9,9 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
-import { builtinCatalog } from '@/domain/catalog/builtin';
-import { createCatalogLookup, type CatalogLookup } from '@/domain/catalog/lookup';
-import type { CatalogCategory, CatalogItem } from '@/domain/catalog/types';
+import { builtinCatalog } from '@epd/domain/catalog/builtin';
+import { createCatalogLookup, type CatalogLookup } from '@epd/domain/catalog/lookup';
+import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
 import type { Profile, ProfilePatch } from '@/data/types';
 
 interface CatalogState {

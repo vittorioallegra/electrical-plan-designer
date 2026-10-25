@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
-import { reconcilePurchases, type BomLine, type PurchaseLineStatus } from '@/domain/bom';
+import { reconcilePurchases, type BomLine, type PurchaseLineStatus } from '@epd/domain/bom';
 import { useToast } from '@/ui/Toast';
 
 export interface Purchases {

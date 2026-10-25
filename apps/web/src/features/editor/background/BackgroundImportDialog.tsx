@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
-import { newId } from '@/domain/ids';
-import type { Background } from '@/domain/types';
+import { newId } from '@epd/domain/ids';
+import type { Background } from '@epd/domain/types';
 import { useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { Dialog } from '@/ui/Dialog';

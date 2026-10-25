@@ -3,7 +3,7 @@
 import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch } from 'immer';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { SaveErrorCode } from '@/data/types';
-import { docIntegrityIssues } from '@/domain/schema';
+import { docIntegrityIssues } from '@epd/domain/schema';
 import type {
   IssuedQuote,
   Point,
@@ -11,7 +11,7 @@ import type {
   ProjectMeta,
   ProjectQuote,
   ProjectSettings,
-} from '@/domain/types';
+} from '@epd/domain/types';
 
 enablePatches();
 

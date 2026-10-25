@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { loadDoc } from '@/domain/load';
+import { loadDoc } from '@epd/domain/load';
 import { renderApp } from '@/testing/renderApp';
 
 describe('projects page', () => {

@@ -2,7 +2,7 @@ import { Archive, ArchiveRestore, Copy, Pencil } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
-import type { CatalogCategory, CatalogItem } from '@/domain/catalog/types';
+import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
 import { Button } from '@/ui/Button';
 import { formatMoney } from '@/ui/format';
 import { NumberInput } from '@/ui/NumberInput';

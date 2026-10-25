@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import demo from '../../../../tests/fixtures/demo-project.json';
+import demo from '../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings } from './defaults';
 import {
   backgroundToWorld,

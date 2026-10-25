@@ -37,7 +37,7 @@ export default defineConfig(
   },
   {
     // The domain is pure: no React, no Supabase, no app layers.
-    files: ['apps/web/src/domain/**/*.ts'],
+    files: ['packages/domain/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -45,22 +45,12 @@ export default defineConfig(
           patterns: [
             {
               group: ['react', 'react-*', 'react/*'],
-              message: 'src/domain must not import React.',
+              message: '@epd/domain must not import React.',
             },
-            { group: ['@supabase/*'], message: 'src/domain must not import Supabase.' },
+            { group: ['@supabase/*'], message: '@epd/domain must not import Supabase.' },
             {
-              group: [
-                '@/data/*',
-                '@/state/*',
-                '@/features/*',
-                '@/ui/*',
-                '@/i18n/*',
-                '../data/*',
-                '../state/*',
-                '../features/*',
-                '../ui/*',
-              ],
-              message: 'src/domain must not import app layers.',
+              group: ['@/*', '@epd/web', '@epd/web/*', '**/apps/**'],
+              message: '@epd/domain must not import app layers.',
             },
           ],
         },

@@ -2,8 +2,8 @@
 import demo from '../../../../tests/fixtures/demo-project.json';
 import { createMemoryRepositories } from '@/data/memory';
 import { DEV_LOGIN, seedMemory } from '@/data/memorySeed';
-import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
-import type { ProjectDoc } from '@/domain/types';
+import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
+import type { ProjectDoc } from '@epd/domain/types';
 import { createEditorStore } from './editorStore';
 
 export const DEMO_ID = '00000000-0000-4000-8000-0000000000aa';

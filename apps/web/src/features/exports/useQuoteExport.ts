@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/data';
-import { formatQuoteNumber } from '@/domain/quote';
-import type { IssuedQuote } from '@/domain/types';
+import { formatQuoteNumber } from '@epd/domain/quote';
+import type { IssuedQuote } from '@epd/domain/types';
 import { useEditor } from '@/state/EditorContext';
 import { downloadBlob, fileSafe } from '@/ui/download';
 import type { Locale } from '@/ui/format';

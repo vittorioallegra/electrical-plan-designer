@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { bomCategoryOrder, type BomLine } from '@/domain/bom';
+import { bomCategoryOrder, type BomLine } from '@epd/domain/bom';
 import { useEditor } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { cn } from '@/ui/cn';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Point } from '@/domain/types';
+import type { Point } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
 import { Dialog } from '@/ui/Dialog';

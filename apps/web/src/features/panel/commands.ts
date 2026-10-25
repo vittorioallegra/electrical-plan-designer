@@ -1,9 +1,9 @@
 // Panel designer commands (v1 edits the first panel of the doc).
-import type { CatalogLookup } from '@/domain/catalog/lookup';
-import type { CatalogItem } from '@/domain/catalog/types';
-import { newId } from '@/domain/ids';
-import { deviceWidth, firstFreeSlot } from '@/domain/panel';
-import type { Panel, PanelDevice } from '@/domain/types';
+import type { CatalogLookup } from '@epd/domain/catalog/lookup';
+import type { CatalogItem } from '@epd/domain/catalog/types';
+import { newId } from '@epd/domain/ids';
+import { deviceWidth, firstFreeSlot } from '@epd/domain/panel';
+import type { Panel, PanelDevice } from '@epd/domain/types';
 import type { EditorStore } from '@/state/editorStore';
 
 export function defaultDeviceLabel(item: CatalogItem | undefined): string {

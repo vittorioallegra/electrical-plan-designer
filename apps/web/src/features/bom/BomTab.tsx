@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { bomCategoryOrder, type BomLine, type PurchaseLineStatus } from '@/domain/bom';
+import { bomCategoryOrder, type BomLine, type PurchaseLineStatus } from '@epd/domain/bom';
 import { useEditor } from '@/state/EditorContext';
 import { formatNumber } from '@/ui/format';
 import { useCatalog } from '../catalog/useCatalog';

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { ProjectSettings } from '@/domain/types';
+import type { ProjectSettings } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { NumberInput } from '@/ui/NumberInput';
 

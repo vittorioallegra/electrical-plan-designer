@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { computeBom, type BomLine } from '@/domain/bom';
-import { runChecks, type Warning } from '@/domain/checks';
-import { routeDoc, type RoutingResult } from '@/domain/routing';
+import { computeBom, type BomLine } from '@epd/domain/bom';
+import { runChecks, type Warning } from '@epd/domain/checks';
+import { routeDoc, type RoutingResult } from '@epd/domain/routing';
 import { useEditor } from '@/state/EditorContext';
 import { useCatalog } from '../catalog/useCatalog';
 

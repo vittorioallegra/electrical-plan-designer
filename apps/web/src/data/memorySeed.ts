@@ -1,6 +1,6 @@
 // Seeds the in-memory backend like supabase/seed.sql: dev user + demo project.
 import demo from '../../../../tests/fixtures/demo-project.json';
-import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
+import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
 import { emptyProfile, type MemoryControl } from './memory';
 
 export const DEV_LOGIN = { email: 'dev@example.test', password: 'devpassword' };

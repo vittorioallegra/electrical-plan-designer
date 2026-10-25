@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cableColorSchema } from '@/domain/schema';
+import { cableColorSchema } from '@epd/domain/schema';
 import type {
   CatalogAttributes,
   CatalogCategory,
   CatalogItem,
   DeviceType,
   PanelDeviceType,
-} from '@/domain/catalog/types';
+} from '@epd/domain/catalog/types';
 import type { NewCatalogItem } from '@/data/types';
 import { Button } from '@/ui/Button';
 import { Dialog } from '@/ui/Dialog';

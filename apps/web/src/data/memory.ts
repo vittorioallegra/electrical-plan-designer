@@ -1,7 +1,7 @@
 // In-memory repositories: unit/component tests and Docker-less dev (`pnpm dev:mem`).
-import type { CatalogItem } from '@/domain/catalog/types';
-import { newId } from '@/domain/ids';
-import type { ProjectMeta, ProjectQuote, ProjectSettings } from '@/domain/types';
+import type { CatalogItem } from '@epd/domain/catalog/types';
+import { newId } from '@epd/domain/ids';
+import type { ProjectMeta, ProjectQuote, ProjectSettings } from '@epd/domain/types';
 import {
   AuthError,
   SaveError,

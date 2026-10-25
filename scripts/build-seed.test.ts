@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
+import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
 import demo from '../tests/fixtures/demo-project.json';
 // @ts-expect-error plain JS module without types
 import { buildSeed, seedQuote, seedSettings } from './build-seed.mjs';

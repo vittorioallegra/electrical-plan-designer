@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { builtinCatalog } from '@/domain/catalog/builtin';
+import { builtinCatalog } from '@epd/domain/catalog/builtin';
 import { createI18n } from '.';
 
 describe('built-in catalog names', () => {

@@ -1,4 +1,4 @@
-import type { CableColor } from '@/domain/types';
+import type { CableColor } from '@epd/domain/types';
 
 /** Swatch colors for conductor insulation. Always shown with role + color name too. */
 export const cableSwatch: Record<CableColor, string> = {

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { CableColor } from '@/domain/types';
+import type { CableColor } from '@epd/domain/types';
 import { cableSwatch } from '@/ui/colors';
 
 /** Swatch + role + color name (never color alone: color-blind safe). */

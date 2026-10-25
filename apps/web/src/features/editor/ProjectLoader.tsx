@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { useRepositories } from '@/data';
-import { DocLoadError, loadDoc } from '@/domain/load';
+import { DocLoadError, loadDoc } from '@epd/domain/load';
 import { startAutosave, type Autosave } from '@/state/autosave';
 import { EditorProvider, useEditorServices } from '@/state/EditorContext';
 import { createEditorStore, type EditorStore } from '@/state/editorStore';

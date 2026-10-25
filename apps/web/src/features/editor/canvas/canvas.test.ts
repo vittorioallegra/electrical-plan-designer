@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { backgroundToWorld, worldToBackground } from '@/domain/geometry';
-import type { Background } from '@/domain/types';
+import { backgroundToWorld, worldToBackground } from '@epd/domain/geometry';
+import type { Background } from '@epd/domain/types';
 import { snapPoint } from './snapping';
 import { centerOn, fitView, gridStep, screenToWorld, worldToScreen, zoomAt } from './viewport';
 
