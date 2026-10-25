@@ -12,7 +12,7 @@ import {
   Stage,
   Text,
 } from 'react-konva';
-import { metersPerPixel, worldToBackground } from '@/domain/geometry';
+import { backgroundMetersPerPixel, UNCALIBRATED_MPP, worldToBackground } from '@/domain/geometry';
 import { createLengthContext } from '@/domain/lengths';
 import { newId } from '@/domain/ids';
 import type { Floor, PlanNode, Point, RunElevation } from '@/domain/types';
@@ -28,8 +28,6 @@ import { snapPoint, type SnapResult } from './snapping';
 import { useBackgroundImage } from './useBackgroundImage';
 import { centerOn, gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
 
-/** Meters per background pixel before calibration (1 px = 1 cm). */
-export const UNCALIBRATED_MPP = 0.01;
 export const DEFAULT_WALL_THICKNESS = 0.2;
 /** Below this zoom (px per meter) length labels are hidden; node labels below half of it. */
 export const LABEL_MIN_SCALE = 30;
@@ -456,11 +454,7 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
   }
 
   const bg = floor?.background;
-  const mpp = bg
-    ? bg.calibration
-      ? (metersPerPixel(bg.calibration) ?? UNCALIBRATED_MPP)
-      : UNCALIBRATED_MPP
-    : 1;
+  const mpp = bg ? backgroundMetersPerPixel(bg) : 1;
   const step = gridStep(view.scale);
   const visible = {
     minX: -view.x / view.scale,

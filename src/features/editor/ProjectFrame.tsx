@@ -16,6 +16,7 @@ import { useToast } from '@/ui/Toast';
 import { LanguageSwitch } from '../shell/LanguageSwitch';
 import { BomTab } from '../bom/BomTab';
 import { WarningsBadge, WarningsTab } from '../checks/WarningsTab';
+import { useProjectPdfExport } from '../exports/useProjectPdfExport';
 import { CircuitsTab } from '../circuits/CircuitsTab';
 import { ProgressStrip } from './ProgressStrip';
 import { SaveStatus } from './SaveStatus';
@@ -63,6 +64,19 @@ export function ProjectFrame({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [store]);
+
+  const projectPdf = useProjectPdfExport();
+  const [exporting, setExporting] = useState(false);
+  async function exportPdf() {
+    setExporting(true);
+    try {
+      await projectPdf();
+    } catch {
+      toast(t('editor.exportPdfFailed'), 'error');
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const exportJson = () =>
     downloadJson(store.getState().data.doc, `${fileSafe(store.getState().meta.name)}.json`);
@@ -132,6 +146,12 @@ export function ProjectFrame({
             </Button>
           }
           items={[
+            {
+              key: 'pdf',
+              label: t('editor.exportPdf'),
+              disabled: exporting,
+              onSelect: () => void exportPdf(),
+            },
             { key: 'json', label: t('editor.exportJson'), onSelect: exportJson },
             {
               key: 'import',

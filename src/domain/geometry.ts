@@ -32,6 +32,14 @@ export function metersPerPixel(calibration: Calibration): number | null {
   return calibration.realDistance / px;
 }
 
+/** Uncalibrated backgrounds show at 1 px = 1 cm. */
+export const UNCALIBRATED_MPP = 0.01;
+
+/** Meters per background pixel: the calibration, or 1 px = 1 cm until calibrated. */
+export function backgroundMetersPerPixel(background: Background): number {
+  return (background.calibration && metersPerPixel(background.calibration)) ?? UNCALIBRATED_MPP;
+}
+
 /**
  * Background pixel → world meters: scale by the calibration, rotate (degrees) around the
  * image origin, then translate by the offset (meters). Plan elements stay in meters, so a

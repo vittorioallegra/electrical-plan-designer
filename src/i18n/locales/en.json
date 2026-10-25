@@ -103,7 +103,9 @@
       "body": "This removes {{nodes}} elements and {{segments}} conduit segments.",
       "circuits": "These circuits lose targets or their manual route:",
       "done": "Deleted. Undo brings it back."
-    }
+    },
+    "exportPdf": "Project PDF",
+    "exportPdfFailed": "Could not create the project PDF. Try again."
   },
   "catalog": {
     "builtin": {
@@ -672,6 +674,21 @@
     "client": "Client: {{name}}",
     "siteAddress": "Site: {{address}}",
     "project": "Project: {{name}}",
-    "adjustment": "Markup / discount {{percent}}%"
+    "adjustment": "Markup / discount {{percent}}%",
+    "summary": "{{floors}} floors · {{circuits}} circuits · {{segments}} conduit segments · {{warnings}} open warnings",
+    "panelTitle": "Panel {{label}}",
+    "enclosure": "Enclosure: {{name}}",
+    "circuitsTitle": "Circuits",
+    "route": "Route",
+    "segmentsTitle": "Conduit segments",
+    "ends": "From – to",
+    "floor": "Floor",
+    "conduit": "Conduit",
+    "length": "Length",
+    "riser": "Riser",
+    "bomTitle": "Bill of materials",
+    "warningsTitle": "Open warnings",
+    "floorTitle": "Floor plan: {{name}}",
+    "emptyFloor": "Nothing drawn on this floor yet."
   }
 }

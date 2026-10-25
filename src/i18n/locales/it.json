@@ -103,7 +103,9 @@
       "body": "Vengono rimossi {{nodes}} elementi e {{segments}} tratti di tubo.",
       "circuits": "Questi circuiti perdono destinazioni o il percorso manuale:",
       "done": "Eliminato. Annulla lo ripristina."
-    }
+    },
+    "exportPdf": "PDF del progetto",
+    "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova."
   },
   "catalog": {
     "builtin": {
@@ -672,6 +674,21 @@
     "client": "Cliente: {{name}}",
     "siteAddress": "Cantiere: {{address}}",
     "project": "Progetto: {{name}}",
-    "adjustment": "Ricarico / sconto {{percent}}%"
+    "adjustment": "Ricarico / sconto {{percent}}%",
+    "summary": "{{floors}} piani · {{circuits}} circuiti · {{segments}} tratti di tubo · {{warnings}} avvisi aperti",
+    "panelTitle": "Quadro {{label}}",
+    "enclosure": "Centralino: {{name}}",
+    "circuitsTitle": "Circuiti",
+    "route": "Percorso",
+    "segmentsTitle": "Tratti di tubo",
+    "ends": "Da – a",
+    "floor": "Piano",
+    "conduit": "Tubo",
+    "length": "Lunghezza",
+    "riser": "Montante",
+    "bomTitle": "Distinta materiali",
+    "warningsTitle": "Avvisi aperti",
+    "floorTitle": "Pianta: {{name}}",
+    "emptyFloor": "Niente disegnato su questo piano."
   }
 }

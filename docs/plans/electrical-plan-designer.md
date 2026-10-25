@@ -381,9 +381,10 @@ Approved: yes (2026-10-25)
 - [x] 19. Checks panel, full BOM, dogfood checkpoint (checkpoint deferred, see Open questions) — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
   `feat: add BOM category totals and the progress strip`,
   `test: add first-project E2E following the progress strip`
-- [ ] 20. Exports and quote — `feat: add quote page with labor lines, inline prices and issued quotes`,
+- [x] 20. Exports and quote — `feat: add quote page with labor lines, inline prices and issued quotes`,
   `feat: add quote CSV export for live and issued quotes`,
-  `feat: add quote PDF with business header and logo`
+  `feat: add quote PDF with business header and logo`,
+  `feat: add project PDF export with floor plans, panel, tables and warnings`
 - [ ] 21. Mobile light view and purchase checklist
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
 
@@ -440,6 +441,9 @@ Approved: yes (2026-10-25)
   quote page are saved as account price overrides keyed by the BOM line key.
 - PDFs use jsPDF's built-in Helvetica: its WinAnsi encoding covers €, ², Ø and Italian
   accented letters (checked by extracting the text with pdfjs), so no font is embedded.
+- PDF text must stay inside WinAnsi (no "→"): other characters make jsPDF re-encode the string
+  and space out the letters. The project PDF is drawn as vectors from the doc (backgrounds via
+  `addImage` with `rotatedImageBox`), never from the Konva canvas.
 - `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
   list, box presets) once per session; built-in prices are set from the catalog page as account
   price overrides.
@@ -449,8 +453,9 @@ Approved: yes (2026-10-25)
   the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 20, remaining: project PDF (floors with background,
-panel, circuits, segments, BOM, warnings), export menu entries, PDF smoke tests.
+Step 21: mobile light view (< 768 px): project list, BOM checklist backed by `purchase_marks`
+(purchased quantity, shortfall, "show remaining", optimistic toggle with rollback toast),
+read-only plan with floor switcher; E2E at 375 px (AC 14).
 
 ## Review record
 
