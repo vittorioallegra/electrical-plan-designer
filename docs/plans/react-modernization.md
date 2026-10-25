@@ -280,7 +280,7 @@ Approved: yes (2026-10-25)
 ### Steps
 - [x] 1. Docs: spec and plan — `docs: add react modernization spec and plan`
 - [x] 2. React 19 + react-konva 19 — `feat: upgrade to React 19.3 and react-konva 19`
-- [ ] 3. React Router 8
+- [x] 3. React Router 8 — `feat: upgrade to React Router 8`
 - [ ] 4. ESLint 10
 - [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
 - [ ] 6. pnpm workspace, app in apps/web
@@ -328,9 +328,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 3: React Router 8. On 7.x enable `future.v8_middleware` and fix warnings, then bump to 8;
-`RouterProvider` from `react-router/dom` in `main.tsx` and `src/testing/renderApp.tsx`; run
-typecheck, lint, Vitest, Playwright, then commit.
+Step 4: ESLint 10 + @eslint/js 10; `defineConfig` from `eslint/config` in `eslint.config.js`; fix
+new recommended rules (`preserve-caught-error` in `importFile.ts` etc.); confirm
+`i18next/no-literal-string` still reports; run lint, typecheck, Vitest, then commit.
 
 ## Review record
 

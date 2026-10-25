@@ -1,6 +1,7 @@
 // Test helper: renders the real routes with in-memory repositories.
 import { render } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { routes } from '@/App';
 import { AppProviders } from '@/AppProviders';
 import { createMemoryRepositories } from '@/data/memory';
