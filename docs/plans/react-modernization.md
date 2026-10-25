@@ -281,7 +281,7 @@ Approved: yes (2026-10-25)
 - [x] 1. Docs: spec and plan — `docs: add react modernization spec and plan`
 - [x] 2. React 19 + react-konva 19 — `feat: upgrade to React 19.3 and react-konva 19`
 - [x] 3. React Router 8 — `feat: upgrade to React Router 8`
-- [ ] 4. ESLint 10
+- [x] 4. ESLint 10 — `chore: upgrade to ESLint 10`
 - [ ] 5. TypeScript 6 → 7, exactOptionalPropertyTypes
 - [ ] 6. pnpm workspace, app in apps/web
 - [ ] 7. packages/domain (@epd/domain)
@@ -315,6 +315,9 @@ Approved: yes (2026-10-25)
 - `.env*` files stay at the repo root (`envDir`), so `env-local`/`check-env` do not change.
 - One root ESLint config and one root Vitest config (`test.projects`) for the workspace.
 - Import boundaries: `import-x/no-restricted-paths` + `eslint-import-resolver-typescript`.
+- ESLint 10: the new recommended rules (`preserve-caught-error`, `no-useless-assignment`,
+  `no-unassigned-vars`) are active and report nothing on the current code; `i18next/no-literal-string`
+  still reports (checked with a probe file).
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -328,9 +331,9 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 4: ESLint 10 + @eslint/js 10; `defineConfig` from `eslint/config` in `eslint.config.js`; fix
-new recommended rules (`preserve-caught-error` in `importFile.ts` etc.); confirm
-`i18next/no-literal-string` still reports; run lint, typecheck, Vitest, then commit.
+Step 5a: `typescript@6.0`; fix whatever `tsc` 6 reports as deprecated (expected `baseUrl`,
+relative `paths`); then 5b (TS 7 alias for typecheck) and 5c (`exactOptionalPropertyTypes`),
+one commit each.
 
 ## Review record
 
