@@ -364,7 +364,7 @@ Approved: yes (2026-10-25)
 - [x] 3. UI foundations (tokens, components, symbols, number input) — `feat: add UI foundations (tokens, components, symbols, number input)`
 - [x] 4. Domain model, defaults, schema, built-in catalog, fixture — `feat: add domain model, schema, defaults and built-in catalog`
 - [x] 5. Domain geometry and lengths — `feat: add domain geometry and segment lengths`
-- [ ] 6. Domain routing and occupancy
+- [x] 6. Domain routing and occupancy — `feat: add conduit routing, manual route validation and occupancy`
 - [ ] 7. Domain BOM
 - [ ] 8. Domain checks and conduit fill
 - [ ] 9. Domain quote math
@@ -417,8 +417,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 6: domain routing (`src/domain/routing.ts`): graph, Dijkstra with id tie-break, tree
-union per circuit, manual tree validation, extra runs, `occupancy(doc)`, split-segment rewrite.
+Step 7: domain BOM (`src/domain/bom.ts`): cable per (section, color), conduit per item,
+boxes/contents/panel, stable line keys, missing items, purchase status from purchased qty.
 
 ## Review record
 
