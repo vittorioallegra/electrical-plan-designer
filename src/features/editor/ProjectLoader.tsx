@@ -80,7 +80,11 @@ export function ProjectLoader() {
         autosave,
         restore: !loaded.readOnly && shouldOfferRestore(copy, record.meta.version) ? copy! : null,
       });
-    })();
+    })().catch((e: unknown) => {
+      // An unexpected error (not a DocLoadError) must not leave the page on "Loading".
+      console.error(e);
+      if (active) setState({ status: 'failed' });
+    });
     return () => {
       active = false;
       cleanup?.();

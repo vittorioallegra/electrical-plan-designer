@@ -400,6 +400,7 @@ Approved: yes (2026-10-25)
   - JSON import accepted a doc from a newer schema version, stripped its unknown fields and autosaved it over the project, bypassing the read-only guard used on load — `fix: reject JSON imports written by a newer app version`
 - follow-ups (review's non-blocking findings, user, 2026-10-25):
   - A failed load of purchase marks showed every line as not bought — `fix: show an error with retry when purchase marks fail to load`
+  - An unexpected (non-`DocLoadError`) error while opening a project left the page on "Loading" — `fix: show the load error when opening a project fails unexpectedly`
 
 ### Decisions
 - Users: professional electrician, single account, projects per client (spec Phase 1).
@@ -467,7 +468,7 @@ Approved: yes (2026-10-25)
 ### Open questions
 - Dogfood checkpoint (step 19) deferred by the user on 2026-10-25: draw one real floor, compare
   the BOM with the hand count, record the time taken and every difference here.
-- Non-blocking findings left open: non-`DocLoadError` failures leave `ProjectLoader` stuck on loading; `profiles` update policy
+- Non-blocking findings left open: `profiles` update policy
   lets a user rewrite their own `quote_counter`; minor UI polish (cut-off "Unpriced"
   placeholder, overlapping canvas labels, drawer tab bar scrolling away, progress strip on
   plans drawn without walls or background).
