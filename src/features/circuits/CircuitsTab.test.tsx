@@ -44,6 +44,19 @@ describe('circuits tab', () => {
     expect(screen.queryByTestId('pick-banner')).not.toBeInTheDocument();
   });
 
+  // protects=picking from another page; fails_when=starting to pick targets on the panel page leaves the plan hidden; no_claim=canvas hit testing (E2E)
+  it('opens the plan when target picking starts on another page', async () => {
+    const { router } = await renderApp(`/projects/${DEMO_PROJECT_ID}/panel`, {
+      exposeTestHandle: true,
+    });
+    await userEvent.click(await screen.findByRole('tab', { name: 'Circuits' }));
+    const tab = await screen.findByTestId('circuits-tab');
+    await userEvent.click(within(tab).getByRole('button', { name: /Sockets GF/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pick targets on the plan' }));
+    expect(router.state.location.pathname).toBe(`/projects/${DEMO_PROJECT_ID}/plan`);
+    expect(await screen.findByTestId('pick-banner')).toHaveTextContent('Sockets GF');
+  });
+
   // protects=manual routing status; fails_when=manual mode does not start from the auto route or a broken route is not flagged; no_claim=every route problem kind
   it('starts manual routing from the auto route and flags a broken one', async () => {
     const tab = await openCircuits();

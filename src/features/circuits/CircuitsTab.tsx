@@ -1,6 +1,7 @@
 import { Plus, Spline, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import type { RouteResult } from '@/domain/routing';
 import { cableColorSchema } from '@/domain/schema';
 import type { Circuit, ExtraConductorRun, Routing } from '@/domain/types';
@@ -26,6 +27,17 @@ import {
 
 const circuitTypes: Circuit['type'][] = ['lighting', 'sockets', 'dedicated', 'other'];
 const colors = cableColorSchema.options;
+
+/** Picking happens on the plan canvas: opens the plan when the drawer is used elsewhere. */
+function useShowPlan(): () => void {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { id = '' } = useParams();
+  return () => {
+    const plan = `/projects/${id}/plan`;
+    if (id && pathname !== plan) void navigate(plan);
+  };
+}
 
 function RouteStatus({ route }: { route: RouteResult | undefined }) {
   const { t } = useTranslation();
@@ -186,6 +198,7 @@ function RoutingControls({
       ? analysis.routing.circuitRoutes.get(owner.id)
       : analysis.routing.extraRunRoutes.get(owner.id);
   const pickingRoute = pick?.mode === 'route' && pick.owner.id === owner.id;
+  const showPlan = useShowPlan();
   return (
     <fieldset className="flex flex-col gap-1">
       <legend className="font-medium">{t('circuits.routing')}</legend>
@@ -210,13 +223,14 @@ function RoutingControls({
         <Button
           variant={pickingRoute ? 'primary' : 'secondary'}
           disabled={readOnly}
-          onClick={() =>
+          onClick={() => {
+            if (!pickingRoute) showPlan();
             store.getState().setUi({
               pick: pickingRoute ? null : { mode: 'route', owner },
               activeOwner: owner,
               tool: 'select',
-            })
-          }
+            });
+          }}
         >
           {pickingRoute ? t('circuits.doneEditingRoute') : t('circuits.editRoute')}
         </Button>
@@ -232,6 +246,7 @@ function CircuitEditor({ circuit }: { circuit: Circuit }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
+  const showPlan = useShowPlan();
   const readOnly = useEditor((s) => s.readOnly);
   const doc = useEditor((s) => s.data.doc);
   const pick = useEditor((s) => s.ui.pick);
@@ -385,13 +400,14 @@ function CircuitEditor({ circuit }: { circuit: Circuit }) {
         <Button
           variant={picking ? 'primary' : 'secondary'}
           disabled={readOnly}
-          onClick={() =>
+          onClick={() => {
+            if (!picking) showPlan();
             store.getState().setUi({
               pick: picking ? null : { mode: 'targets', owner },
               activeOwner: owner,
               tool: 'select',
-            })
-          }
+            });
+          }}
         >
           {picking ? t('circuits.donePicking') : t('circuits.pickTargets')}
         </Button>
