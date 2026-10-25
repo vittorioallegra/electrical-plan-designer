@@ -353,7 +353,7 @@ Every test carries a one-line card comment: `protects=...; fails_when=...; no_cl
 
 ## Progress
 
-Phase: verification
+Phase: done
 Branch: feat/electrical-plan-designer
 Spec: docs/specs/electrical-plan-designer.md
 Approved: yes (2026-10-25)
@@ -461,11 +461,20 @@ Approved: yes (2026-10-25)
 ### Open questions
 - Dogfood checkpoint (step 19) deferred by the user on 2026-10-25: draw one real floor, compare
   the BOM with the hand count, record the time taken and every difference here.
+- Fix `fa07b89` keeps inline quote price inputs for priced lines; should account price
+  overrides for cable colors get a proper home in the Catalog instead?
+- Locale files have no plural forms ("1 targets"); add i18next `_one`/`_other` keys?
+- Non-blocking findings left open: purchase-mark load errors are silent (`usePurchases.ts`);
+  non-`DocLoadError` failures leave `ProjectLoader` stuck on loading; `profiles` update policy
+  lets a user rewrite their own `quote_counter`; minor UI polish (cut-off "Unpriced"
+  placeholder, overlapping canvas labels, drawer tab bar scrolling away, progress strip on
+  plans drawn without walls or background).
+- Review ran a reduced `review` skill (no specialist subagents or adversarial pass).
 
 ### Next
-Phase 4: run the qa subagent against the spec (one commit per bug, each updating
-Verification), then the review subagent on the branch diff. Note: the repo has no `main`
-branch yet (history starts on `feat/electrical-plan-designer`).
+Verification done. Decide on publishing: the repo has no remote and no `main` branch
+(history starts on `feat/electrical-plan-designer`), so publishing means creating a GitHub
+repository first. Then the dogfood checkpoint and the open questions above.
 
 ## Review record
 
