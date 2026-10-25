@@ -376,7 +376,8 @@ Approved: yes (2026-10-25)
 - [x] 15. Catalog, box contents, presets — `feat: add catalog page, box contents editor and box presets`
 - [x] 16. Minimal BOM drawer tab — `feat: add live BOM drawer tab`
 - [x] 17. Panel designer — `feat: add panel designer with DIN rails, slots and upstream groups`
-- [x] 18. Circuits UI and routing — `feat: add circuits tab, target picking, manual routes and extra runs`
+- [x] 18. Circuits UI and routing — `feat: add circuits tab, target picking, manual routes and extra runs`,
+  `test: cover circuits tab creation, target picking, manual routes and occupancy`
 - [ ] 19. Checks panel, full BOM, dogfood checkpoint
 - [ ] 20. Exports and quote
 - [ ] 21. Mobile light view and purchase checklist
@@ -435,9 +436,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Add component tests for the circuits tab (create circuit, pick targets, manual route status,
-two-way helper, segment occupancy) — step 18 shipped without them. Then step 19: checks panel
-(Warnings tab, grouped, click-to-select, hide connectivity filter), full BOM, dogfood checkpoint.
+Step 19: checks panel (Warnings tab, grouped, click-to-select, hide connectivity filter), full
+BOM grouped with totals, first-project E2E, then the dogfood checkpoint (needs the user).
 
 ## Review record
 
