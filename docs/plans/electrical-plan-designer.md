@@ -391,6 +391,7 @@ Approved: yes (2026-10-25)
 ### Verification
 - qa: in progress
   - Catalog price of a built-in cable never priced the quote's cable lines — `fix: price cable lines from the built-in cable catalog price`
+  - Delete confirmation counted selected nodes as conduit segments (deleting one box with 2 segments said 3) — `fix: count nodes and segments separately in the delete confirmation`
 - review: pending
 
 ### Decisions

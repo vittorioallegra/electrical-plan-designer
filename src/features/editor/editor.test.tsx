@@ -1,9 +1,10 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import demo from '../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
 import type { ProjectDoc } from '@/domain/types';
+import type { EditorStore } from '@/state/editorStore';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
 const planPath = `/projects/${DEMO_PROJECT_ID}/plan`;
@@ -101,5 +102,19 @@ describe('project settings', () => {
     expect(input).toHaveValue('0,45');
     await userEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(input).toHaveValue('0,3');
+  });
+});
+
+describe('delete confirmation', () => {
+  // protects=delete dialog counts; fails_when=selected node ids are counted as conduit segments (or segment ids as elements); no_claim=canvas selection (E2E)
+  it('counts a selected node as an element and only its real segments', async () => {
+    await renderApp(planPath, { exposeTestHandle: true });
+    await screen.findByTestId('project-name');
+    const store = (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
+    act(() => store.getState().setUi({ selection: ['n_l1'] }));
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(
+      await screen.findByText('This removes 1 elements and 1 conduit segments.'),
+    ).toBeInTheDocument();
   });
 });

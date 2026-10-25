@@ -1,11 +1,13 @@
 // Editor commands for plan elements. Each one is a single undoable applyCommand.
 import { DEFAULT_CONDUIT_ID } from '@/domain/catalog/builtin';
 import {
+  cascadeOf,
   copyNodes,
   deleteElements,
   moveNodes,
   nextNodeLabel,
   pasteNodes,
+  type CascadeSummary,
   type Clipboard,
 } from '@/domain/edits';
 import { distance, projectOnPolyline } from '@/domain/geometry';
@@ -128,6 +130,19 @@ export function addConduitToNewJunction(
     });
   });
   return result.ok ? node.id : null;
+}
+
+/**
+ * What deleting a mixed selection would remove: segment ids count as segments, every other
+ * id (nodes, walls) as an element.
+ */
+export function cascadeOfSelection(doc: ProjectDoc, ids: string[]): CascadeSummary {
+  const segmentIds = new Set(doc.segments.map((x) => x.id));
+  return cascadeOf(
+    doc,
+    ids.filter((id) => !segmentIds.has(id)),
+    ids.filter((id) => segmentIds.has(id)),
+  );
 }
 
 /** Deletes plan elements of any kind (nodes, segments, walls) in one undoable step. */

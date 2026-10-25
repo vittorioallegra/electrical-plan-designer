@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cascadeOf } from '@/domain/edits';
 import type { Point } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
@@ -9,7 +8,7 @@ import { useToast } from '@/ui/Toast';
 import { BackgroundImportDialog } from './background/BackgroundImportDialog';
 import { CalibrationDialog } from './background/CalibrationDialog';
 import { PlanCanvas } from './canvas/PlanCanvas';
-import { copySelection, deleteIds, pasteClipboard } from './commands';
+import { cascadeOfSelection, copySelection, deleteIds, pasteClipboard } from './commands';
 import { FloorsPanel } from './FloorsPanel';
 import { Inspector } from './Inspector';
 import { ToolPalette, toolHintKey, toolShortcuts } from './ToolPalette';
@@ -51,7 +50,7 @@ export function PlanView() {
   /** Deletes at once, or asks first when the cascade reaches beyond the selection. */
   function requestDelete(ids: string[]) {
     if (readOnly || ids.length === 0) return;
-    const summary = cascadeOf(store.getState().data.doc, ids, ids);
+    const summary = cascadeOfSelection(store.getState().data.doc, ids);
     const extraSegments = summary.segmentIds.filter((id) => !ids.includes(id));
     if (
       extraSegments.length === 0 &&
@@ -85,7 +84,7 @@ export function PlanView() {
     return () => window.removeEventListener('keydown', onKey);
   }, [store, readOnly]);
 
-  const summary = pendingDelete ? cascadeOf(doc, pendingDelete, pendingDelete) : null;
+  const summary = pendingDelete ? cascadeOfSelection(doc, pendingDelete) : null;
   const circuitNames = summary
     ? doc.circuits.filter((c) => summary.circuitIds.includes(c.id)).map((c) => c.name)
     : [];
