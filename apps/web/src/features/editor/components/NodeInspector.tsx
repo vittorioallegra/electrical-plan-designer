@@ -8,7 +8,8 @@ import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { formatLength } from '@/lib/format';
 import { NumberInput } from '@/components/ui/NumberInput';
-import { useItemName, useItemsOf } from '@/features/catalog/hooks/useCatalog';
+import { useItemName } from '@/hooks/useItemName';
+import { useItemsOf } from '@/hooks/useItemsOf';
 import { BoxContents } from './BoxContents';
 
 const mountings: Mounting[] = ['socket', 'switch', 'ceiling', 'custom'];

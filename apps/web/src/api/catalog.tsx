@@ -7,11 +7,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/lib/repositories/provider';
 import { builtinCatalog } from '@epd/domain/catalog/builtin';
 import { createCatalogLookup, type CatalogLookup } from '@epd/domain/catalog/lookup';
-import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
+import type { CatalogItem } from '@epd/domain/catalog/types';
 import type { Profile, ProfilePatch } from '@/lib/repositories/types';
 
 interface CatalogState {
@@ -79,27 +78,4 @@ export function useCatalog(): CatalogState {
   const ctx = useContext(CatalogContext);
   if (!ctx) throw new Error('CatalogProvider missing');
   return ctx;
-}
-
-/** Display name of a catalog item (built-in names are i18n keys). */
-export function useItemName(): (item: CatalogItem | undefined, fallbackId?: string) => string {
-  const { t } = useTranslation();
-  return useCallback(
-    (item, fallbackId) =>
-      item
-        ? item.ownerId === null
-          ? t(item.name)
-          : item.name
-        : t('catalog.missingItem', { id: fallbackId ?? '' }),
-    [t],
-  );
-}
-
-/** Non-archived items of one category, for pickers. */
-export function useItemsOf(category: CatalogCategory): CatalogItem[] {
-  const { items } = useCatalog();
-  return useMemo(
-    () => items.filter((i) => i.category === category && !i.archived),
-    [items, category],
-  );
 }

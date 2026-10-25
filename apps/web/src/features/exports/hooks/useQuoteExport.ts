@@ -5,10 +5,11 @@ import type { IssuedQuote } from '@epd/domain/types';
 import { useEditor } from '@/stores/editor/EditorContext';
 import { downloadBlob, fileSafe } from '@/lib/download';
 import type { Locale } from '@/lib/format';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildQuotePdf } from '@/features/exports/utils/quotePdf';
-import { quoteCsv, type QuoteDocument } from '@/features/exports/utils/quoteCsv';
+import type { QuoteDocument } from '@epd/domain/quote';
+import { quoteCsv } from '@/features/exports/utils/quoteCsv';
 
 const localeOf = (language: string): Locale => (language === 'it' ? 'it' : 'en');
 

@@ -5,7 +5,7 @@ import { formatQuoteNumber, laborAmounts } from '@epd/domain/quote';
 import type { IssuedQuote, ProjectMeta } from '@epd/domain/types';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
 import { CONTENT_WIDTH, PAGE, PdfWriter, type ImageData } from './pdfKit';
-import type { QuoteDocument } from './quoteCsv';
+import type { QuoteDocument } from '@epd/domain/quote';
 
 export interface QuotePdfInput {
   quote: QuoteDocument | IssuedQuote;

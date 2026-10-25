@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createI18n } from '@/lib/i18n';
 import { pdfText } from '@/testing/pdfText';
 import { buildQuotePdf } from './quotePdf';
-import type { QuoteDocument } from './quoteCsv';
+import type { QuoteDocument } from '@epd/domain/quote';
 
 const live: QuoteDocument = {
   lines: [

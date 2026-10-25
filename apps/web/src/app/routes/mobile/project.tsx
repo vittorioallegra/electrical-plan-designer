@@ -13,7 +13,7 @@ import { cn } from '@/lib/cn';
 import { Tabs } from '@/components/ui/Tabs';
 import { PlanCanvas } from '@/features/editor/canvas/PlanCanvas';
 import { fitView, zoomAt } from '@/features/editor/canvas/viewport';
-import { Checklist } from './Checklist';
+import { Checklist } from '@/features/bom/components/Checklist';
 
 const noAutosave: Autosave = { flush: () => undefined, stop: () => undefined };
 

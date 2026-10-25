@@ -289,7 +289,7 @@ Approved: yes (2026-10-25)
 - [x] 6. pnpm workspace, app in apps/web — `refactor: move the app into a pnpm workspace at apps/web`
 - [x] 7. packages/domain (@epd/domain) — `refactor: extract the domain into the @epd/domain package`
 - [x] 8. Move files to the target layout — `refactor: move files to the Bulletproof React layout`
-- [ ] 9. Remove cross-feature imports, import-boundary lint rules
+- [x] 9. Remove cross-feature imports, import-boundary lint rules — `refactor: enforce feature import boundaries`
 - [ ] 10. TanStack Query for server state
 - [ ] 11. Route loaders, error elements, lazy routes
 - [ ] 12. Split PlanCanvas
@@ -336,6 +336,14 @@ Approved: yes (2026-10-25)
   ProjectFrame → `app/layouts/`, SettingsPage → `features/settings`); `data/index.tsx` became
   `lib/repositories/provider.tsx`, `state/testing.ts` became `testing/editor.ts`. Built CSS is
   byte-identical to the previous commit (Tailwind source detection unaffected).
+- Step 9: CatalogProvider + `useCatalog` moved as-is to `src/api/catalog.tsx` (step 10 replaces
+  them with queries); `useItemName`/`useItemsOf` to `src/hooks/`. `QuoteDocument` (pure data type)
+  moved to `@epd/domain/quote` so `quote` and `exports` share it. Composition in `src/app/routes`:
+  `project/layout` (ProjectLoader gets a `renderFrame` prop for ProjectFrame), `project/plan`
+  (circuit pick handlers injected into PlanCanvas via PlanView), `project/quote` (QuotePage gets
+  the exporter as a prop), `mobile/project` (was MobileProjectPage; Checklist moved into `bom`).
+  `src/testing` may import `src/app` (renderApp). `unrs-resolver` (TS import resolver) is denied
+  its build script in `allowBuilds`; it uses its prebuilt optional binding.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -349,10 +357,10 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 9: remove the remaining cross-feature imports (catalog `useCatalog` split into `api/` +
-`hooks/`, mobile Checklist into `bom`, MobileProjectPage into `app/routes/mobile/project`, canvas
-pick handlers from ProjectFrame, QuotePage export actions as props), then add the
-`import-x/no-restricted-paths` + no-barrel lint rules and a Vitest test running ESLint on fixtures.
+Step 10: TanStack Query v5 per "Data layer rules": `lib/query-client.ts`, provider, query keys in
+`api/`; replace `api/catalog.tsx` (CatalogProvider + `useCatalog`, a temporary home from step 9)
+with catalog/profile queries and mutations; port projects list, purchase marks, project record,
+profile logo URL, background image URL; tests per the plan.
 
 ## Review record
 

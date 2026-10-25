@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/components/ui/Toast';
 import { applyPresetTo } from '@/features/editor/utils/commands';
-import { useCatalog, useItemName, useItemsOf } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
+import { useItemName } from '@/hooks/useItemName';
+import { useItemsOf } from '@/hooks/useItemsOf';
 
 /** Contents of a terminal box: devices, blanking covers and plate, with a modules counter. */
 export function BoxContents({ node }: { node: PlanNode }) {

@@ -1,15 +1,7 @@
 // Quote CSV for Excel: `;` separator, UTF-8 with BOM, decimals in the quote's language.
 import type { TFunction } from 'i18next';
-import { laborAmounts } from '@epd/domain/quote';
-import type { QuoteLine, QuoteSettings, QuoteTotals } from '@epd/domain/types';
+import { laborAmounts, type QuoteDocument } from '@epd/domain/quote';
 import type { Locale } from '@/lib/format';
-
-/** What a quote export renders: the live quote or an issued snapshot. */
-export interface QuoteDocument {
-  lines: QuoteLine[];
-  settings: QuoteSettings;
-  totals: QuoteTotals;
-}
 
 const BOM = '﻿';
 

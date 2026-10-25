@@ -6,3 +6,4 @@ allowBuilds:
   core-js: false
   esbuild: true
   supabase: true
+  unrs-resolver: false

@@ -5,6 +5,13 @@ import type { CatalogLookup } from './catalog/lookup';
 import type { CatalogItem } from './catalog/types';
 import type { IssuedQuote, PriceOverrides, QuoteLine, QuoteSettings, QuoteTotals } from './types';
 
+/** What a quote export renders: the live quote or an issued snapshot. */
+export interface QuoteDocument {
+  lines: QuoteLine[];
+  settings: QuoteSettings;
+  totals: QuoteTotals;
+}
+
 export interface PriceContext {
   catalog: CatalogLookup;
   /** The account's user items; priced cable items match cable lines by section + color. */

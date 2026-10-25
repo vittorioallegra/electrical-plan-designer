@@ -5,7 +5,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router';
 import { loadDoc } from '@epd/domain/load';
 import { useEditor, useEditorContext, useEditorServices } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
-import type { UnsavedCopy } from '@/stores/editor/unsavedStore';
+import type { ProjectFrameProps } from '@/features/editor/components/ProjectLoader';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { downloadJson, fileSafe } from '@/lib/download';
@@ -34,13 +34,7 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /** Shared frame of the project pages: top bar, view content, bottom drawer, dialogs. */
-export function ProjectFrame({
-  restore,
-  onRestoreHandled,
-}: {
-  restore: UnsavedCopy | null;
-  onRestoreHandled: () => void;
-}) {
+export function ProjectFrame({ restore, onRestoreHandled }: ProjectFrameProps) {
   const { t, i18n } = useTranslation();
   const { store } = useEditorContext();
   const { unsaved } = useEditorServices();

@@ -21,9 +21,9 @@ import { createLengthContext } from '@epd/domain/lengths';
 import { newId } from '@epd/domain/ids';
 import type { Floor, PlanNode, Point, RunElevation } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import type { EditorStore } from '@/stores/editor/editorStore';
+import { useCatalog } from '@/api/catalog';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { toggleRouteSegment, toggleTarget } from '@/features/circuits/utils/commands';
 import { formatLength } from '@/lib/format';
 import { provisionDash, symbolPaths, type SymbolKind } from '@/components/symbols/symbols';
 import {
@@ -78,13 +78,27 @@ export function symbolOf(node: PlanNode): SymbolKind {
   }
 }
 
+type PickOwner = { kind: 'circuit' | 'extra'; id: string };
+
+/** Circuit picking edits, injected so the canvas does not depend on the circuits feature. */
+export interface CanvasPickHandlers {
+  toggleTarget: (store: EditorStore, circuitId: string, nodeId: string) => void;
+  toggleRouteSegment: (store: EditorStore, owner: PickOwner, segmentId: string) => void;
+}
+
 export interface PlanCanvasProps {
   onCalibrationPoints: (p1: Point, p2: Point) => void;
   onDeleteRequest: (ids: string[]) => void;
+  /** Without handlers (read-only views) clicks in pick mode do nothing. */
+  pickHandlers?: CanvasPickHandlers | undefined;
 }
 
 /** The plan canvas: background, grid, walls, conduits, nodes and the active tool (meters). */
-export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasProps) {
+export function PlanCanvas({
+  onCalibrationPoints,
+  onDeleteRequest,
+  pickHandlers,
+}: PlanCanvasProps) {
   const { i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
@@ -403,15 +417,16 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
     const s = store.getState();
 
     if (pick && !s.readOnly) {
+      if (!pickHandlers) return;
       const hits = hitTest(doc, floorId, world, view.scale);
       if (pick.mode === 'targets' && pick.owner.kind === 'circuit') {
         const node = hits.find((h) => h.kind === 'node');
         const kind = node ? nodeById.get(node.id)?.kind : undefined;
         if (node && (kind === 'terminal_box' || kind === 'junction_box'))
-          toggleTarget(store, pick.owner.id, node.id);
+          pickHandlers.toggleTarget(store, pick.owner.id, node.id);
       } else if (pick.mode === 'route') {
         const segment = hits.find((h) => h.kind === 'segment');
-        if (segment) toggleRouteSegment(store, pick.owner, segment.id);
+        if (segment) pickHandlers.toggleRouteSegment(store, pick.owner, segment.id);
       }
       return;
     }

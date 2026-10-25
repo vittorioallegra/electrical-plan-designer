@@ -2,8 +2,13 @@ import { FileSpreadsheet, FileText, Plus, Stamp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRepositories } from '@/lib/repositories/provider';
-import { formatQuoteNumber, issueQuote, type QuoteResult } from '@epd/domain/quote';
-import type { QuoteLine, QuoteSettings } from '@epd/domain/types';
+import {
+  formatQuoteNumber,
+  issueQuote,
+  type QuoteDocument,
+  type QuoteResult,
+} from '@epd/domain/quote';
+import type { IssuedQuote, QuoteLine, QuoteSettings } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
@@ -12,14 +17,20 @@ import { NumberInput } from '@/components/ui/NumberInput';
 import { Table } from '@/components/ui/Table';
 import { useToast } from '@/components/ui/Toast';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
-import { useQuoteExport } from '@/features/exports/hooks/useQuoteExport';
+import { useCatalog } from '@/api/catalog';
 import { useLiveQuote, usePriceContext } from '@/features/quote/hooks/useQuote';
 
 type LaborLine = QuoteSettings['laborLines'][number];
 
 /** Quote settings, live totals, unpriced lines with inline prices, and issued snapshots. */
-export function QuotePage() {
+/** Quote downloads, supplied by the app (built by the exports feature). */
+export interface QuoteExporter {
+  csv: (quote: QuoteDocument | IssuedQuote) => void;
+  /** Throws when the PDF cannot be built. */
+  pdf: (quote: QuoteDocument | IssuedQuote) => Promise<void>;
+}
+
+export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
   const { t, i18n } = useTranslation();
   const locale: Locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
@@ -33,7 +44,6 @@ export function QuotePage() {
   const ctx = usePriceContext();
   const { profile, updateProfile } = useCatalog();
   const [issuing, setIssuing] = useState(false);
-  const exporter = useQuoteExport();
 
   const editSettings = (label: string, fn: (s: QuoteSettings) => void) =>
     store.getState().applyCommand(label, (d) => {

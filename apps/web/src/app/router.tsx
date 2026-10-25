@@ -2,11 +2,11 @@ import { Navigate, type RouteObject } from 'react-router';
 import { AuthForm } from '@/features/auth/components/AuthForm';
 import { CatalogPage } from '@/features/catalog/components/CatalogPage';
 import { RequireAuth } from '@/app/layouts/RequireAuth';
-import { PlanView } from '@/features/editor/components/PlanView';
-import { ProjectLoader } from '@/features/editor/components/ProjectLoader';
 import { SettingsPage } from '@/features/settings/components/SettingsPage';
-import { QuotePage } from '@/features/quote/components/QuotePage';
-import { MobileProjectPage } from '@/features/mobile/components/MobileProjectPage';
+import { MobileProjectPage } from '@/app/routes/mobile/project';
+import { ProjectLayoutRoute } from '@/app/routes/project/layout';
+import { PlanRoute } from '@/app/routes/project/plan';
+import { QuoteRoute } from '@/app/routes/project/quote';
 import { MobileShell } from '@/app/layouts/MobileShell';
 import { ViewModeGate } from '@/features/mobile/components/ViewModeGate';
 import { PanelView } from '@/features/panel/components/PanelView';
@@ -31,12 +31,12 @@ export const routes: RouteObject[] = [
         children: [
           {
             path: 'projects/:id',
-            element: <ProjectLoader />,
+            element: <ProjectLayoutRoute />,
             children: [
               { index: true, element: <Navigate to="plan" replace /> },
-              { path: 'plan', element: <PlanView /> },
+              { path: 'plan', element: <PlanRoute /> },
               { path: 'panel', element: <PanelView /> },
-              { path: 'quote', element: <QuotePage /> },
+              { path: 'quote', element: <QuoteRoute /> },
               { path: 'settings', element: <SettingsPage /> },
             ],
           },

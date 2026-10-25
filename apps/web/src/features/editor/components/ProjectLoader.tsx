@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { useRepositories } from '@/lib/repositories/provider';
@@ -9,7 +9,6 @@ import { createEditorStore, type EditorStore } from '@/stores/editor/editorStore
 import { shouldOfferRestore, type UnsavedCopy } from '@/stores/editor/unsavedStore';
 import { Button } from '@/components/ui/Button';
 import { downloadJson } from '@/lib/download';
-import { ProjectFrame } from '@/app/layouts/ProjectFrame';
 
 type LoadState =
   | { status: 'loading' }
@@ -24,8 +23,20 @@ declare global {
   }
 }
 
-/** Loads and validates a project, then mounts the editor with its store and autosave. */
-export function ProjectLoader() {
+export interface ProjectFrameProps {
+  restore: UnsavedCopy | null;
+  onRestoreHandled: () => void;
+}
+
+/**
+ * Loads and validates a project, then mounts the editor with its store and autosave.
+ * The app supplies the frame (top bar, views, drawer), which composes several features.
+ */
+export function ProjectLoader({
+  renderFrame,
+}: {
+  renderFrame: (props: ProjectFrameProps) => ReactNode;
+}) {
   const { t } = useTranslation();
   const { id = '' } = useParams();
   const repos = useRepositories();
@@ -131,10 +142,10 @@ export function ProjectLoader() {
   }
   return (
     <EditorProvider store={state.store} autosave={state.autosave}>
-      <ProjectFrame
-        restore={state.restore}
-        onRestoreHandled={() => setState({ ...state, restore: null })}
-      />
+      {renderFrame({
+        restore: state.restore,
+        onRestoreHandled: () => setState({ ...state, restore: null }),
+      })}
     </EditorProvider>
   );
 }

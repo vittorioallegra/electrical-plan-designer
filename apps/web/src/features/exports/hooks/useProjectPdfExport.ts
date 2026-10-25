@@ -3,7 +3,7 @@ import { useRepositories } from '@/lib/repositories/provider';
 import { useEditorContext } from '@/stores/editor/EditorContext';
 import { downloadBlob, fileSafe } from '@/lib/download';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 

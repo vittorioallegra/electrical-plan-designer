@@ -1,9 +1,17 @@
+import { readdirSync } from 'node:fs';
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import i18next from 'eslint-plugin-i18next';
+import importX from 'eslint-plugin-import-x';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+
+const web = './apps/web/src';
+const features = readdirSync(new URL(`${web}/features`, import.meta.url), { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name);
 
 export default defineConfig(
   {
@@ -32,7 +40,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', '*.js'],
     languageOptions: { globals: globals.node },
   },
   {
@@ -53,6 +61,59 @@ export default defineConfig(
               message: '@epd/domain must not import app layers.',
             },
           ],
+        },
+      ],
+    },
+  },
+  {
+    // Import boundaries (Bulletproof React): features never import each other, shared code never
+    // imports features or the app. `src/app` composes features. `src/testing` may import the app
+    // (renderApp mounts the real routes) but not features.
+    files: ['apps/web/**/*.{ts,tsx}'],
+    plugins: { 'import-x': importX },
+    settings: {
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver({ project: 'apps/web/tsconfig.json' }),
+      ],
+    },
+    rules: {
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          basePath: import.meta.dirname,
+          zones: [
+            ...features.map((name) => ({
+              target: `${web}/features/${name}`,
+              from: `${web}/features`,
+              except: [`./${name}`],
+              message: 'Features must not import other features; compose them in src/app.',
+            })),
+            {
+              target: ['api', 'components', 'config', 'hooks', 'lib', 'stores'].map(
+                (dir) => `${web}/${dir}`,
+              ),
+              from: [`${web}/features`, `${web}/app`],
+              message: 'Shared code must not import features or the app.',
+            },
+            {
+              target: `${web}/testing`,
+              from: `${web}/features`,
+              message: 'Test helpers must not import features.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // No re-export barrels: import modules by path.
+    files: ['**/index.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportAllDeclaration, ExportNamedDeclaration[source]',
+          message: 'No re-export barrels in index files; import the module by its path.',
         },
       ],
     },

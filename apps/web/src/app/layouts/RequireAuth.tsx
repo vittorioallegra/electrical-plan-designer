@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { CatalogProvider } from '@/features/catalog/hooks/useCatalog';
+import { CatalogProvider } from '@/api/catalog';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
 /** Protected routes. On sign-out or session expiry, redirects to /login and comes back after. */

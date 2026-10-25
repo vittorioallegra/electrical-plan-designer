@@ -9,7 +9,8 @@ import { NumberInput } from '@/components/ui/NumberInput';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/components/ui/Toast';
 import { categories, ItemDialog } from './ItemDialog';
-import { useCatalog, useItemName } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
+import { useItemName } from '@/hooks/useItemName';
 
 type Editing = {
   title: string;

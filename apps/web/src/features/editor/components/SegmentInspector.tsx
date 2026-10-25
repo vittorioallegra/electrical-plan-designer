@@ -6,7 +6,8 @@ import type { ConduitSegment, RunElevation } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { formatLength, formatNumber } from '@/lib/format';
-import { useItemName, useItemsOf } from '@/features/catalog/hooks/useCatalog';
+import { useItemName } from '@/hooks/useItemName';
+import { useItemsOf } from '@/hooks/useItemsOf';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { ConductorBadge } from '@/components/ConductorBadge';
 

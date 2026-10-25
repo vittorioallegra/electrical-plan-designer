@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { formatNumber } from '@/lib/format';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog, useItemName } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
+import { useItemName } from '@/hooks/useItemName';
 import { ConductorBadge } from '@/components/ConductorBadge';
 import {
   addTwoWayRun,

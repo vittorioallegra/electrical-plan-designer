@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog, useItemName, useItemsOf } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
+import { useItemName } from '@/hooks/useItemName';
+import { useItemsOf } from '@/hooks/useItemsOf';
 import {
   addDevice,
   defaultDeviceLabel,

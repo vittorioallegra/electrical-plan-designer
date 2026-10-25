@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createI18n } from '@/lib/i18n';
-import { quoteCsv, type QuoteDocument } from './quoteCsv';
+import type { QuoteDocument } from '@epd/domain/quote';
+import { quoteCsv } from './quoteCsv';
 
 const quote: QuoteDocument = {
   lines: [

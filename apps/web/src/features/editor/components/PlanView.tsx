@@ -7,7 +7,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { useToast } from '@/components/ui/Toast';
 import { BackgroundImportDialog } from '@/features/editor/background/BackgroundImportDialog';
 import { CalibrationDialog } from '@/features/editor/background/CalibrationDialog';
-import { PlanCanvas } from '@/features/editor/canvas/PlanCanvas';
+import { PlanCanvas, type CanvasPickHandlers } from '@/features/editor/canvas/PlanCanvas';
 import {
   cascadeOfSelection,
   copySelection,
@@ -24,7 +24,7 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /** Plan view: floor tabs + tools on the left, canvas, inspector on the right. */
-export function PlanView() {
+export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }) {
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const toast = useToast();
@@ -109,6 +109,7 @@ export function PlanView() {
         <PlanCanvas
           onCalibrationPoints={(p1, p2) => setCalibration([p1, p2])}
           onDeleteRequest={requestDelete}
+          pickHandlers={pickHandlers}
         />
         {pick ? (
           <div

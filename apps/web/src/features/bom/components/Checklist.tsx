@@ -7,10 +7,10 @@ import { cn } from '@/lib/cn';
 import { formatNumber, type Locale } from '@/lib/format';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { describeBomLine, describeLineKey } from '@/lib/describeBom';
-import { PurchasesLoadError } from '@/features/bom/components/PurchasesLoadError';
+import { PurchasesLoadError } from './PurchasesLoadError';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { usePurchases } from '@/features/bom/hooks/usePurchases';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
 
 /** Phone purchase checklist: one big row per BOM line, ticked lines store the bought quantity. */
 export function Checklist() {

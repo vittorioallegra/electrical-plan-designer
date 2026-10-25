@@ -38,7 +38,7 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 ## Layout
 
 pnpm workspace: root scripts proxy to the app with `pnpm --filter @epd/web …`; one root ESLint
-config, root `vitest.config.ts` (`test.projects`: web, domain, scripts), `tsconfig.base.json` shared.
+config, root `vitest.config.ts` (`test.projects`: web, domain, repo = `scripts/` + `tests/`), `tsconfig.base.json` shared.
 `.env*` files stay at the root (Vite `envDir`). The app lives in `apps/web/` (package
 `@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`). Folder convention:
 Bulletproof React. Paths below under `src/` are `apps/web/src/`.
@@ -47,12 +47,14 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
   BOM, checks, quote, built-in catalog); source-only, imported as `@epd/domain/<module>` (no barrel);
   its tests run in the `node` environment
 - `src/app/` — entry (`main.tsx`), `provider.tsx`, `router.tsx` (routes), `layouts/` (AppShell,
-  MobileShell, ProjectFrame, RequireAuth), `routes/`, `styles.css`
+  MobileShell, ProjectFrame, RequireAuth), `routes/` (route modules that compose features),
+  `styles.css`
 - `src/features/<name>/` — UI by feature (auth, projects, editor, panel, circuits, catalog, bom,
   checks, quote, exports, mobile, profile, settings), split into `components/`, `hooks/`,
   `utils/` (and `api/`) as needed
 - `src/components/` — shared UI: `ui/` (Radix-based components, number input), `symbols/`
-- `src/hooks/` — hooks shared by several features (e.g. `useAnalysis`)
+- `src/api/` — server state shared by several features (catalog + profile)
+- `src/hooks/` — hooks shared by several features (`useAnalysis`, `useItemName`, `useItemsOf`)
 - `src/lib/` — `repositories/` (repository interfaces + Supabase and in-memory implementations,
   provider; the only place that talks to Supabase), `auth/`, `i18n/` (`locales/en.json` base,
   `it.json`), formatting, colors, download, BOM/check descriptions, view mode
@@ -63,7 +65,8 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
 - `src/testing/` — `setup.ts` (Vitest), `renderApp.tsx` (component tests), `editor.ts` (store
   helpers), `pdfText.ts` (PDF text via pdfjs, Node env)
 - `apps/web/e2e/` — Playwright specs + `helpers.ts` (`fixture(name)` resolves `tests/fixtures`)
-- `tests/fixtures/` — shared fixtures at the repo root (domain, web, seed and its test)
+- `tests/fixtures/` — shared fixtures at the repo root (domain, web, seed and its test);
+  `tests/lint/` — tests of the ESLint import rules
 
 ## Conventions
 
@@ -73,6 +76,11 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
   Every key must exist in both `en.json` and `it.json` (test enforces).
 - Dependency rule: `app → features → stores → domain`, `features/stores → lib → domain`,
   `features → components`. `@epd/domain` imports nothing from the app (ESLint enforced).
+- Import boundaries (ESLint `import-x/no-restricted-paths`): a feature never imports another
+  feature; `api`, `components`, `config`, `hooks`, `lib`, `stores` never import `features` or
+  `app`; `testing` may import `app` only. Code used by two features moves to a shared folder,
+  or `src/app` composes the features (props, render props, injected handlers). No re-export
+  barrels in `index.ts`.
 - Import alias `@/` = `src/`. Components get persistence only via `useRepositories()`
   (`src/lib/repositories/types.ts`); component tests use `renderApp()` from `src/testing/renderApp.tsx`
   (real routes + in-memory repositories, seeded like `supabase/seed.sql`).

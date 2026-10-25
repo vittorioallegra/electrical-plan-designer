@@ -5,7 +5,7 @@ import { useEditor } from '@/stores/editor/EditorContext';
 import type { Locale } from '@/lib/format';
 import { describeBomLine } from '@/lib/describeBom';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
 
 /** Prices of the signed-in account: user items, built-in catalog and price overrides. */
 export function usePriceContext(): PriceContext {

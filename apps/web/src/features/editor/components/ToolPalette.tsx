@@ -5,7 +5,7 @@ import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { Tool } from '@/stores/editor/editorStore';
 import { cn } from '@/lib/cn';
 import { ElectricalSymbol } from '@/components/symbols/ElectricalSymbol';
-import { useCatalog } from '@/features/catalog/hooks/useCatalog';
+import { useCatalog } from '@/api/catalog';
 
 const tools: { tool: Tool; icon: ReactNode; key: string; shortcut: string }[] = [
   { tool: 'select', icon: <MousePointer2 size={16} />, key: 'tools.select', shortcut: 'V' },

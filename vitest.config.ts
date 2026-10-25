@@ -6,7 +6,14 @@ export default defineConfig({
     projects: [
       'apps/web/vite.config.ts',
       'packages/domain/vitest.config.ts',
-      { test: { name: 'scripts', environment: 'node', include: ['scripts/**/*.test.ts'] } },
+      {
+        test: {
+          name: 'repo',
+          environment: 'node',
+          include: ['scripts/**/*.test.ts', 'tests/**/*.test.ts'],
+          testTimeout: 30_000,
+        },
+      },
     ],
   },
 });
