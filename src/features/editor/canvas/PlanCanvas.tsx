@@ -24,6 +24,7 @@ import { formatLength } from '@/ui/format';
 import { provisionDash, symbolPaths, type SymbolKind } from '@/ui/symbols';
 import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode } from '../commands';
 import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from './hitTest';
+import { LABEL_FONT_PX, nodeLabelBox, segmentLabelBox, type LabelBox } from './labels';
 import { snapPoint, type SnapResult } from './snapping';
 import { useBackgroundImage } from './useBackgroundImage';
 import { centerOn, gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
@@ -103,6 +104,7 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
 
   const colors = useMemo(
     () => ({
+      background: css('--color-canvas-bg'),
       grid: css('--color-canvas-grid'),
       wall: css('--color-canvas-wall'),
       node: css('--color-canvas-node'),
@@ -528,6 +530,34 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
     const b = nodeById.get(s.toNodeId);
     return a?.floorId === floorId && b?.floorId === floorId;
   });
+  // Direction of the first leg of every conduit at each node, for label placement.
+  const legsByNode = new Map<string, Point[]>();
+  for (const s of floorSegments) {
+    const a = posOf(nodeById.get(s.fromNodeId)!);
+    const b = posOf(nodeById.get(s.toNodeId)!);
+    const first = s.vertices[0] ?? b;
+    const last = s.vertices[s.vertices.length - 1] ?? a;
+    legsByNode.set(s.fromNodeId, [
+      ...(legsByNode.get(s.fromNodeId) ?? []),
+      { x: first.x - a.x, y: first.y - a.y },
+    ]);
+    legsByNode.set(s.toNodeId, [
+      ...(legsByNode.get(s.toNodeId) ?? []),
+      { x: last.x - b.x, y: last.y - b.y },
+    ]);
+  }
+  // Text with a halo in the canvas background color, so it stays readable over conduits.
+  const labelProps = (box: LabelBox, fill: string) => ({
+    x: px(box.x),
+    y: px(box.y),
+    width: px(box.width),
+    align: box.align,
+    fontSize: px(LABEL_FONT_PX),
+    fill,
+    stroke: colors.background,
+    strokeWidth: px(3),
+    fillAfterStrokeEnabled: true,
+  });
   const linkedRisers = new Set(
     doc.segments
       .filter((s) => nodeById.get(s.fromNodeId)?.floorId !== nodeById.get(s.toNodeId)?.floorId)
@@ -638,6 +668,7 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
               x: (points[edge]!.x + points[edge + 1]!.x) / 2,
               y: (points[edge]!.y + points[edge + 1]!.y) / 2,
             };
+            const labelBox = segmentLabelBox(points[edge]!, points[edge + 1]!);
             return (
               <Group key={s.id}>
                 {highlighted.has(s.id) ? (
@@ -670,11 +701,10 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
                 />
                 {view.scale >= LABEL_MIN_SCALE ? (
                   <Text
-                    x={label.x + px(4)}
-                    y={label.y + px(4)}
+                    {...labelProps(labelBox, colors.run[s.runElevation])}
+                    x={label.x + px(labelBox.x)}
+                    y={label.y + px(labelBox.y)}
                     text={formatLength(lengths.segmentLengthMm(s) / 1000, locale)}
-                    fontSize={px(11)}
-                    fill={colors.run[s.runElevation]}
                   />
                 ) : null}
               </Group>
@@ -711,7 +741,10 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
                   <Circle radius={px(3)} x={px(10)} y={px(-10)} fill={colors.riser} />
                 ) : null}
                 {view.scale >= LABEL_MIN_SCALE / 2 ? (
-                  <Text x={px(14)} y={px(-6)} text={n.label} fontSize={px(11)} fill={colors.node} />
+                  <Text
+                    {...labelProps(nodeLabelBox(legsByNode.get(n.id) ?? []), colors.node)}
+                    text={n.label}
+                  />
                 ) : null}
               </Group>
             );
