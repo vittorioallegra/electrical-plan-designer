@@ -22,6 +22,12 @@ missing), pnpm 12.
 - `pnpm test:e2e` — Playwright (`tests/e2e`); quiet: `pnpm exec playwright test --reporter=dot`
 - `pnpm verify` — typecheck, lint, test, test:db, test:e2e (the gate; no CI yet)
 - `pnpm db:start | db:stop | db:reset | db:types`, `pnpm env:local`
+- `pnpm db:seed` — regenerate `supabase/seed.sql` from `tests/fixtures/demo-project.json`
+  (a unit test fails when they drift), then `pnpm db:reset`
+
+Local seed login (local stack only): `dev@example.test` / `devpassword`, with the
+"Demo house" project. Schema changes: add a new file in `supabase/migrations/`, then
+`pnpm db:reset && pnpm db:types`. Cloud deploy: docs/deploy.md.
 
 Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:local`,
 `setup`. Everything else runs without it.
@@ -35,8 +41,8 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 - `src/ui/` — design tokens, shared Radix-based components, symbols, number input/format
 - `src/i18n/` — i18next setup; `locales/en.json` (base) and `locales/it.json`
 - `src/config.ts` — zod-validated Vite env
-- `supabase/` — config, migrations, seed (local stack)
-- `scripts/` — `check-env.mjs`, `env-local.mjs`
+- `supabase/` — config, migrations, generated seed (local stack)
+- `scripts/` — `check-env.mjs`, `env-local.mjs`, `build-seed.mjs`
 - `tests/` — `setup.ts`, `e2e/` (Playwright), `fixtures/` (shared JSON fixtures)
 
 ## Conventions

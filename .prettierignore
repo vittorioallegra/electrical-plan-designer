@@ -1,7 +1,6 @@
 pnpm-lock.yaml
 dist
 supabase/.temp
-src/data/database.types.ts
 docs
 .gstack
 playwright-report
