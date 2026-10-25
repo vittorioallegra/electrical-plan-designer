@@ -1,7 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import demo from '../../../tests/fixtures/demo-project.json';
+import demo from '../../../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
 import type { ProjectDoc } from '@/domain/types';
 import type { EditorStore } from '@/state/editorStore';

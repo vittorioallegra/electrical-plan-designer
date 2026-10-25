@@ -1,5 +1,5 @@
 // Seeds the in-memory backend like supabase/seed.sql: dev user + demo project.
-import demo from '../../tests/fixtures/demo-project.json';
+import demo from '../../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
 import { emptyProfile, type MemoryControl } from './memory';
 

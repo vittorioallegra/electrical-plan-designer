@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import demo from '../../tests/fixtures/demo-project.json';
+import demo from '../../../../tests/fixtures/demo-project.json';
 import { computeBom, reconcilePurchases, type BomLine } from './bom';
 import { createCatalogLookup } from './catalog/lookup';
 import { defaultProjectSettings } from './defaults';

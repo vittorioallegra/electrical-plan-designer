@@ -17,8 +17,8 @@ Development runs on the local Supabase stack. When a cloud project is needed:
    - Email confirmations: on. Configure custom SMTP (the built-in sender is rate-limited).
 4. Regenerate types against the remote schema and check there is no drift:
    ```bash
-   pnpm exec supabase gen types typescript --linked > src/data/database.types.ts
+   pnpm exec supabase gen types typescript --linked > apps/web/src/data/database.types.ts
    ```
 5. Build the app with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` of the cloud project
-   (`VITE_DATA_MODE=supabase`, `VITE_E2E` unset) and host `dist/` as a static SPA with a
+   (`VITE_DATA_MODE=supabase`, `VITE_E2E` unset) (`pnpm build`) and host `apps/web/dist/` as a static SPA with a
    fallback to `index.html`.

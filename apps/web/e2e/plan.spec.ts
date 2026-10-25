@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { clickWorld, editorState, logIn, newProject } from './helpers';
+import { clickWorld, editorState, fixture, logIn, newProject } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
@@ -12,7 +12,7 @@ test('import a PNG, calibrate two points 4.20 m apart, and measure 4.20 m betwee
 }) => {
   await newProject(page, `AC2 ${Date.now()}`);
   await page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }).click();
-  await page.getByTestId('background-file').setInputFiles('tests/fixtures/plan-1000x800.png');
+  await page.getByTestId('background-file').setInputFiles(fixture('plan-1000x800.png'));
   await expect(page.getByTestId('background-panel')).toContainText('Not calibrated');
 
   // Uncalibrated: 1 px = 1 cm. Click image pixels (100, 100) and (310, 100).
@@ -70,7 +70,7 @@ test('draw a plan with walls only, in meters', async ({ page }) => {
 test('import page 2 of a PDF as background', async ({ page }) => {
   await newProject(page, `PDF ${Date.now()}`);
   await page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }).click();
-  await page.getByTestId('background-file').setInputFiles('tests/fixtures/plan-2-pages.pdf');
+  await page.getByTestId('background-file').setInputFiles(fixture('plan-2-pages.pdf'));
   await page.getByRole('option', { name: 'Page 2' }).click();
   await page.getByRole('button', { name: 'Use page 2' }).click();
   await expect(page.getByTestId('background-panel')).toBeVisible();

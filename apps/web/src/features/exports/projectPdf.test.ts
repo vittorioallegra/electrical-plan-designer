@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import demo from '../../../tests/fixtures/demo-project.json';
+import demo from '../../../../../tests/fixtures/demo-project.json';
 import { computeBom } from '@/domain/bom';
 import { createCatalogLookup } from '@/domain/catalog/lookup';
 import { runChecks } from '@/domain/checks';

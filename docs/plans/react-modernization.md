@@ -286,7 +286,7 @@ Approved: yes (2026-10-25)
   - [x] 5a. TypeScript 6.0 — `chore: upgrade to TypeScript 6.0`
   - [x] 5b. TypeScript 7 typecheck — `chore: typecheck with TypeScript 7`
   - [x] 5c. exactOptionalPropertyTypes — `chore: enable exactOptionalPropertyTypes`
-- [ ] 6. pnpm workspace, app in apps/web
+- [x] 6. pnpm workspace, app in apps/web — `refactor: move the app into a pnpm workspace at apps/web`
 - [ ] 7. packages/domain (@epd/domain)
 - [ ] 8. Move files to the target layout
 - [ ] 9. Remove cross-feature imports, import-boundary lint rules
@@ -323,6 +323,10 @@ Approved: yes (2026-10-25)
   still reports (checked with a probe file).
 - TypeScript 7 alias works: `typecheck` runs `node node_modules/typescript7/bin/tsc` (7.0.2,
   ~0.8 s); `node_modules/.bin/tsc` stays TypeScript 6.0.3 for typescript-eslint and editors.
+- Workspace: `tests/setup.ts` moved to `apps/web/tests/setup.ts` for now (step 8 moves it to
+  `src/testing`); e2e fixture files are resolved with `fixture(name)` in `e2e/helpers.ts`;
+  `tsconfig.base.json` holds shared compiler options, root `tsconfig.json` covers `scripts/`.
+  Checked: `pnpm setup` from a clean copy of the tracked files, `dev:mem` in the browser.
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -336,9 +340,10 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 6 (Phase B): pnpm workspace with the Vite app in `apps/web` (details in plan step 6): git mv,
-`envDir` at the repo root, Vitest root `test.projects`, Playwright `testDir`, `db:types` path,
-root scripts keep their names via `pnpm --filter @epd/web`; verify `pnpm setup` and `dev:mem`.
+Step 7: `packages/domain` as `@epd/domain` (git mv `apps/web/src/domain`, package.json with zod
++ nanoid, `exports: { "./*": "./src/*.ts" }`, own tsconfig + Vitest project, purity lint rule
+moved); web imports `@epd/domain/<module>`; `scripts/build-seed.test.ts` imports
+`@epd/domain/defaults`.
 
 ## Review record
 

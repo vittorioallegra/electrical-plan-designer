@@ -1,5 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import { expect, type Page } from '@playwright/test';
-import type { EditorState } from '../../src/state/editorStore';
+import type { EditorState } from '../src/state/editorStore';
+
+/** Absolute path of a shared file in the repo's tests/fixtures. */
+export function fixture(name: string): string {
+  return fileURLToPath(new URL(`../../../tests/fixtures/${name}`, import.meta.url));
+}
 
 export const DEV_LOGIN = { email: 'dev@example.test', password: 'devpassword' };
 

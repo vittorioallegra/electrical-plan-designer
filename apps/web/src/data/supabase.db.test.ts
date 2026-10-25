@@ -1,7 +1,7 @@
 // Integration tests against the local Supabase stack (pnpm test:db).
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
-import demo from '../../tests/fixtures/demo-project.json';
+import demo from '../../../../tests/fixtures/demo-project.json';
 import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';
 import type { Database } from './database.types';
 

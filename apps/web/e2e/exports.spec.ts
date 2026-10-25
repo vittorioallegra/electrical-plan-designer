@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
-import { clickWorld, logIn, newProject } from './helpers';
+import { clickWorld, fixture, logIn, newProject } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 test('export the project PDF of a floor with a private background', async ({ page }) => {
   await newProject(page, `PDF ${Date.now()}`);
   await page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }).click();
-  await page.getByTestId('background-file').setInputFiles('tests/fixtures/plan-1000x800.png');
+  await page.getByTestId('background-file').setInputFiles(fixture('plan-1000x800.png'));
   await expect(page.getByTestId('background-panel')).toContainText('Not calibrated');
   await page.getByTestId('tool-panel').click();
   await clickWorld(page, { x: 1, y: 1 });

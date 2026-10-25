@@ -1,5 +1,5 @@
 // Test helpers for the editor store.
-import demo from '../../tests/fixtures/demo-project.json';
+import demo from '../../../../tests/fixtures/demo-project.json';
 import { createMemoryRepositories } from '@/data/memory';
 import { DEV_LOGIN, seedMemory } from '@/data/memorySeed';
 import { defaultProjectSettings, defaultQuoteSettings } from '@/domain/defaults';

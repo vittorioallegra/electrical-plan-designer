@@ -17,10 +17,11 @@ missing), pnpm 12.
   (`typescript7` npm alias); `typescript` stays 6.0 because typescript-eslint needs its API
 - `pnpm test` — unit + component tests (Vitest, jsdom). Quiet, failures only:
   `pnpm exec vitest run --reporter=dot --silent`
-- Single test file: `pnpm exec vitest run src/domain/lengths.test.ts --reporter=dot`;
+- Single test file (from the repo root):
+  `pnpm exec vitest run apps/web/src/domain/lengths.test.ts --reporter=dot`;
   single test by name: add `-t "riser"`
-- `pnpm test:db` — integration tests against local Supabase (`src/**/*.db.test.ts`)
-- `pnpm test:e2e` — Playwright (`tests/e2e`, own Vite server on :5174 in `e2e` mode);
+- `pnpm test:db` — integration tests against local Supabase (`apps/web/src/**/*.db.test.ts`)
+- `pnpm test:e2e` — Playwright (`apps/web/e2e`, own Vite server on :5174 in `e2e` mode);
   quiet: `pnpm exec playwright test --reporter=dot`
 - `pnpm verify` — typecheck, lint, test, test:db, test:e2e (the gate; no CI yet)
 - `pnpm db:start | db:stop | db:reset | db:types`, `pnpm env:local`
@@ -36,6 +37,12 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 
 ## Layout
 
+pnpm workspace: root scripts proxy to the app with `pnpm --filter @epd/web …`; one root ESLint
+config, root `vitest.config.ts` (`test.projects`: web, scripts), `tsconfig.base.json` shared.
+`.env*` files stay at the root (Vite `envDir`). The app lives in `apps/web/` (package
+`@epd/web`: `index.html`, Vite/Vitest/Playwright configs, `src/`, `e2e/`, `tests/setup.ts`).
+Paths below under `src/` are `apps/web/src/`.
+
 - `src/domain/` — pure TypeScript: model, defaults, geometry, lengths, routing, BOM, checks, quote, built-in catalog
 - `src/data/` — repository interfaces + Supabase and in-memory implementations (only place that talks to Supabase)
 - `src/state/` — editor store (zustand + immer patches), undo/redo, autosave
@@ -47,7 +54,8 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 - `supabase/` — config, migrations, generated seed (local stack)
 - `scripts/` — `check-env.mjs`, `env-local.mjs`, `build-seed.mjs`
 - `src/testing/` — `renderApp.tsx` (component tests), `pdfText.ts` (PDF text via pdfjs, Node env)
-- `tests/` — `setup.ts`, `e2e/` (Playwright), `fixtures/` (shared JSON fixtures)
+- `apps/web/e2e/` — Playwright specs + `helpers.ts` (`fixture(name)` resolves `tests/fixtures`)
+- `tests/fixtures/` — shared fixtures at the repo root (domain, web, seed and its test)
 
 ## Conventions
 
@@ -66,8 +74,8 @@ Need Docker (local Supabase stack): `dev`, `test:db`, `test:e2e`, `db:*`, `env:l
 - PDFs (jsPDF, built-in Helvetica) must only contain WinAnsi characters (no `→`, emoji);
   PDF tests run with `// @vitest-environment node`.
 - Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).
-- jsdom has no canvas: `tests/setup.ts` stubs `react-konva`, so canvas behavior is tested
-  in Playwright, driving the store through `window.__epd` (`tests/e2e/helpers.ts`).
+- jsdom has no canvas: `apps/web/tests/setup.ts` stubs `react-konva`, so canvas behavior is
+  tested in Playwright, driving the store through `window.__epd` (`apps/web/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 - `useEditor(selector)` must return stable references: select raw store fields and derive

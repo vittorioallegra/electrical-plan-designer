@@ -9,11 +9,11 @@ export default defineConfig(
   {
     ignores: [
       '.gstack',
-      'dist',
-      'node_modules',
-      'playwright-report',
-      'test-results',
-      'src/data/database.types.ts',
+      '**/dist',
+      '**/node_modules',
+      '**/playwright-report',
+      '**/test-results',
+      'apps/web/src/data/database.types.ts',
     ],
   },
   js.configs.recommended,
@@ -37,7 +37,7 @@ export default defineConfig(
   },
   {
     // The domain is pure: no React, no Supabase, no app layers.
-    files: ['src/domain/**/*.ts'],
+    files: ['apps/web/src/domain/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -69,7 +69,7 @@ export default defineConfig(
   },
   {
     // User-facing strings go through i18n.
-    files: ['src/features/**/*.tsx', 'src/ui/**/*.tsx', 'src/App.tsx'],
+    files: ['apps/web/src/features/**/*.tsx', 'apps/web/src/ui/**/*.tsx', 'apps/web/src/App.tsx'],
     ignores: ['**/*.test.tsx'],
     plugins: { i18next },
     rules: {

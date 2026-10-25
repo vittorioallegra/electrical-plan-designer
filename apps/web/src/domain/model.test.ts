@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import demo from '../../tests/fixtures/demo-project.json';
+import demo from '../../../../tests/fixtures/demo-project.json';
 import { builtinById, builtinCatalog } from './catalog/builtin';
 import { defaultProjectSettings, defaultQuoteSettings, newProjectDoc } from './defaults';
 import { DocLoadError, loadDoc, migrateDoc } from './load';
