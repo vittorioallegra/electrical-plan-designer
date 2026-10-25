@@ -33,3 +33,14 @@ describe('app shell', () => {
     expect(await screen.findByRole('heading', { name: 'Progetto quadro' })).toBeInTheDocument();
   });
 });
+
+describe('editor layout shell', () => {
+  // protects=editor frame (top bar, drawer, inspector); fails_when=the plan route loses a region; no_claim=canvas behavior
+  it('shows the drawer tabs and an empty inspector on the plan view', () => {
+    renderAt('/projects/p1/plan', 'en');
+    expect(screen.getByRole('tab', { name: 'Circuits' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'BOM' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Warnings' })).toBeInTheDocument();
+    expect(screen.getByText('Nothing selected.')).toBeInTheDocument();
+  });
+});

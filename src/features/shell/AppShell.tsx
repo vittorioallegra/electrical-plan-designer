@@ -5,8 +5,8 @@ import { LanguageSwitch } from './LanguageSwitch';
 export function AppShell() {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
-      <header className="flex items-center gap-4 border-b border-neutral-200 px-4 py-2">
+    <div data-density="compact" className="min-h-screen bg-surface text-text">
+      <header className="flex items-center gap-4 border-b border-border px-4 py-2">
         <span className="font-semibold">{t('app.name')}</span>
         <nav className="flex gap-3 text-sm">
           <NavLink to="/projects">{t('nav.projects')}</NavLink>

@@ -361,7 +361,7 @@ Approved: yes (2026-10-25)
 ### Steps
 - [x] 1. Docs commit (spec + plan) — `docs: add electrical plan designer spec and plan`
 - [x] 2. Scaffold, dev environment scripts, i18n, CLAUDE.md — `chore: scaffold app, dev environment scripts and i18n`
-- [ ] 3. UI foundations (tokens, components, symbols, number input)
+- [x] 3. UI foundations (tokens, components, symbols, number input) — `feat: add UI foundations (tokens, components, symbols, number input)`
 - [ ] 4. Domain model, defaults, schema, built-in catalog, fixture
 - [ ] 5. Domain geometry and lengths
 - [ ] 6. Domain routing and occupancy
@@ -414,8 +414,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 3: UI foundations (tokens, Radix components, NumberInput + formatNumber/formatMoney, symbol set,
-editor layout shell) on branch feat/electrical-plan-designer.
+Step 4: domain model (`src/domain/types.ts`, `defaults.ts`, `schema.ts`, `migrateDoc`,
+`catalog/builtin.ts`) and the shared fixture `tests/fixtures/demo-project.json`.
 
 ## Review record
 

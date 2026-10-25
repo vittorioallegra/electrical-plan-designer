@@ -7,7 +7,7 @@ export function LanguageSwitch() {
     <label className="flex items-center gap-2 text-sm">
       {t('language.label')}
       <select
-        className="rounded border border-neutral-300 px-1 py-0.5"
+        className="rounded border border-border px-1 py-0.5"
         value={i18n.language}
         onChange={(e) => void setLanguage(i18n, e.target.value as Language)}
       >

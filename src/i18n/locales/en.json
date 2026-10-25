@@ -29,5 +29,30 @@
     "mobileProjects": "Projects",
     "mobileProject": "Project",
     "notFound": "Page not found"
+  },
+  "editor": {
+    "untitledProject": "Untitled project",
+    "saveStatus": {
+      "saved": "Saved"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "views": "Project views",
+    "export": "Export",
+    "drawer": "Project details",
+    "tabs": {
+      "circuits": "Circuits",
+      "bom": "BOM",
+      "warnings": "Warnings"
+    },
+    "empty": {
+      "circuits": "No circuits yet.",
+      "bom": "The bill of materials appears as you draw.",
+      "warnings": "No warnings.",
+      "selection": "Nothing selected."
+    },
+    "tools": "Tools",
+    "floors": "Floors",
+    "inspector": "Inspector"
   }
 }

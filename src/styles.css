@@ -1,1 +1,57 @@
 @import 'tailwindcss';
+
+/* Design tokens. Neutrals + one accent + semantic colors. Canvas colors are separate and
+   tuned to stay readable over a background plan at 40% opacity. */
+@theme {
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f5f4;
+  --color-border: #d6d3d1;
+  --color-text: #1c1917;
+  --color-text-muted: #57534e;
+  --color-accent: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-contrast: #ffffff;
+  --color-warning: #b45309;
+  --color-warning-bg: #fef3c7;
+  --color-error: #b91c1c;
+  --color-error-bg: #fee2e2;
+  --color-success: #15803d;
+  --color-success-bg: #dcfce7;
+  --color-focus: #2563eb;
+
+  --color-canvas-bg: #ffffff;
+  --color-canvas-grid: #e7e5e4;
+  --color-canvas-wall: #44403c;
+  --color-canvas-node: #0f172a;
+  --color-canvas-selection: #2563eb;
+  --color-canvas-run-floor: #c2410c;
+  --color-canvas-run-ceiling: #0e7490;
+  --color-canvas-run-direct: #7e22ce;
+  --color-canvas-riser: #be185d;
+  --color-canvas-warning: #d97706;
+  --color-canvas-highlight: #16a34a;
+}
+
+:root {
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Density: compact for the desktop editor, touch for the mobile view (tap targets >= 44 px). */
+[data-density='compact'] {
+  --control-height: 2rem;
+  --control-padding-x: 0.625rem;
+  font-size: 0.875rem;
+}
+
+[data-density='touch'] {
+  --control-height: 2.75rem;
+  --control-padding-x: 1rem;
+  font-size: 1rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

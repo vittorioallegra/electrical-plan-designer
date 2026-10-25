@@ -29,5 +29,30 @@
     "mobileProjects": "Progetti",
     "mobileProject": "Progetto",
     "notFound": "Pagina non trovata"
+  },
+  "editor": {
+    "untitledProject": "Progetto senza nome",
+    "saveStatus": {
+      "saved": "Salvato"
+    },
+    "undo": "Annulla",
+    "redo": "Ripeti",
+    "views": "Viste del progetto",
+    "export": "Esporta",
+    "drawer": "Dettagli progetto",
+    "tabs": {
+      "circuits": "Circuiti",
+      "bom": "Distinta",
+      "warnings": "Avvisi"
+    },
+    "empty": {
+      "circuits": "Nessun circuito.",
+      "bom": "La distinta materiali compare mentre disegni.",
+      "warnings": "Nessun avviso.",
+      "selection": "Nessuna selezione."
+    },
+    "tools": "Strumenti",
+    "floors": "Piani",
+    "inspector": "Proprietà"
   }
 }
