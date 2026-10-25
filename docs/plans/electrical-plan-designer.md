@@ -363,7 +363,7 @@ Approved: yes (2026-10-25)
 - [x] 2. Scaffold, dev environment scripts, i18n, CLAUDE.md — `chore: scaffold app, dev environment scripts and i18n`
 - [x] 3. UI foundations (tokens, components, symbols, number input) — `feat: add UI foundations (tokens, components, symbols, number input)`
 - [x] 4. Domain model, defaults, schema, built-in catalog, fixture — `feat: add domain model, schema, defaults and built-in catalog`
-- [ ] 5. Domain geometry and lengths
+- [x] 5. Domain geometry and lengths — `feat: add domain geometry and segment lengths`
 - [ ] 6. Domain routing and occupancy
 - [ ] 7. Domain BOM
 - [ ] 8. Domain checks and conduit fill
@@ -417,8 +417,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 5: domain geometry + lengths (`src/domain/geometry.ts`, `lengths.ts`): polyline length,
-calibration, node heights, floor elevations, segment/riser lengths in integer mm.
+Step 6: domain routing (`src/domain/routing.ts`): graph, Dijkstra with id tie-break, tree
+union per circuit, manual tree validation, extra runs, `occupancy(doc)`, split-segment rewrite.
 
 ## Review record
 
