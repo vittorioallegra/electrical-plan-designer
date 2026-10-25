@@ -14,6 +14,7 @@ import { cn } from '@/ui/cn';
 import { useToast } from '@/ui/Toast';
 import { LanguageSwitch } from '../shell/LanguageSwitch';
 import { BomTab } from '../bom/BomTab';
+import { CircuitsTab } from '../circuits/CircuitsTab';
 import { SaveStatus } from './SaveStatus';
 
 const viewTabs = [
@@ -226,7 +227,7 @@ function BottomDrawer() {
           {
             value: 'circuits',
             label: t('editor.tabs.circuits'),
-            content: <Empty text={t('editor.empty.circuits')} />,
+            content: <CircuitsTab />,
           },
           {
             value: 'bom',

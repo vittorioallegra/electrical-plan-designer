@@ -42,6 +42,10 @@ export interface EditorUi {
   view: { scale: number; x: number; y: number };
   /** Box preset applied when placing terminal boxes (null = plain box). */
   presetId: string | null;
+  /** Circuit or extra run shown highlighted on the plan and edited in the drawer. */
+  activeOwner: { kind: 'circuit' | 'extra'; id: string } | null;
+  /** Plan picking mode: clicking boxes toggles targets, clicking segments toggles the manual route. */
+  pick: { mode: 'targets' | 'route'; owner: { kind: 'circuit' | 'extra'; id: string } } | null;
 }
 
 export interface EditorState {
@@ -116,6 +120,8 @@ export function createEditorStore(init: EditorInit): EditorStore {
         tool: 'select',
         view: { scale: 50, x: 80, y: 80 },
         presetId: null,
+        activeOwner: null,
+        pick: null,
       },
 
       applyCommand(label, recipe) {

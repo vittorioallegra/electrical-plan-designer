@@ -363,7 +363,9 @@
       "total": "Lunghezza con calate",
       "plan": "Lunghezza in pianta",
       "conduit": "Tubo",
-      "runElevation": "Quota tubo"
+      "runElevation": "Quota tubo",
+      "occupancy": "Conduttori dentro: {{count}}",
+      "empty": "Nessun conduttore instradato qui."
     },
     "riser": {
       "title": "Piani collegati",
@@ -496,5 +498,72 @@
     "circuitsOn": "Protegge: {{names}}",
     "noCircuits": "Nessun circuito su questo apparecchio.",
     "deleteUsed": "Elimina ({{count}} circuiti restano senza protezione)"
+  },
+  "units": {
+    "mm2": "{{value}} mm²"
+  },
+  "conductorRoles": {
+    "L": "L",
+    "N": "N",
+    "PE": "PE",
+    "traveler": "Navetta",
+    "return": "Ritorno",
+    "other": "Altro"
+  },
+  "circuits": {
+    "noPanel": "Posiziona un quadro sulla pianta per aggiungere circuiti.",
+    "noDevices": "Aggiungi prima gli apparecchi di protezione nel quadro.",
+    "noDevice": "Nessun apparecchio",
+    "new": "Nuovo circuito",
+    "defaultName": "Circuito",
+    "twoWay": "Deviata",
+    "twoWayHint": "Seleziona due scatole terminali sulla pianta: aggiunge due navette tra di esse.",
+    "targets": "{{count}} destinazioni",
+    "routed": "{{count}} tratti",
+    "unreachable": "{{count}} destinazioni non raggiungibili",
+    "extraRun": "Conduttori aggiuntivi",
+    "extraRunTitle": "Conduttori aggiuntivi {{from}} → {{to}}",
+    "selectHint": "Seleziona un circuito per modificarlo. Il suo percorso è evidenziato sulla pianta.",
+    "routing": "Instradamento",
+    "mode": {
+      "auto": "Percorso più breve",
+      "manual": "Manuale"
+    },
+    "editRoute": "Scegli i tratti sulla pianta",
+    "doneEditingRoute": "Fine scelta tratti",
+    "name": "Nome",
+    "type": "Tipo",
+    "types": {
+      "lighting": "Luce",
+      "sockets": "Prese",
+      "dedicated": "Dedicato",
+      "other": "Altro"
+    },
+    "device": "Protezione",
+    "section": "Sezione",
+    "conductors": "Conduttori",
+    "conductorColor": "Colore di {{role}}",
+    "conductorSection": "Sezione del conduttore {{n}}",
+    "removeConductor": "Rimuovi {{role}}",
+    "targetsTitle": "Destinazioni",
+    "noTargets": "Nessuna destinazione.",
+    "pickTargets": "Scegli le destinazioni sulla pianta",
+    "donePicking": "Fine scelta",
+    "delete": "Elimina circuito",
+    "deleteRun": "Elimina conduttori aggiuntivi",
+    "belongsTo": "Appartiene al circuito",
+    "noCircuit": "Nessuno",
+    "done": "Fatto",
+    "pickBanner": {
+      "targets": "Clicca le scatole per aggiungere o togliere destinazioni di {{name}}. Esc per finire.",
+      "route": "Clicca i tratti di tubo per aggiungerli o toglierli dal percorso. Esc per finire."
+    },
+    "problems": {
+      "no_source": "Nessun quadro lo alimenta",
+      "missing_segment": "Il percorso usa un tratto eliminato",
+      "unreached_target": "Il percorso non raggiunge tutte le destinazioni",
+      "cycle": "Il percorso ha un anello",
+      "dead_end": "Il percorso ha un vicolo cieco"
+    }
   }
 }

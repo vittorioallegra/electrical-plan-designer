@@ -39,6 +39,14 @@ export function PlanView() {
     );
   });
   const tool = useEditor((s) => s.ui.tool);
+  const pick = useEditor((s) => s.ui.pick);
+  const pickName = useEditor((s) =>
+    s.ui.pick
+      ? s.ui.pick.owner.kind === 'circuit'
+        ? (s.data.doc.circuits.find((c) => c.id === s.ui.pick!.owner.id)?.name ?? '')
+        : ''
+      : '',
+  );
 
   /** Deletes at once, or asks first when the cascade reaches beyond the selection. */
   function requestDelete(ids: string[]) {
@@ -98,7 +106,18 @@ export function PlanView() {
           onCalibrationPoints={(p1, p2) => setCalibration([p1, p2])}
           onDeleteRequest={requestDelete}
         />
-        {hint ? (
+        {pick ? (
+          <div
+            className="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded bg-accent px-3 py-1 text-accent-contrast"
+            role="status"
+            data-testid="pick-banner"
+          >
+            <span>{t(`circuits.pickBanner.${pick.mode}`, { name: pickName })}</span>
+            <Button onClick={() => store.getState().setUi({ pick: null })}>
+              {t('circuits.done')}
+            </Button>
+          </div>
+        ) : hint ? (
           <p
             className="pointer-events-none absolute top-2 left-1/2 max-w-[90%] -translate-x-1/2 rounded bg-text px-3 py-1 text-center text-surface"
             role="status"

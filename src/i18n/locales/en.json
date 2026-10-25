@@ -363,7 +363,9 @@
       "total": "Length with drops",
       "plan": "Plan length",
       "conduit": "Conduit",
-      "runElevation": "Run elevation"
+      "runElevation": "Run elevation",
+      "occupancy": "Conductors inside: {{count}}",
+      "empty": "No conductors routed here yet."
     },
     "riser": {
       "title": "Linked floors",
@@ -496,5 +498,72 @@
     "circuitsOn": "Protects: {{names}}",
     "noCircuits": "No circuits on this device yet.",
     "deleteUsed": "Delete ({{count}} circuits become unprotected)"
+  },
+  "units": {
+    "mm2": "{{value}} mm²"
+  },
+  "conductorRoles": {
+    "L": "L",
+    "N": "N",
+    "PE": "PE",
+    "traveler": "Traveler",
+    "return": "Return",
+    "other": "Other"
+  },
+  "circuits": {
+    "noPanel": "Place a panel on the plan to add circuits.",
+    "noDevices": "Add protective devices in the panel designer first.",
+    "noDevice": "No device",
+    "new": "New circuit",
+    "defaultName": "Circuit",
+    "twoWay": "Two-way switch",
+    "twoWayHint": "Select two terminal boxes on the plan: adds two travelers between them.",
+    "targets": "{{count}} targets",
+    "routed": "{{count}} segments",
+    "unreachable": "{{count}} targets unreachable",
+    "extraRun": "Extra conductors",
+    "extraRunTitle": "Extra conductors {{from}} → {{to}}",
+    "selectHint": "Select a circuit to edit it. Its path is highlighted on the plan.",
+    "routing": "Routing",
+    "mode": {
+      "auto": "Shortest path",
+      "manual": "Manual"
+    },
+    "editRoute": "Pick segments on the plan",
+    "doneEditingRoute": "Done picking segments",
+    "name": "Name",
+    "type": "Type",
+    "types": {
+      "lighting": "Lighting",
+      "sockets": "Sockets",
+      "dedicated": "Dedicated",
+      "other": "Other"
+    },
+    "device": "Protecting device",
+    "section": "Cross-section",
+    "conductors": "Conductors",
+    "conductorColor": "Color of {{role}}",
+    "conductorSection": "Section of conductor {{n}}",
+    "removeConductor": "Remove {{role}}",
+    "targetsTitle": "Targets",
+    "noTargets": "No targets yet.",
+    "pickTargets": "Pick targets on the plan",
+    "donePicking": "Done picking",
+    "delete": "Delete circuit",
+    "deleteRun": "Delete extra conductors",
+    "belongsTo": "Belongs to circuit",
+    "noCircuit": "None",
+    "done": "Done",
+    "pickBanner": {
+      "targets": "Click boxes to add or remove targets of {{name}}. Esc to finish.",
+      "route": "Click conduit segments to add or remove them from the route. Esc to finish."
+    },
+    "problems": {
+      "no_source": "No panel feeds it",
+      "missing_segment": "Route uses a deleted segment",
+      "unreached_target": "Route does not reach every target",
+      "cycle": "Route has a loop",
+      "dead_end": "Route has a dead end"
+    }
   }
 }

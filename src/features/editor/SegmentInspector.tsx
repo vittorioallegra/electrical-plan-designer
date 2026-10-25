@@ -5,8 +5,10 @@ import { createLengthContext } from '@/domain/lengths';
 import type { ConduitSegment, RunElevation } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { Button } from '@/ui/Button';
-import { formatLength } from '@/ui/format';
+import { formatLength, formatNumber } from '@/ui/format';
 import { useItemName, useItemsOf } from '../catalog/useCatalog';
+import { useAnalysis } from '../bom/useAnalysis';
+import { ConductorBadge } from '../circuits/ConductorBadge';
 
 const elevations: RunElevation[] = ['floor', 'ceiling', 'direct'];
 
@@ -26,6 +28,12 @@ export function SegmentInspector({
   const conduits = useItemsOf('conduit');
   const itemName = useItemName();
   const ctx = createLengthContext(doc, settings);
+  const { routing } = useAnalysis();
+  const conductors = routing.occupancy.get(segment.id) ?? [];
+  const ownerName = (o: { kind: string; id: string }) =>
+    o.kind === 'circuit'
+      ? (doc.circuits.find((c) => c.id === o.id)?.name ?? o.id)
+      : t('circuits.extraRun');
   const from = doc.nodes.find((n) => n.id === segment.fromNodeId);
   const to = doc.nodes.find((n) => n.id === segment.toNodeId);
   const riser = ctx.isRiser(segment);
@@ -90,6 +98,25 @@ export function SegmentInspector({
           </select>
         </label>
       ) : null}
+      <div className="flex flex-col gap-1" data-testid="segment-occupancy">
+        <span className="font-medium">
+          {t('inspector.segment.occupancy', { count: conductors.length })}
+        </span>
+        {conductors.length === 0 ? (
+          <span className="text-text-muted">{t('inspector.segment.empty')}</span>
+        ) : null}
+        <ul className="flex flex-col gap-0.5">
+          {conductors.map((c, i) => (
+            <li key={i} className="flex flex-wrap items-center gap-x-2">
+              <ConductorBadge role={c.role} color={c.color} />
+              <span className="tabular-nums text-text-muted">
+                {t('units.mm2', { value: formatNumber(c.crossSection, locale) })}
+              </span>
+              <span className="text-text-muted">{ownerName(c.owner)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
       <Button variant="danger" disabled={readOnly} onClick={onDelete}>
         <Trash2 size={16} />
         {t('inspector.delete')}

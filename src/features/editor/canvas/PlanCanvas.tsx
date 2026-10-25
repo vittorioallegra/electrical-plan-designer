@@ -18,6 +18,8 @@ import { newId } from '@/domain/ids';
 import type { Floor, PlanNode, Point, RunElevation } from '@/domain/types';
 import { useEditor, useEditorContext } from '@/state/EditorContext';
 import { useCatalog } from '../../catalog/useCatalog';
+import { useAnalysis } from '../../bom/useAnalysis';
+import { toggleRouteSegment, toggleTarget } from '../../circuits/commands';
 import { formatLength } from '@/ui/format';
 import { provisionDash, symbolPaths, type SymbolKind } from '@/ui/symbols';
 import { addConduit, addConduitToNewJunction, moveSelection, nodeAt, placeNode } from '../commands';
@@ -89,6 +91,9 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
   const { image } = useBackgroundImage(floor?.background?.storagePath);
   const { profile } = useCatalog();
   const presetId = useEditor((s) => s.ui.presetId);
+  const pick = useEditor((s) => s.ui.pick);
+  const activeOwner = useEditor((s) => s.ui.activeOwner);
+  const { routing } = useAnalysis();
 
   const [cursor, setCursor] = useState<SnapResult | null>(null);
   const [wallStart, setWallStart] = useState<Point | null>(null);
@@ -176,6 +181,10 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
         return;
       }
       if (e.key === 'Escape') {
+        if (store.getState().ui.pick) {
+          store.getState().setUi({ pick: null });
+          return;
+        }
         if (wallStart || calibration.length > 0 || conduit) {
           setWallStart(null);
           setCalibration([]);
@@ -331,6 +340,20 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
     const world = screenToWorld(view, p);
     const s = store.getState();
 
+    if (pick && !s.readOnly) {
+      const hits = hitTest(doc, floorId, world, view.scale);
+      if (pick.mode === 'targets' && pick.owner.kind === 'circuit') {
+        const node = hits.find((h) => h.kind === 'node');
+        const kind = node ? nodeById.get(node.id)?.kind : undefined;
+        if (node && (kind === 'terminal_box' || kind === 'junction_box'))
+          toggleTarget(store, pick.owner.id, node.id);
+      } else if (pick.mode === 'route') {
+        const segment = hits.find((h) => h.kind === 'segment');
+        if (segment) toggleRouteSegment(store, pick.owner, segment.id);
+      }
+      return;
+    }
+
     if (tool === 'select') {
       const hits = hitTest(doc, floorId, world, view.scale);
       lastHits.current = { hits, index: 0 };
@@ -465,6 +488,34 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
       .flatMap((s) => [s.fromNodeId, s.toNodeId]),
   );
   const conduitFrom = conduit ? nodeById.get(conduit.fromNodeId) : undefined;
+  const activeRoute = activeOwner
+    ? activeOwner.kind === 'circuit'
+      ? routing.circuitRoutes.get(activeOwner.id)
+      : routing.extraRunRoutes.get(activeOwner.id)
+    : undefined;
+  const highlighted = new Set(
+    pick?.mode === 'route'
+      ? (() => {
+          const owner =
+            pick.owner.kind === 'circuit'
+              ? doc.circuits.find((c) => c.id === pick.owner.id)
+              : doc.extraRuns.find((r) => r.id === pick.owner.id);
+          return owner?.routing.mode === 'manual' ? owner.routing.segmentIds : [];
+        })()
+      : activeRoute?.ok
+        ? activeRoute.segmentIds
+        : [],
+  );
+  const activeTargets = new Set(
+    activeOwner?.kind === 'circuit'
+      ? (doc.circuits.find((c) => c.id === activeOwner.id)?.targetNodeIds ?? [])
+      : activeOwner
+        ? (() => {
+            const r = doc.extraRuns.find((x) => x.id === activeOwner.id);
+            return r ? [r.fromNodeId, r.toNodeId] : [];
+          })()
+        : [],
+  );
 
   return (
     <div
@@ -540,6 +591,16 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
             };
             return (
               <Group key={s.id}>
+                {highlighted.has(s.id) ? (
+                  <Line
+                    points={points.flatMap((p) => [p.x, p.y])}
+                    stroke={colors.highlight}
+                    strokeWidth={10}
+                    opacity={0.45}
+                    strokeScaleEnabled={false}
+                    lineJoin="round"
+                  />
+                ) : null}
                 {selected.has(s.id) ? (
                   <Line
                     points={points.flatMap((p) => [p.x, p.y])}
@@ -576,6 +637,14 @@ export function PlanCanvas({ onCalibrationPoints, onDeleteRequest }: PlanCanvasP
               <Group key={n.id} x={pos.x} y={pos.y}>
                 {selected.has(n.id) ? (
                   <Circle radius={px(16)} fill={colors.selection} opacity={0.2} />
+                ) : null}
+                {activeTargets.has(n.id) ? (
+                  <Circle
+                    radius={px(15)}
+                    stroke={colors.highlight}
+                    strokeWidth={2.5}
+                    strokeScaleEnabled={false}
+                  />
                 ) : null}
                 <Path
                   data={symbolPaths[symbolOf(n)]}
