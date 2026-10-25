@@ -366,7 +366,7 @@ Approved: yes (2026-10-25)
 - [x] 5. Domain geometry and lengths — `feat: add domain geometry and segment lengths`
 - [x] 6. Domain routing and occupancy — `feat: add conduit routing, manual route validation and occupancy`
 - [x] 7. Domain BOM — `feat: add BOM computation and purchase reconciliation`
-- [ ] 8. Domain checks and conduit fill
+- [x] 8. Domain checks and conduit fill — `feat: add basic checks and conduit fill`
 - [ ] 9. Domain quote math
 - [ ] 10. Supabase local schema, RLS, save RPC, storage, seed, deploy doc
 - [ ] 11. Auth, profile, project list
@@ -417,8 +417,8 @@ Approved: yes (2026-10-25)
 - None.
 
 ### Next
-Step 8: domain checks 1–9 + conduit fill (`src/domain/checks.ts`, `conduitFill.ts`), one
-triggering and one clean fixture per check.
+Step 9: domain quote math (`src/domain/quote.ts`): material lines × price lookup (user item →
+override → unpriced), adjustment %, labor, VAT, integer cents, `issueQuote` snapshot; AC 15b.
 
 ## Review record
 
