@@ -354,7 +354,7 @@ Every test carries a one-line card comment: `protects=...; fails_when=...; no_cl
 ## Progress
 
 Phase: done
-Branch: feat/electrical-plan-designer
+Branch: main
 Spec: docs/specs/electrical-plan-designer.md
 Approved: yes (2026-10-25)
 
@@ -473,10 +473,9 @@ Approved: yes (2026-10-25)
 - Review ran a reduced `review` skill (no specialist subagents or adversarial pass).
 
 ### Next
-Verification done. Decide on publishing: the repo has no remote and no `main` branch
-(history starts on `feat/electrical-plan-designer`), so publishing means creating a GitHub
-repository first (user chose not to publish yet, 2026-10-25). Then the dogfood checkpoint
-and the open questions above.
+Verification done. The feature branch was renamed to `main` (user, 2026-10-25). The repo
+has no remote: publishing means creating a GitHub repository and pushing `main` (not
+done yet). Then the dogfood checkpoint and the open questions above.
 
 ## Review record
 
