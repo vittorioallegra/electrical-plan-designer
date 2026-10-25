@@ -690,5 +690,28 @@
     "warningsTitle": "Open warnings",
     "floorTitle": "Floor plan: {{name}}",
     "emptyFloor": "Nothing drawn on this floor yet."
+  },
+  "purchases": {
+    "saveFailed": "Could not save the purchase. Check the connection and try again.",
+    "progress": "{{done}} of {{total}} bought",
+    "remainingOnly": "Show remaining only",
+    "partial": "Bought {{bought}} / need {{need}}",
+    "bought": "Bought",
+    "boughtOf": "Bought: {{name}}",
+    "orphans": "No longer in the BOM",
+    "orphansHint": "Bought earlier, but the drawing no longer needs them.",
+    "clear": "Clear"
+  },
+  "mobile": {
+    "desktopView": "Switch to the desktop editor",
+    "mobileView": "Mobile view",
+    "checklist": "Checklist",
+    "plan": "Plan",
+    "floors": "Floors",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to screen",
+    "tabletNotice": "The editor works best on screens at least 1024 px wide.",
+    "dismiss": "Dismiss"
   }
 }

@@ -690,5 +690,28 @@
     "warningsTitle": "Avvisi aperti",
     "floorTitle": "Pianta: {{name}}",
     "emptyFloor": "Niente disegnato su questo piano."
+  },
+  "purchases": {
+    "saveFailed": "Impossibile salvare l’acquisto. Controlla la connessione e riprova.",
+    "progress": "{{done}} di {{total}} acquistati",
+    "remainingOnly": "Mostra solo da comprare",
+    "partial": "Comprati {{bought}} / servono {{need}}",
+    "bought": "Comprati",
+    "boughtOf": "Comprato: {{name}}",
+    "orphans": "Non più in distinta",
+    "orphansHint": "Comprati prima, ma il disegno non li richiede più.",
+    "clear": "Rimuovi"
+  },
+  "mobile": {
+    "desktopView": "Passa all’editor desktop",
+    "mobileView": "Vista mobile",
+    "checklist": "Lista acquisti",
+    "plan": "Pianta",
+    "floors": "Piani",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "fit": "Adatta allo schermo",
+    "tabletNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
+    "dismiss": "Chiudi"
   }
 }

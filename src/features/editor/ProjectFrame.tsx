@@ -53,6 +53,8 @@ export function ProjectFrame({
   const conflict = useEditor((s) => s.saveStatus === 'conflict');
   const importInput = useRef<HTMLInputElement>(null);
   const [conflictOpen, setConflictOpen] = useState(true);
+  // 768–1023 px gets the editor with a non-blocking notice, checked once on open.
+  const [narrow, setNarrow] = useState(() => window.innerWidth < 1024);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -176,6 +178,14 @@ export function ProjectFrame({
         <LanguageSwitch />
       </header>
 
+      {narrow ? (
+        <div className="flex items-center gap-3 bg-surface-muted px-3 py-1.5" role="status">
+          <span>{t('mobile.tabletNotice')}</span>
+          <Button variant="ghost" onClick={() => setNarrow(false)}>
+            {t('mobile.dismiss')}
+          </Button>
+        </div>
+      ) : null}
       {readOnly ? (
         <p className="bg-warning-bg px-3 py-1.5 text-warning" role="status">
           {t('editor.readOnly')}

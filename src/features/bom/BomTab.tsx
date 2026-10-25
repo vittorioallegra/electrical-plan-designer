@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { bomCategoryOrder, type BomLine } from '@/domain/bom';
+import { bomCategoryOrder, type BomLine, type PurchaseLineStatus } from '@/domain/bom';
+import { useEditor } from '@/state/EditorContext';
 import { formatNumber } from '@/ui/format';
 import { useCatalog } from '../catalog/useCatalog';
 import { describeBomLine } from './describe';
 import { useAnalysis } from './useAnalysis';
+import { usePurchases } from './usePurchases';
 
 /** Sum of a category's quantities, when every line shares one unit. */
 function CategoryTotal({ lines }: { lines: readonly BomLine[] }) {
@@ -19,11 +21,25 @@ function CategoryTotal({ lines }: { lines: readonly BomLine[] }) {
   );
 }
 
+function PartialNote({ line, purchased }: { line: BomLine; purchased?: PurchaseLineStatus }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'it' ? 'it' : 'en';
+  if (purchased?.status !== 'partial') return null;
+  const qty = (n: number) => `${formatNumber(n, locale)} ${t(`bom.units.${line.unit}`)}`;
+  return (
+    <span className="block text-warning">
+      {t('purchases.partial', { bought: qty(purchased.purchased!), need: qty(line.quantity) })}
+    </span>
+  );
+}
+
 export function BomTab() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { bom } = useAnalysis();
   const { lookup } = useCatalog();
+  const projectId = useEditor((s) => s.projectId);
+  const purchases = usePurchases(projectId, bom);
   if (bom.length === 0) return <p className="text-text-muted">{t('editor.empty.bom')}</p>;
   const groups = bomCategoryOrder
     .map((category) => [category, bom.filter((l) => l.category === category)] as const)
@@ -47,7 +63,21 @@ export function BomTab() {
                     data-key={line.key}
                     className={line.category === 'missing' ? 'text-error' : ''}
                   >
-                    <td className="py-0.5 pr-2">{describeBomLine(line, lookup, t, locale)}</td>
+                    <td className="w-6 py-0.5 align-top">
+                      <input
+                        type="checkbox"
+                        aria-label={t('purchases.boughtOf', {
+                          name: describeBomLine(line, lookup, t, locale),
+                        })}
+                        disabled={purchases.loading}
+                        checked={purchases.status.get(line.key)?.status === 'done'}
+                        onChange={() => purchases.toggle(line)}
+                      />
+                    </td>
+                    <td className="py-0.5 pr-2">
+                      {describeBomLine(line, lookup, t, locale)}
+                      <PartialNote line={line} purchased={purchases.status.get(line.key)} />
+                    </td>
                     <td className="py-0.5 text-right whitespace-nowrap tabular-nums">
                       {formatNumber(line.quantity, locale)} {t(`bom.units.${line.unit}`)}
                     </td>

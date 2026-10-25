@@ -385,7 +385,7 @@ Approved: yes (2026-10-25)
   `feat: add quote CSV export for live and issued quotes`,
   `feat: add quote PDF with business header and logo`,
   `feat: add project PDF export with floor plans, panel, tables and warnings`
-- [ ] 21. Mobile light view and purchase checklist
+- [x] 21. Mobile light view and purchase checklist — `feat: add mobile light view with purchase checklist and read-only plan`
 - [ ] 22. i18n completeness, full test run, CLAUDE.md update
 
 ### Verification
@@ -444,6 +444,9 @@ Approved: yes (2026-10-25)
 - PDF text must stay inside WinAnsi (no "→"): other characters make jsPDF re-encode the string
   and space out the letters. The project PDF is drawn as vectors from the doc (backgrounds via
   `addImage` with `rotatedImageBox`), never from the Konva canvas.
+- View mode (editor vs mobile) is resolved once per browser tab session (`sessionStorage`
+  `epd.viewMode`) and changed only by the manual switch. Purchase ticks are also shown and
+  editable in the desktop BOM tab, so AC 14 holds in both directions.
 - `CatalogProvider` (mounted by `RequireAuth`) loads user catalog items and the profile (price
   list, box presets) once per session; built-in prices are set from the catalog page as account
   price overrides.
@@ -453,9 +456,9 @@ Approved: yes (2026-10-25)
   the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 21: mobile light view (< 768 px): project list, BOM checklist backed by `purchase_marks`
-(purchased quantity, shortfall, "show remaining", optimistic toggle with rollback toast),
-read-only plan with floor switcher; E2E at 375 px (AC 14).
+Step 22: i18n completeness check (every `en.json` key in `it.json`, no literal JSX strings),
+`pnpm verify` green, update `CLAUDE.md` (new folders: `features/checks`, `exports`, `mobile`,
+`quote`). Then Phase 4 (qa, then review).
 
 ## Review record
 
