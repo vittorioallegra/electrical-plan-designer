@@ -143,7 +143,7 @@ export function CatalogPage() {
                   {builtin ? (
                     <NumberInput
                       aria-label={t('catalog.priceFor', { name: itemName(item) })}
-                      className="w-28"
+                      className="w-36"
                       value={override !== undefined ? override / 100 : null}
                       placeholder={t('catalog.unpriced')}
                       unit="€"
