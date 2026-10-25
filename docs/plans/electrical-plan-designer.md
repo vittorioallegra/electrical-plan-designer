@@ -378,7 +378,7 @@ Approved: yes (2026-10-25)
 - [x] 17. Panel designer — `feat: add panel designer with DIN rails, slots and upstream groups`
 - [x] 18. Circuits UI and routing — `feat: add circuits tab, target picking, manual routes and extra runs`,
   `test: cover circuits tab creation, target picking, manual routes and occupancy`
-- [ ] 19. Checks panel, full BOM, dogfood checkpoint — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
+- [x] 19. Checks panel, full BOM, dogfood checkpoint (checkpoint deferred, see Open questions) — `feat: add warnings tab with grouping, badge, click-to-select and connectivity filter`,
   `feat: add BOM category totals and the progress strip`,
   `test: add first-project E2E following the progress strip`
 - [ ] 20. Exports and quote
@@ -439,12 +439,11 @@ Approved: yes (2026-10-25)
   price overrides.
 
 ### Open questions
-- None.
+- Dogfood checkpoint (step 19) deferred by the user on 2026-10-25: draw one real floor, compare
+  the BOM with the hand count, record the time taken and every difference here.
 
 ### Next
-Step 19, remaining: the dogfood checkpoint (needs the user: draw one real floor of the house,
-compare the BOM with the hand count, record the time taken and every difference here). Then
-step 20 (exports and quote).
+Step 20: quote page, "Issue quote" snapshot, project PDF, quote PDF, CSV (see step 20 above).
 
 ## Review record
 
