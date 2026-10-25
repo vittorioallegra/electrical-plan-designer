@@ -1,90 +1,29 @@
-import type Konva from 'konva';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Circle,
-  Group,
-  Image as KonvaImage,
-  Layer,
-  Line,
-  Path,
-  Rect,
-  Stage,
-  Text,
-} from 'react-konva';
-import {
-  backgroundMetersPerPixel,
-  UNCALIBRATED_MPP,
-  worldToBackground,
-} from '@epd/domain/geometry';
+import { Stage } from 'react-konva';
 import { createLengthContext } from '@epd/domain/lengths';
-import { newId } from '@epd/domain/ids';
-import type { Floor, PlanNode, Point, RunElevation } from '@epd/domain/types';
-import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
-import type { EditorStore } from '@/stores/editor/editorStore';
+import type { PlanNode, Point } from '@epd/domain/types';
 import { useCatalog } from '@/api/catalog';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { formatLength } from '@/lib/format';
-import { provisionDash, symbolPaths, type SymbolKind } from '@/components/symbols/symbols';
+import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { useCanvasColors } from './canvasColors';
+import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
+import { usePlanPointer, type CanvasPickHandlers } from './hooks/usePlanPointer';
+import { useStageSize } from './hooks/useStageSize';
+import { useTouchNavigation } from './hooks/useTouchNavigation';
+import { BackgroundLayer } from './layers/BackgroundLayer';
+import { PlanLayer, type PlanScene } from './layers/PlanLayer';
+import { ToolOverlayLayer } from './layers/ToolOverlayLayer';
 import {
-  addConduit,
-  addConduitToNewJunction,
-  moveSelection,
-  nodeAt,
-  placeNode,
-} from '@/features/editor/utils/commands';
-import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from './hitTest';
-import { LABEL_FONT_PX, nodeLabelBox, segmentLabelBox, type LabelBox } from './labels';
-import { snapPoint, type SnapResult } from './snapping';
+  activeTargetNodes,
+  floorSegmentsOf,
+  gridLines,
+  highlightedSegments,
+  legsByNode,
+  linkedRisers,
+} from './planScene';
 import { useBackgroundImage } from './useBackgroundImage';
-import { centerOn, gridStep, screenToWorld, snapStep, zoomAt, type View } from './viewport';
-
-export const DEFAULT_WALL_THICKNESS = 0.2;
-/** Below this zoom (px per meter) length labels are hidden; node labels below half of it. */
-export const LABEL_MIN_SCALE = 30;
-
-const css = (name: string) =>
-  typeof document === 'undefined'
-    ? '#000'
-    : getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000';
-
-type Drag =
-  | { kind: 'pan'; start: Point; view: View; moved: boolean }
-  | { kind: 'box'; start: Point; current: Point; additive: boolean; moved: boolean }
-  | {
-      kind: 'move';
-      nodeIds: string[];
-      start: Point;
-      anchor: Point;
-      delta: Point;
-      duplicate: boolean;
-      moved: boolean;
-    };
-
-export function symbolOf(node: PlanNode): SymbolKind {
-  switch (node.kind) {
-    case 'panel':
-      return 'panel';
-    case 'junction_box':
-      return 'junction_box';
-    case 'riser_point':
-      return 'riser';
-    case 'terminal_box':
-      return node.mounting === 'switch'
-        ? 'switch'
-        : node.mounting === 'ceiling'
-          ? 'ceiling'
-          : 'socket';
-  }
-}
-
-type PickOwner = { kind: 'circuit' | 'extra'; id: string };
-
-/** Circuit picking edits, injected so the canvas does not depend on the circuits feature. */
-export interface CanvasPickHandlers {
-  toggleTarget: (store: EditorStore, circuitId: string, nodeId: string) => void;
-  toggleRouteSegment: (store: EditorStore, owner: PickOwner, segmentId: string) => void;
-}
+import { centerOn } from './viewport';
 
 export interface PlanCanvasProps {
   onCalibrationPoints: (p1: Point, p2: Point) => void;
@@ -103,7 +42,7 @@ export function PlanCanvas({
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
   const container = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 800, height: 600 });
+  const size = useStageSize(container);
   const view = useEditor((s) => s.ui.view);
   const tool = useEditor((s) => s.ui.tool);
   const floorId = useEditor((s) => s.ui.floorId);
@@ -117,42 +56,7 @@ export function PlanCanvas({
   const pick = useEditor((s) => s.ui.pick);
   const activeOwner = useEditor((s) => s.ui.activeOwner);
   const { routing } = useAnalysis();
-
-  const [cursor, setCursor] = useState<SnapResult | null>(null);
-  const [wallStart, setWallStart] = useState<Point | null>(null);
-  const [calibration, setCalibration] = useState<Point[]>([]);
-  const [conduit, setConduit] = useState<{ fromNodeId: string; vertices: Point[] } | null>(null);
-  const [drag, setDrag] = useState<Drag | null>(null);
-  const suppressClick = useRef(false);
-  const lastHits = useRef<{ hits: Hit[]; index: number } | null>(null);
-
-  const colors = useMemo(
-    () => ({
-      background: css('--color-canvas-bg'),
-      grid: css('--color-canvas-grid'),
-      wall: css('--color-canvas-wall'),
-      node: css('--color-canvas-node'),
-      selection: css('--color-canvas-selection'),
-      highlight: css('--color-canvas-highlight'),
-      riser: css('--color-canvas-riser'),
-      run: {
-        floor: css('--color-canvas-run-floor'),
-        ceiling: css('--color-canvas-run-ceiling'),
-        direct: css('--color-canvas-run-direct'),
-      } satisfies Record<RunElevation, string>,
-    }),
-    [],
-  );
-
-  useEffect(() => {
-    const el = container.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const colors = useCanvasColors();
 
   // A focus request (e.g. from the warnings tab) pans the view to that point once.
   const focus = useEditor((s) => s.ui.focus);
@@ -162,20 +66,9 @@ export function PlanCanvas({
     state.setUi({ view: centerOn(state.ui.view, focus, size), focus: null });
   }, [focus, size, store]);
 
-  // Tool switches and floor switches reset the in-progress action.
-  const actionKey = `${tool}|${floorId}`;
-  const [lastActionKey, setLastActionKey] = useState(actionKey);
-  if (lastActionKey !== actionKey) {
-    setLastActionKey(actionKey);
-    setWallStart(null);
-    setCalibration([]);
-    setConduit(null);
-  }
-
   const lengths = useMemo(() => createLengthContext(doc, settings), [doc, settings]);
   const floorNodes = useMemo(() => doc.nodes.filter((n) => n.floorId === floorId), [doc, floorId]);
   const nodeById = useMemo(() => new Map(doc.nodes.map((n) => [n.id, n])), [doc]);
-
   const snapTargets = useMemo(() => {
     const ids = new Set(floorNodes.map((n) => n.id));
     return {
@@ -185,438 +78,46 @@ export function PlanCanvas({
     };
   }, [floorNodes, doc.segments, floor]);
 
-  function snapped(raw: Point, alt: boolean): SnapResult {
-    return snapPoint(raw, snapTargets, {
-      scale: view.scale,
-      gridStep: snapStep(view.scale),
-      enabled: !alt,
-    });
-  }
-
-  function select(ids: string[]) {
-    store.getState().setUi({ selection: ids });
-  }
-
-  function finishConduitAtVertex() {
-    if (!conduit || conduit.vertices.length === 0) return;
-    const jb = addConduitToNewJunction(store, conduit.fromNodeId, conduit.vertices);
-    setConduit(jb ? { fromNodeId: jb, vertices: [] } : null);
-  }
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-      ) {
-        return;
-      }
-      if (e.key === 'Escape') {
-        if (store.getState().ui.pick) {
-          store.getState().setUi({ pick: null });
-          return;
-        }
-        if (wallStart || calibration.length > 0 || conduit) {
-          setWallStart(null);
-          setCalibration([]);
-          setConduit(null);
-        } else {
-          store.getState().setUi({ tool: 'select', selection: [] });
-        }
-        return;
-      }
-      if (tool === 'conduit' && conduit) {
-        if (e.key === 'Backspace') {
-          e.preventDefault();
-          setConduit({ ...conduit, vertices: conduit.vertices.slice(0, -1) });
-          return;
-        }
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          finishConduitAtVertex();
-          return;
-        }
-      }
-      if (e.key === 'Tab' && lastHits.current && lastHits.current.hits.length > 1) {
-        e.preventDefault();
-        const next = (lastHits.current.index + 1) % lastHits.current.hits.length;
-        lastHits.current.index = next;
-        select([lastHits.current.hits[next]!.id]);
-        return;
-      }
-      if (
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        store.getState().ui.selection.length > 0
-      ) {
-        e.preventDefault();
-        onDeleteRequest(store.getState().ui.selection);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+  const pointer = usePlanPointer({
+    store,
+    view,
+    tool,
+    floorId,
+    floor,
+    doc,
+    nodeById,
+    snapTargets,
+    pick,
+    pickHandlers,
+    boxPreset: profile?.boxPresets.find((p) => p.id === presetId),
+    onCalibrationPoints,
   });
+  useCanvasKeyboard({ store, tool, pointer, onDeleteRequest });
+  const touch = useTouchNavigation(store, container);
 
-  function pointerScreen(e: Konva.KonvaEventObject<MouseEvent | WheelEvent>): Point | null {
-    return e.target.getStage()?.getPointerPosition() ?? null;
-  }
-
-  function onWheel(e: Konva.KonvaEventObject<WheelEvent>) {
-    e.evt.preventDefault();
-    const p = pointerScreen(e);
-    if (!p) return;
-    store.getState().setUi({ view: zoomAt(view, p, Math.pow(1.0015, -e.evt.deltaY)) });
-  }
-
-  // Touch: one finger pans, two fingers pinch-zoom around their midpoint.
-  const touch = useRef<{ view: View; points: Point[] } | null>(null);
-  function touchPoints(e: Konva.KonvaEventObject<TouchEvent>): Point[] {
-    const rect = container.current?.getBoundingClientRect();
-    if (!rect) return [];
-    return [...e.evt.touches].map((t) => ({ x: t.clientX - rect.left, y: t.clientY - rect.top }));
-  }
-  function onTouchStart(e: Konva.KonvaEventObject<TouchEvent>) {
-    e.evt.preventDefault();
-    touch.current = { view: store.getState().ui.view, points: touchPoints(e) };
-  }
-  function onTouchMove(e: Konva.KonvaEventObject<TouchEvent>) {
-    e.evt.preventDefault();
-    const start = touch.current;
-    const points = touchPoints(e);
-    if (!start || points.length === 0) return;
-    if (points.length >= 2 && start.points.length >= 2) {
-      const mid = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
-      const c0 = mid(start.points[0]!, start.points[1]!);
-      const c1 = mid(points[0]!, points[1]!);
-      const d0 = Math.hypot(
-        start.points[1]!.x - start.points[0]!.x,
-        start.points[1]!.y - start.points[0]!.y,
-      );
-      const d1 = Math.hypot(points[1]!.x - points[0]!.x, points[1]!.y - points[0]!.y);
-      const zoomed = zoomAt(start.view, c0, d0 > 0 ? d1 / d0 : 1);
-      store.getState().setUi({
-        view: { ...zoomed, x: zoomed.x + c1.x - c0.x, y: zoomed.y + c1.y - c0.y },
-      });
-    } else {
-      store.getState().setUi({
-        view: {
-          ...start.view,
-          x: start.view.x + points[0]!.x - start.points[0]!.x,
-          y: start.view.y + points[0]!.y - start.points[0]!.y,
-        },
-      });
-    }
-  }
-  function onTouchEnd(e: Konva.KonvaEventObject<TouchEvent>) {
-    const points = touchPoints(e);
-    touch.current = points.length > 0 ? { view: store.getState().ui.view, points } : null;
-  }
-
-  function onMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
-    const p = pointerScreen(e);
-    if (!p) return;
-    const world = screenToWorld(view, p);
-    if (e.evt.button === 1) {
-      setDrag({ kind: 'pan', start: p, view, moved: false });
-      return;
-    }
-    if (e.evt.button !== 0 || tool !== 'select') return;
-    const hits = hitTest(doc, floorId, world, view.scale);
-    const top = hits[0];
-    if (top?.kind === 'node' && !store.getState().readOnly) {
-      const current = store.getState().ui.selection;
-      const nodeIds = current.includes(top.id)
-        ? current.filter((id) => nodeById.has(id))
-        : [top.id];
-      setDrag({
-        kind: 'move',
-        nodeIds,
-        start: world,
-        anchor: nodeById.get(top.id)!.position,
-        delta: { x: 0, y: 0 },
-        duplicate: e.evt.altKey,
-        moved: false,
-      });
-      return;
-    }
-    if (!top) {
-      setDrag(
-        e.evt.shiftKey
-          ? { kind: 'box', start: world, current: world, additive: true, moved: false }
-          : { kind: 'pan', start: p, view, moved: false },
-      );
-    }
-  }
-
-  function onMouseMove(e: Konva.KonvaEventObject<MouseEvent>) {
-    const p = pointerScreen(e);
-    if (!p) return;
-    const world = screenToWorld(view, p);
-    if (drag?.kind === 'pan') {
-      const dx = p.x - drag.start.x;
-      const dy = p.y - drag.start.y;
-      store.getState().setUi({ view: { ...drag.view, x: drag.view.x + dx, y: drag.view.y + dy } });
-      if (!drag.moved && Math.hypot(dx, dy) > 3) setDrag({ ...drag, moved: true });
-      return;
-    }
-    if (drag?.kind === 'box') {
-      setDrag({ ...drag, current: world, moved: true });
-      return;
-    }
-    if (drag?.kind === 'move') {
-      const raw = {
-        x: drag.anchor.x + world.x - drag.start.x,
-        y: drag.anchor.y + world.y - drag.start.y,
-      };
-      const target = snapPoint(
-        raw,
-        { ...snapTargets, nodes: snapTargets.nodes.filter((n) => !drag.nodeIds.includes(n.id)) },
-        {
-          scale: view.scale,
-          gridStep: snapStep(view.scale),
-          enabled: !e.evt.altKey || drag.duplicate,
-        },
-      ).point;
-      const delta = { x: target.x - drag.anchor.x, y: target.y - drag.anchor.y };
-      const moved =
-        drag.moved || Math.hypot(world.x - drag.start.x, world.y - drag.start.y) * view.scale > 3;
-      setDrag({ ...drag, delta, moved });
-      return;
-    }
-    if (tool !== 'select') {
-      setCursor(
-        tool === 'calibrate' ? { point: world, kind: 'none' } : snapped(world, e.evt.altKey),
-      );
-    }
-  }
-
-  function onMouseUp() {
-    if (!drag) return;
-    if (drag.moved) suppressClick.current = true;
-    if (drag.kind === 'move' && drag.moved && (drag.delta.x !== 0 || drag.delta.y !== 0)) {
-      moveSelection(store, drag.nodeIds, drag.delta, drag.duplicate);
-      if (!drag.duplicate) select(drag.nodeIds);
-    }
-    if (drag.kind === 'box' && drag.moved) {
-      const ids = boxSelect(doc, floorId, drag.start, drag.current);
-      const current = store.getState().ui.selection;
-      select(drag.additive ? [...new Set([...current, ...ids])] : ids);
-    }
-    setDrag(null);
-  }
-
-  function onClick(e: Konva.KonvaEventObject<MouseEvent>) {
-    if (e.evt.button !== 0) return;
-    if (suppressClick.current) {
-      suppressClick.current = false;
-      return;
-    }
-    const p = pointerScreen(e);
-    if (!p) return;
-    const world = screenToWorld(view, p);
-    const s = store.getState();
-
-    if (pick && !s.readOnly) {
-      if (!pickHandlers) return;
-      const hits = hitTest(doc, floorId, world, view.scale);
-      if (pick.mode === 'targets' && pick.owner.kind === 'circuit') {
-        const node = hits.find((h) => h.kind === 'node');
-        const kind = node ? nodeById.get(node.id)?.kind : undefined;
-        if (node && (kind === 'terminal_box' || kind === 'junction_box'))
-          pickHandlers.toggleTarget(store, pick.owner.id, node.id);
-      } else if (pick.mode === 'route') {
-        const segment = hits.find((h) => h.kind === 'segment');
-        if (segment) pickHandlers.toggleRouteSegment(store, pick.owner, segment.id);
-      }
-      return;
-    }
-
-    if (tool === 'select') {
-      const hits = hitTest(doc, floorId, world, view.scale);
-      lastHits.current = { hits, index: 0 };
-      const top = hits[0];
-      if (!top) {
-        if (!e.evt.shiftKey) select([]);
-        return;
-      }
-      if (e.evt.shiftKey) {
-        const current = s.ui.selection;
-        select(
-          current.includes(top.id) ? current.filter((id) => id !== top.id) : [...current, top.id],
-        );
-      } else {
-        select([top.id]);
-      }
-      return;
-    }
-
-    if (s.readOnly) return;
-    const snap = snapped(world, e.evt.altKey);
-
-    if (tool === 'wall') {
-      const point = snap.point;
-      if (!wallStart) {
-        setWallStart(point);
-        return;
-      }
-      // Clicking the chain's last point again (a double click) ends the chain. Konva's own
-      // dblclick also fires for two quick clicks at different points, so it is not used.
-      if (point.x === wallStart.x && point.y === wallStart.y) {
-        setWallStart(null);
-        return;
-      }
-      const wall = { id: newId(), a: wallStart, b: point, thickness: DEFAULT_WALL_THICKNESS };
-      s.applyCommand('draw wall', (d) => {
-        d.doc.floors.find((f) => f.id === floorId)?.walls.push(wall);
-      });
-      setWallStart(point);
-      return;
-    }
-
-    if (tool === 'calibrate' && floor?.background) {
-      const next = [...calibration, toBackgroundPx(floor, world)];
-      if (next.length === 2) {
-        setCalibration([]);
-        onCalibrationPoints(next[0]!, next[1]!);
-      } else {
-        setCalibration(next);
-      }
-      return;
-    }
-
-    if (tool === 'conduit') {
-      const target = snap.kind === 'node' ? snap.nodeId : undefined;
-      if (!conduit) {
-        if (target) setConduit({ fromNodeId: target, vertices: [] });
-        return;
-      }
-      if (target && target !== conduit.fromNodeId) {
-        if (addConduit(store, conduit.fromNodeId, target, conduit.vertices)) {
-          setConduit({ fromNodeId: target, vertices: [] });
-        }
-        return;
-      }
-      if (target) return;
-      const last = conduit.vertices[conduit.vertices.length - 1];
-      if (last && last.x === snap.point.x && last.y === snap.point.y) {
-        finishConduitAtVertex();
-        return;
-      }
-      setConduit({ ...conduit, vertices: [...conduit.vertices, snap.point] });
-      return;
-    }
-
-    if (
-      tool === 'panel' ||
-      tool === 'junction_box' ||
-      tool === 'terminal_box' ||
-      tool === 'riser_point'
-    ) {
-      if (snap.kind === 'node' || nodeAt(doc, floorId, snap.point, NODE_HIT_PX / view.scale))
-        return;
-      const onSegment =
-        tool === 'junction_box'
-          ? hitTest(doc, floorId, snap.point, view.scale).find((h) => h.kind === 'segment')?.id
-          : undefined;
-      const preset =
-        tool === 'terminal_box' ? profile?.boxPresets.find((p) => p.id === presetId) : undefined;
-      placeNode(store, tool, snap.point, onSegment, preset);
-    }
-  }
-
-  const bg = floor?.background;
-  const mpp = bg ? backgroundMetersPerPixel(bg) : 1;
-  const step = gridStep(view.scale);
-  const visible = {
-    minX: -view.x / view.scale,
-    minY: -view.y / view.scale,
-    maxX: (size.width - view.x) / view.scale,
-    maxY: (size.height - view.y) / view.scale,
-  };
-  const gridLines: number[][] = [];
-  for (let x = Math.floor(visible.minX / step) * step; x <= visible.maxX; x += step) {
-    gridLines.push([x, visible.minY, x, visible.maxY]);
-  }
-  for (let y = Math.floor(visible.minY / step) * step; y <= visible.maxY; y += step) {
-    gridLines.push([visible.minX, y, visible.maxX, y]);
-  }
-
+  const { drag } = pointer;
   const moving = drag?.kind === 'move' && drag.moved && !drag.duplicate ? drag : null;
   const ghost = drag?.kind === 'move' && drag.moved && drag.duplicate ? drag : null;
   const posOf = (n: PlanNode): Point =>
     moving && moving.nodeIds.includes(n.id)
       ? { x: n.position.x + moving.delta.x, y: n.position.y + moving.delta.y }
       : n.position;
-  const px = (v: number) => v / view.scale;
-  const selected = new Set(selection);
-
-  const floorSegments = doc.segments.filter((s) => {
-    const a = nodeById.get(s.fromNodeId);
-    const b = nodeById.get(s.toNodeId);
-    return a?.floorId === floorId && b?.floorId === floorId;
-  });
-  // Direction of the first leg of every conduit at each node, for label placement.
-  const legsByNode = new Map<string, Point[]>();
-  for (const s of floorSegments) {
-    const a = posOf(nodeById.get(s.fromNodeId)!);
-    const b = posOf(nodeById.get(s.toNodeId)!);
-    const first = s.vertices[0] ?? b;
-    const last = s.vertices[s.vertices.length - 1] ?? a;
-    legsByNode.set(s.fromNodeId, [
-      ...(legsByNode.get(s.fromNodeId) ?? []),
-      { x: first.x - a.x, y: first.y - a.y },
-    ]);
-    legsByNode.set(s.toNodeId, [
-      ...(legsByNode.get(s.toNodeId) ?? []),
-      { x: last.x - b.x, y: last.y - b.y },
-    ]);
-  }
-  // Text with a halo in the canvas background color, so it stays readable over conduits.
-  const labelProps = (box: LabelBox, fill: string) => ({
-    x: px(box.x),
-    y: px(box.y),
-    width: px(box.width),
-    align: box.align,
-    fontSize: px(LABEL_FONT_PX),
-    fill,
-    stroke: colors.background,
-    strokeWidth: px(3),
-    fillAfterStrokeEnabled: true,
-  });
-  const linkedRisers = new Set(
-    doc.segments
-      .filter((s) => nodeById.get(s.fromNodeId)?.floorId !== nodeById.get(s.toNodeId)?.floorId)
-      .flatMap((s) => [s.fromNodeId, s.toNodeId]),
-  );
-  const conduitFrom = conduit ? nodeById.get(conduit.fromNodeId) : undefined;
-  const activeRoute = activeOwner
-    ? activeOwner.kind === 'circuit'
-      ? routing.circuitRoutes.get(activeOwner.id)
-      : routing.extraRunRoutes.get(activeOwner.id)
-    : undefined;
-  const highlighted = new Set(
-    pick?.mode === 'route'
-      ? (() => {
-          const owner =
-            pick.owner.kind === 'circuit'
-              ? doc.circuits.find((c) => c.id === pick.owner.id)
-              : doc.extraRuns.find((r) => r.id === pick.owner.id);
-          return owner?.routing.mode === 'manual' ? owner.routing.segmentIds : [];
-        })()
-      : activeRoute?.ok
-        ? activeRoute.segmentIds
-        : [],
-  );
-  const activeTargets = new Set(
-    activeOwner?.kind === 'circuit'
-      ? (doc.circuits.find((c) => c.id === activeOwner.id)?.targetNodeIds ?? [])
-      : activeOwner
-        ? (() => {
-            const r = doc.extraRuns.find((x) => x.id === activeOwner.id);
-            return r ? [r.fromNodeId, r.toNodeId] : [];
-          })()
-        : [],
-  );
+  const segments = floorSegmentsOf(doc, nodeById, floorId);
+  const scene: PlanScene = {
+    walls: floor?.walls ?? [],
+    segments,
+    nodes: floorNodes,
+    nodeById,
+    posOf,
+    legs: legsByNode(segments, nodeById, posOf),
+    selected: new Set(selection),
+    highlighted: highlightedSegments(doc, routing, pick, activeOwner),
+    activeTargets: activeTargetNodes(doc, activeOwner),
+    linkedRisers: linkedRisers(doc, nodeById),
+    ghost: ghost
+      ? { nodes: doc.nodes.filter((n) => ghost.nodeIds.includes(n.id)), delta: ghost.delta }
+      : null,
+  };
 
   return (
     <div
@@ -631,248 +132,36 @@ export function PlanCanvas({
         scaleY={view.scale}
         x={view.x}
         y={view.y}
-        onWheel={onWheel}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={() => {
-          setDrag(null);
-          setCursor(null);
-        }}
-        onClick={onClick}
-        onContextMenu={(e) => {
-          e.evt.preventDefault();
-          setWallStart(null);
-          setConduit(null);
-        }}
+        {...touch}
+        {...pointer.handlers}
         style={{
           cursor: tool === 'select' ? (drag?.kind === 'pan' ? 'grabbing' : 'default') : 'crosshair',
         }}
       >
-        <Layer listening={false}>
-          {bg && image ? (
-            <KonvaImage
-              image={image}
-              x={bg.offset.x}
-              y={bg.offset.y}
-              rotation={bg.rotation}
-              scaleX={mpp}
-              scaleY={mpp}
-              opacity={bg.opacity}
-            />
-          ) : null}
-          {gridLines.map((pts, i) => (
-            <Line
-              key={i}
-              points={pts}
-              stroke={colors.grid}
-              strokeWidth={1}
-              strokeScaleEnabled={false}
-            />
-          ))}
-        </Layer>
-        <Layer listening={false}>
-          {(floor?.walls ?? []).map((w) => (
-            <Line
-              key={w.id}
-              points={[w.a.x, w.a.y, w.b.x, w.b.y]}
-              stroke={selected.has(w.id) ? colors.selection : colors.wall}
-              strokeWidth={w.thickness}
-              lineCap="square"
-            />
-          ))}
-          {floorSegments.map((s) => {
-            const a = posOf(nodeById.get(s.fromNodeId)!);
-            const b = posOf(nodeById.get(s.toNodeId)!);
-            const points = [a, ...s.vertices, b];
-            const edge = Math.floor((points.length - 1) / 2);
-            const label = {
-              x: (points[edge]!.x + points[edge + 1]!.x) / 2,
-              y: (points[edge]!.y + points[edge + 1]!.y) / 2,
-            };
-            const labelBox = segmentLabelBox(points[edge]!, points[edge + 1]!);
-            return (
-              <Group key={s.id}>
-                {highlighted.has(s.id) ? (
-                  <Line
-                    points={points.flatMap((p) => [p.x, p.y])}
-                    stroke={colors.highlight}
-                    strokeWidth={10}
-                    opacity={0.45}
-                    strokeScaleEnabled={false}
-                    lineJoin="round"
-                  />
-                ) : null}
-                {selected.has(s.id) ? (
-                  <Line
-                    points={points.flatMap((p) => [p.x, p.y])}
-                    stroke={colors.selection}
-                    strokeWidth={8}
-                    opacity={0.35}
-                    strokeScaleEnabled={false}
-                    lineJoin="round"
-                  />
-                ) : null}
-                <Line
-                  points={points.flatMap((p) => [p.x, p.y])}
-                  stroke={colors.run[s.runElevation]}
-                  strokeWidth={2.5}
-                  strokeScaleEnabled={false}
-                  lineJoin="round"
-                  {...(s.runElevation === 'ceiling' ? { dash: [px(8), px(4)] } : {})}
-                />
-                {view.scale >= LABEL_MIN_SCALE ? (
-                  <Text
-                    {...labelProps(labelBox, colors.run[s.runElevation])}
-                    x={label.x + px(labelBox.x)}
-                    y={label.y + px(labelBox.y)}
-                    text={formatLength(lengths.segmentLengthMm(s) / 1000, locale)}
-                  />
-                ) : null}
-              </Group>
-            );
-          })}
-          {floorNodes.map((n) => {
-            const pos = posOf(n);
-            return (
-              <Group key={n.id} x={pos.x} y={pos.y}>
-                {selected.has(n.id) ? (
-                  <Circle radius={px(16)} fill={colors.selection} opacity={0.2} />
-                ) : null}
-                {activeTargets.has(n.id) ? (
-                  <Circle
-                    radius={px(15)}
-                    stroke={colors.highlight}
-                    strokeWidth={2.5}
-                    strokeScaleEnabled={false}
-                  />
-                ) : null}
-                <Path
-                  data={symbolPaths[symbolOf(n)]}
-                  x={px(-12)}
-                  y={px(-12)}
-                  scaleX={px(1)}
-                  scaleY={px(1)}
-                  stroke={n.kind === 'riser_point' ? colors.riser : colors.node}
-                  strokeWidth={1.6}
-                  strokeScaleEnabled={false}
-                  {...(n.kind === 'panel' ? { fill: colors.node } : {})}
-                  {...(n.status === 'provision' ? { dash: provisionDash } : {})}
-                />
-                {n.kind === 'riser_point' && !linkedRisers.has(n.id) ? (
-                  <Circle radius={px(3)} x={px(10)} y={px(-10)} fill={colors.riser} />
-                ) : null}
-                {view.scale >= LABEL_MIN_SCALE / 2 ? (
-                  <Text
-                    {...labelProps(nodeLabelBox(legsByNode.get(n.id) ?? []), colors.node)}
-                    text={n.label}
-                  />
-                ) : null}
-              </Group>
-            );
-          })}
-          {ghost
-            ? doc.nodes
-                .filter((n) => ghost.nodeIds.includes(n.id))
-                .map((n) => (
-                  <Circle
-                    key={n.id}
-                    x={n.position.x + ghost.delta.x}
-                    y={n.position.y + ghost.delta.y}
-                    radius={px(12)}
-                    stroke={colors.selection}
-                    strokeWidth={1.5}
-                    strokeScaleEnabled={false}
-                    dash={[4, 3]}
-                  />
-                ))
-            : null}
-        </Layer>
-        <Layer listening={false}>
-          {wallStart && cursor ? (
-            <Line
-              points={[wallStart.x, wallStart.y, cursor.point.x, cursor.point.y]}
-              stroke={colors.selection}
-              strokeWidth={DEFAULT_WALL_THICKNESS}
-              opacity={0.5}
-            />
-          ) : null}
-          {conduitFrom ? (
-            <Line
-              points={[
-                conduitFrom.position,
-                ...conduit!.vertices,
-                ...(cursor ? [cursor.point] : []),
-              ].flatMap((p) => [p.x, p.y])}
-              stroke={colors.run[settings.defaultRunElevation]}
-              strokeWidth={2.5}
-              strokeScaleEnabled={false}
-              dash={[6, 4]}
-            />
-          ) : null}
-          {bg
-            ? calibration.map((cpx, i) => (
-                <Circle
-                  key={i}
-                  {...backgroundPxToWorld(bg, cpx, mpp)}
-                  radius={px(5)}
-                  stroke={colors.highlight}
-                  strokeWidth={2}
-                  strokeScaleEnabled={false}
-                />
-              ))
-            : null}
-          {drag?.kind === 'box' ? (
-            <Rect
-              x={Math.min(drag.start.x, drag.current.x)}
-              y={Math.min(drag.start.y, drag.current.y)}
-              width={Math.abs(drag.current.x - drag.start.x)}
-              height={Math.abs(drag.current.y - drag.start.y)}
-              stroke={colors.selection}
-              strokeWidth={1}
-              strokeScaleEnabled={false}
-              dash={[4, 4]}
-            />
-          ) : null}
-          {cursor && tool !== 'select' ? (
-            <Rect
-              x={cursor.point.x - px(4)}
-              y={cursor.point.y - px(4)}
-              width={px(8)}
-              height={px(8)}
-              stroke={
-                cursor.kind === 'grid' || cursor.kind === 'none' ? colors.grid : colors.highlight
-              }
-              strokeWidth={1.5}
-              strokeScaleEnabled={false}
-            />
-          ) : null}
-        </Layer>
+        <BackgroundLayer
+          background={floor?.background}
+          image={image}
+          mpp={pointer.mpp}
+          gridLines={gridLines(view, size)}
+          colors={colors}
+        />
+        <PlanLayer
+          scene={scene}
+          scale={view.scale}
+          colors={colors}
+          lengths={lengths}
+          locale={locale}
+        />
+        <ToolOverlayLayer
+          pointer={pointer}
+          tool={tool}
+          scale={view.scale}
+          colors={colors}
+          background={floor?.background}
+          nodeById={nodeById}
+          runElevation={settings.defaultRunElevation}
+        />
       </Stage>
     </div>
   );
-}
-
-function toBackgroundPx(floor: Floor, world: Point): Point {
-  const bg = floor.background!;
-  const withCalibration = bg.calibration
-    ? bg
-    : {
-        ...bg,
-        calibration: { p1: { x: 0, y: 0 }, p2: { x: 1, y: 0 }, realDistance: UNCALIBRATED_MPP },
-      };
-  return worldToBackground(withCalibration, world)!;
-}
-
-function backgroundPxToWorld(bg: NonNullable<Floor['background']>, p: Point, mpp: number): Point {
-  const rad = (bg.rotation * Math.PI) / 180;
-  const x = p.x * mpp;
-  const y = p.y * mpp;
-  return {
-    x: bg.offset.x + x * Math.cos(rad) - y * Math.sin(rad),
-    y: bg.offset.y + x * Math.sin(rad) + y * Math.cos(rad),
-  };
 }

@@ -1,5 +1,5 @@
 import { toggleRouteSegment, toggleTarget } from '@/features/circuits/utils/commands';
-import type { CanvasPickHandlers } from '@/features/editor/canvas/PlanCanvas';
+import type { CanvasPickHandlers } from '@/features/editor/canvas/hooks/usePlanPointer';
 import { PlanView } from '@/features/editor/components/PlanView';
 
 const circuitPicking: CanvasPickHandlers = { toggleTarget, toggleRouteSegment };

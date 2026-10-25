@@ -7,7 +7,8 @@ import { Dialog } from '@/components/ui/Dialog';
 import { useToast } from '@/components/ui/Toast';
 import { BackgroundImportDialog } from '@/features/editor/background/BackgroundImportDialog';
 import { CalibrationDialog } from '@/features/editor/background/CalibrationDialog';
-import { PlanCanvas, type CanvasPickHandlers } from '@/features/editor/canvas/PlanCanvas';
+import type { CanvasPickHandlers } from '@/features/editor/canvas/hooks/usePlanPointer';
+import { PlanCanvas } from '@/features/editor/canvas/PlanCanvas';
 import {
   cascadeOfSelection,
   copySelection,
