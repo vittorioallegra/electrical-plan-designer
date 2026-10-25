@@ -290,7 +290,7 @@ Approved: yes (2026-10-25)
 - [x] 7. packages/domain (@epd/domain) — `refactor: extract the domain into the @epd/domain package`
 - [x] 8. Move files to the target layout — `refactor: move files to the Bulletproof React layout`
 - [x] 9. Remove cross-feature imports, import-boundary lint rules — `refactor: enforce feature import boundaries`
-- [ ] 10. TanStack Query for server state
+- [x] 10. TanStack Query for server state — `feat: move server state to TanStack Query`
 - [ ] 11. Route loaders, error elements, lazy routes
 - [ ] 12. Split PlanCanvas
 - [ ] 13. Split CircuitsTab, PanelView, QuotePage
@@ -344,6 +344,15 @@ Approved: yes (2026-10-25)
   the exporter as a prop), `mobile/project` (was MobileProjectPage; Checklist moved into `bom`).
   `src/testing` may import `src/app` (renderApp). `unrs-resolver` (TS import resolver) is denied
   its build script in `allowBuilds`; it uses its prebuilt optional binding.
+- Step 10: `useCatalog()` stays as a derived hook over the catalog and profile queries (same
+  shape for its consumers, no provider); `RequireAuth` keeps both queries observed for the whole
+  signed-in session (loaded once on entry, as the provider did). ProfilePage edits a draft of the
+  text fields only and saves just those (it no longer resends a stale copy of price overrides and
+  box presets). Logo shown through a React 19 ref-cleanup `<img>` (object URL revoked).
+  Purchase ticks update the cache synchronously before the mutation (per-line rollback).
+  `notifyManager.setScheduler(queueMicrotask)`: the default `setTimeout(0)` notification made a
+  controlled checkbox show its old value right after the click (caught by the mobile E2E).
+  Exports still download logo/backgrounds on demand at export time (action, not page data).
 - CLAUDE.md is updated in each step that changes commands or folders, not only at the end.
 - User, 2026-10-25: plan approved; do the pnpm workspace split now (Phase B stays); TypeScript
   6.0 is acceptable for criterion 1 if the TS 7 alias does not work; no Edge Function for
@@ -357,10 +366,11 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Step 10: TanStack Query v5 per "Data layer rules": `lib/query-client.ts`, provider, query keys in
-`api/`; replace `api/catalog.tsx` (CatalogProvider + `useCatalog`, a temporary home from step 9)
-with catalog/profile queries and mutations; port projects list, purchase marks, project record,
-profile logo URL, background image URL; tests per the plan.
+Step 11: route modules with loaders (project record via `fetchQuery`, shared catalog/profile
+prefetch), the auth middleware on the protected route, `ErrorBoundary` on every route + root,
+shared `ErrorState`/`RouteError` (link to projects + Retry), lazy route modules (PDF/export code
+and the canvas out of the initial bundle), `createRoutes({ repos, queryClient })`; `renderApp()`
+awaits the first navigation. Tests per the plan.
 
 ## Review record
 

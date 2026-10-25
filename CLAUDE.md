@@ -53,7 +53,8 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
   checks, quote, exports, mobile, profile, settings), split into `components/`, `hooks/`,
   `utils/` (and `api/`) as needed
 - `src/components/` — shared UI: `ui/` (Radix-based components, number input), `symbols/`
-- `src/api/` — server state shared by several features (catalog + profile)
+- `src/api/` — TanStack Query hooks shared by several features (`keys.ts`, catalog, profile,
+  project record); feature-only queries live in `features/<name>/api/`
 - `src/hooks/` — hooks shared by several features (`useAnalysis`, `useItemName`, `useItemsOf`)
 - `src/lib/` — `repositories/` (repository interfaces + Supabase and in-memory implementations,
   provider; the only place that talks to Supabase), `auth/`, `i18n/` (`locales/en.json` base,
@@ -95,5 +96,11 @@ Bulletproof React. Paths below under `src/` are `apps/web/src/`.
   tested in Playwright, driving the store through `window.__epd` (`apps/web/e2e/helpers.ts`).
 - Env modes: `.env.memory` (`dev:mem`), `.env.e2e` (exposes `window.__epd` test handle).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
+- Server data goes through TanStack Query hooks (`useQuery`/`useMutation` over
+  `useRepositories()`), never `useEffect` fetches. Keys come from `src/api/keys.ts` and start
+  with the user id; the cache is cleared when the user changes. No retries, no refetch on focus
+  (`lib/query-client.ts`). The project record is always fetched fresh (`fetchQuery`,
+  `staleTime: 0`) and never re-seeds an open editor. Component tests get a fresh client from
+  `renderApp()` (returned as `queryClient`).
 - `useEditor(selector)` must return stable references: select raw store fields and derive
   arrays with `useMemo`, never `.filter()/.map()` inside the selector (render loop).

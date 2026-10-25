@@ -2,7 +2,7 @@ import { Maximize, Minus, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
-import { useRepositories } from '@/lib/repositories/provider';
+import { useFetchProjectRecord } from '@/api/projectRecord';
 import { loadDoc } from '@epd/domain/load';
 import type { Point } from '@epd/domain/types';
 import type { Autosave } from '@/stores/editor/autosave';
@@ -24,13 +24,12 @@ type State =
 export function MobileProjectPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams();
-  const { projects } = useRepositories();
+  const fetchRecord = useFetchProjectRecord();
   const [state, setState] = useState<State>({ status: 'loading' });
 
   useEffect(() => {
     let active = true;
-    projects
-      .get(id)
+    fetchRecord(id)
       .then((record) => {
         if (!active) return;
         if (!record) return setState({ status: 'not_found' });
@@ -47,7 +46,7 @@ export function MobileProjectPage() {
     return () => {
       active = false;
     };
-  }, [projects, id]);
+  }, [fetchRecord, id]);
 
   if (state.status === 'loading') return <p className="text-text-muted">{t('common.loading')}</p>;
   if (state.status !== 'ready') {

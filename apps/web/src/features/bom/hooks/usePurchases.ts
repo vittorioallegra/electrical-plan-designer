@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRepositories } from '@/lib/repositories/provider';
+import { usePurchaseMarks, useSetPurchase } from '@/features/bom/api/purchases';
 import { reconcilePurchases, type BomLine, type PurchaseLineStatus } from '@epd/domain/bom';
 import { useToast } from '@/components/ui/Toast';
 
@@ -23,43 +23,14 @@ export interface Purchases {
 /** Purchase marks of a project, saved optimistically: a failed save rolls back with a toast. */
 export function usePurchases(projectId: string, bom: readonly BomLine[]): Purchases {
   const { t } = useTranslation();
-  const { purchases } = useRepositories();
   const toast = useToast();
-  const [marks, setMarks] = useState<Map<string, number | null> | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  // Last rendered marks, read by the rollback of a failed save.
-  const current = useRef(marks);
-  useEffect(() => {
-    current.current = marks;
-  }, [marks]);
-
-  useEffect(() => {
-    let active = true;
-    purchases
-      .list(projectId)
-      .then((m) => {
-        if (active) setMarks(m);
-      })
-      .catch(() => {
-        if (active) setLoadFailed(true);
-      });
-    return () => {
-      active = false;
-    };
-  }, [purchases, projectId, attempt]);
-
-  const setPurchased = useCallback(
-    (key: string, qty: number | null) => {
-      const previous = current.current?.get(key) ?? null;
-      setMarks((m) => new Map(m ?? []).set(key, qty));
-      purchases.set(projectId, key, qty).catch(() => {
-        setMarks((m) => new Map(m ?? []).set(key, previous));
-        toast(t('purchases.saveFailed'), 'error');
-      });
-    },
-    [purchases, projectId, toast, t],
-  );
+  const query = usePurchaseMarks(projectId);
+  const onFailed = useCallback(() => toast(t('purchases.saveFailed'), 'error'), [toast, t]);
+  const setPurchased = useSetPurchase(projectId, onFailed);
+  const marks = query.data ?? null;
+  // While a retry runs after a failure, show loading again instead of the error.
+  const retrying = query.isError && query.isFetching;
+  const loadFailed = query.isError && !retrying;
 
   const reconciled = useMemo(() => reconcilePurchases([...bom], marks ?? new Map()), [bom, marks]);
   const status = useMemo(() => new Map(reconciled.lines.map((l) => [l.key, l])), [reconciled]);
@@ -69,12 +40,9 @@ export function usePurchases(projectId: string, bom: readonly BomLine[]): Purcha
   );
 
   return {
-    loading: marks === null && !loadFailed,
+    loading: query.isPending || retrying,
     loadFailed,
-    retry: () => {
-      setLoadFailed(false);
-      setAttempt((n) => n + 1);
-    },
+    retry: () => void query.refetch(),
     status,
     orphans,
     toggle: (line) =>

@@ -1,3 +1,4 @@
+import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { i18n } from 'i18next';
 import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -9,11 +10,13 @@ import { ToastProvider } from '@/components/ui/Toast';
 
 export function AppProviders({
   repos,
+  queryClient,
   i18n,
   services,
   children,
 }: {
   repos: Repositories;
+  queryClient: QueryClient;
   i18n: i18n;
   services?: EditorServices | undefined;
   children: ReactNode;
@@ -21,11 +24,13 @@ export function AppProviders({
   return (
     <I18nextProvider i18n={i18n}>
       <RepositoriesProvider repos={repos}>
-        <AuthProvider>
-          <EditorServicesProvider services={services}>
-            <ToastProvider>{children}</ToastProvider>
-          </EditorServicesProvider>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <EditorServicesProvider services={services}>
+              <ToastProvider>{children}</ToastProvider>
+            </EditorServicesProvider>
+          </AuthProvider>
+        </QueryClientProvider>
       </RepositoriesProvider>
     </I18nextProvider>
   );

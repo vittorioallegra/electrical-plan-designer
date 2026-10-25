@@ -1,7 +1,6 @@
 import { Archive, ArchiveRestore, Copy, Pencil } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRepositories } from '@/lib/repositories/provider';
 import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
 import { Button } from '@/components/ui/Button';
 import { formatMoney } from '@/lib/format';
@@ -9,7 +8,8 @@ import { NumberInput } from '@/components/ui/NumberInput';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/components/ui/Toast';
 import { categories, ItemDialog } from './ItemDialog';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog, useCreateCatalogItem, useUpdateCatalogItem } from '@/api/catalog';
+import type { NewCatalogItem } from '@/lib/repositories/types';
 import { useItemName } from '@/hooks/useItemName';
 
 type Editing = {
@@ -21,8 +21,9 @@ type Editing = {
 export function CatalogPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
-  const { catalog: repo } = useRepositories();
-  const { items, reload, profile, updateProfile } = useCatalog();
+  const { items, profile, updateProfile } = useCatalog();
+  const createItem = useCreateCatalogItem();
+  const updateItem = useUpdateCatalogItem();
   const itemName = useItemName();
   const toast = useToast();
   const [category, setCategory] = useState<CatalogCategory>('device');
@@ -34,12 +35,11 @@ export function CatalogPage() {
     [items, category, showArchived],
   );
 
-  async function save(item: Parameters<typeof repo.create>[0]) {
+  async function save(item: NewCatalogItem) {
     try {
-      if (editing?.id) await repo.update(editing.id, item);
-      else await repo.create(item);
+      if (editing?.id) await updateItem.mutateAsync({ id: editing.id, patch: item });
+      else await createItem.mutateAsync(item);
       setEditing(null);
-      reload();
     } catch {
       toast(t('catalog.saveFailed'), 'error');
     }
@@ -47,8 +47,7 @@ export function CatalogPage() {
 
   async function setArchived(item: CatalogItem, archived: boolean) {
     try {
-      await repo.update(item.id, { archived });
-      reload();
+      await updateItem.mutateAsync({ id: item.id, patch: { archived } });
     } catch {
       toast(t('catalog.saveFailed'), 'error');
     }

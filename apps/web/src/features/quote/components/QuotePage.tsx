@@ -1,7 +1,6 @@
 import { FileSpreadsheet, FileText, Plus, Stamp, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRepositories } from '@/lib/repositories/provider';
 import {
   formatQuoteNumber,
   issueQuote,
@@ -18,6 +17,7 @@ import { Table } from '@/components/ui/Table';
 import { useToast } from '@/components/ui/Toast';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useCatalog } from '@/api/catalog';
+import { useNextQuoteNumber } from '@/api/profile';
 import { useLiveQuote, usePriceContext } from '@/features/quote/hooks/useQuote';
 
 type LaborLine = QuoteSettings['laborLines'][number];
@@ -34,7 +34,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
   const { t, i18n } = useTranslation();
   const locale: Locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
-  const { profile: profileRepo } = useRepositories();
+  const nextQuoteNumber = useNextQuoteNumber();
   const toast = useToast();
   const readOnly = useEditor((s) => s.readOnly);
   const settings = useEditor((s) => s.data.quote.settings);
@@ -66,7 +66,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
   async function issue() {
     setIssuing(true);
     try {
-      const number = await profileRepo.nextQuoteNumber();
+      const number = await nextQuoteNumber.mutateAsync();
       const snapshot = issueQuote(bom, ctx, settings, describe, number, new Date(), i18n.language);
       store.getState().appendIssuedQuote(snapshot);
       toast(t('quote.issuedToast', { number: formatQuoteNumber(snapshot) }), 'success');

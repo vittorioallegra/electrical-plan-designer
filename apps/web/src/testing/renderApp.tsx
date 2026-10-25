@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { routes } from '@/app/router';
+import { createQueryClient } from '@/lib/query-client';
 import { AppProviders } from '@/app/provider';
 import { createMemoryRepositories } from '@/lib/repositories/memory';
 import { DEV_LOGIN, seedMemory } from '@/lib/repositories/memorySeed';
@@ -28,14 +29,16 @@ export async function renderApp(
   }
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   const unsaved = createMemoryUnsavedStore();
+  const queryClient = createQueryClient();
   const result = render(
     <AppProviders
       repos={memory.repos}
+      queryClient={queryClient}
       i18n={createI18n(lng)}
       services={{ unsaved, exposeTestHandle }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
   );
-  return { ...result, ...memory, router, unsaved };
+  return { ...result, ...memory, router, unsaved, queryClient };
 }

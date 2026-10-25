@@ -1,7 +1,8 @@
 // Autosave: debounced, one save in flight at a time, typed error handling.
 import type { AuthRepository, ProjectRepository } from '@/lib/repositories/types';
 import { SaveError } from '@/lib/repositories/types';
-import type { EditorStore } from './editorStore';
+import type { ProjectMeta } from '@epd/domain/types';
+import type { EditorData, EditorStore } from './editorStore';
 import type { UnsavedStore } from './unsavedStore';
 
 export interface AutosaveOptions {
@@ -12,6 +13,8 @@ export interface AutosaveOptions {
   /** Delays of the bounded retry for network errors. */
   retryDelaysMs?: number[];
   target?: Pick<Window, 'addEventListener' | 'removeEventListener'>;
+  /** Called after each successful save with the new meta and the data that was saved. */
+  onSaved?: (meta: ProjectMeta, data: EditorData) => void;
 }
 
 export interface Autosave {
@@ -59,6 +62,7 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
         saveError: null,
         meta: { ...now.meta, version },
       });
+      options.onSaved?.({ ...now.meta, version }, s.data);
       if (clean) {
         void options.unsaved?.delete(s.projectId).catch(() => undefined);
       } else {

@@ -1,10 +1,15 @@
 import { MoreHorizontal } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
-import { useRepositories } from '@/lib/repositories/provider';
 import { defaultProjectSettings, defaultQuoteSettings, newProjectDoc } from '@epd/domain/defaults';
 import type { ProjectMeta } from '@epd/domain/types';
+import {
+  useCreateProject,
+  useDeleteProject,
+  useProjects,
+  useUpdateProject,
+} from '@/features/projects/api/projects';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Menu } from '@/components/ui/Menu';
@@ -15,36 +20,25 @@ type Editing = { mode: 'create' } | { mode: 'rename'; project: ProjectMeta } | n
 
 export function ProjectsPage({ basePath = '/projects' }: { basePath?: string }) {
   const { t, i18n } = useTranslation();
-  const { projects } = useRepositories();
   const navigate = useNavigate();
   const toast = useToast();
-  const [list, setList] = useState<ProjectMeta[] | null>(null);
+  const query = useProjects();
+  const createProject = useCreateProject();
+  const updateProject = useUpdateProject();
+  const deleteProject = useDeleteProject();
   const [editing, setEditing] = useState<Editing>(null);
   const [deleting, setDeleting] = useState<ProjectMeta | null>(null);
-
-  const [generation, setGeneration] = useState(0);
-  const reload = useCallback(() => setGeneration((g) => g + 1), []);
-
+  // A failed load shows the empty list with an error toast.
+  const list = query.isError ? [] : (query.data ?? null);
+  const loadFailed = query.isError;
   useEffect(() => {
-    let active = true;
-    projects
-      .list()
-      .then((l) => active && setList(l))
-      .catch(() => {
-        if (!active) return;
-        toast(t('projects.loadFailed'), 'error');
-        setList([]);
-      });
-    return () => {
-      active = false;
-    };
-  }, [projects, t, toast, generation]);
+    if (loadFailed) toast(t('projects.loadFailed'), 'error');
+  }, [loadFailed, t, toast]);
 
   async function remove(project: ProjectMeta) {
     setDeleting(null);
     try {
-      await projects.delete(project.id);
-      reload();
+      await deleteProject.mutateAsync(project.id);
     } catch {
       toast(t('projects.deleteFailed'), 'error');
     }
@@ -120,7 +114,7 @@ export function ProjectsPage({ basePath = '/projects' }: { basePath?: string }) 
             try {
               if (editing.mode === 'create') {
                 const settings = defaultProjectSettings();
-                const created = await projects.create({
+                const created = await createProject.mutateAsync({
                   ...values,
                   settings,
                   quote: { settings: defaultQuoteSettings(), issued: [] },
@@ -128,9 +122,8 @@ export function ProjectsPage({ basePath = '/projects' }: { basePath?: string }) 
                 });
                 navigate(`${basePath}/${created.id}`);
               } else {
-                await projects.updateMeta(editing.project.id, values);
+                await updateProject.mutateAsync({ id: editing.project.id, patch: values });
                 setEditing(null);
-                reload();
               }
             } catch {
               toast(t('projects.saveFailed'), 'error');

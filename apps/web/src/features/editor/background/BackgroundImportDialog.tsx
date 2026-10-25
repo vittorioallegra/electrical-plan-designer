@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { cn } from '@/lib/cn';
 import { useSession } from '@/lib/auth/AuthProvider';
-import { primeBackgroundImage } from '../canvas/useBackgroundImage';
+import { usePrimeBackgroundImage } from '../canvas/useBackgroundImage';
 import { checkFile, ImportError, loadImage, openPdf, type PdfHandle } from './importFile';
 
 const MAX_THUMBNAILS = 30;
@@ -29,6 +29,7 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const { files } = useRepositories();
   const session = useSession();
+  const primeBackgroundImage = usePrimeBackgroundImage();
   const { store } = useEditorContext();
   const [step, setStep] = useState<Step>({ kind: 'pick' });
   const [error, setError] = useState<string | null>(null);

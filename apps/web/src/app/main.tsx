@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router/dom';
 import { routes } from './router';
 import { AppProviders } from './provider';
 import { getConfig } from '@/config/env';
+import { createQueryClient } from '@/lib/query-client';
 import { createRepositories } from '@/lib/repositories/provider';
 import { createI18n } from '@/lib/i18n';
 import { createIndexedDbUnsavedStore } from '@/stores/editor/unsavedStore';
@@ -23,6 +24,7 @@ const router = createBrowserRouter(routes);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppProviders
+      queryClient={createQueryClient()}
       repos={repos}
       i18n={i18n}
       services={{ unsaved: createIndexedDbUnsavedStore(), exposeTestHandle: config.testHandle }}

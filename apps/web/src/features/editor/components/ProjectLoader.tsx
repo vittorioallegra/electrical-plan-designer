@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
+import { useFetchProjectRecord, useProjectSaved } from '@/api/projectRecord';
 import { useRepositories } from '@/lib/repositories/provider';
 import { DocLoadError, loadDoc } from '@epd/domain/load';
 import { startAutosave, type Autosave } from '@/stores/editor/autosave';
@@ -40,6 +41,8 @@ export function ProjectLoader({
   const { t } = useTranslation();
   const { id = '' } = useParams();
   const repos = useRepositories();
+  const fetchRecord = useFetchProjectRecord();
+  const onSaved = useProjectSaved();
   const { unsaved, exposeTestHandle } = useEditorServices();
   const [state, setState] = useState<LoadState>({ status: 'loading' });
 
@@ -49,7 +52,7 @@ export function ProjectLoader({
     void (async () => {
       let record;
       try {
-        record = await repos.projects.get(id);
+        record = await fetchRecord(id);
       } catch {
         if (active) setState({ status: 'failed' });
         return;
@@ -79,6 +82,7 @@ export function ProjectLoader({
         projects: repos.projects,
         auth: repos.auth,
         unsaved,
+        onSaved,
       });
       if (exposeTestHandle) window.__epd = { store };
       cleanup = () => {
@@ -100,7 +104,7 @@ export function ProjectLoader({
       active = false;
       cleanup?.();
     };
-  }, [id, repos, unsaved, exposeTestHandle]);
+  }, [id, repos, unsaved, exposeTestHandle, fetchRecord, onSaved]);
 
   if (state.status === 'loading')
     return <p className="p-4 text-text-muted">{t('common.loading')}</p>;

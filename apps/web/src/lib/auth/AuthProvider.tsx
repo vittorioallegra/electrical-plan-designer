@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRepositories } from '@/lib/repositories/provider';
 import type { Session } from '@/lib/repositories/types';
 
@@ -11,12 +12,20 @@ const AuthContext = createContext<AuthState>({ status: 'loading', session: null 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { auth } = useRepositories();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>({ status: 'loading', session: null });
+  // User of the data in the query cache; it is dropped on sign-out or a change of user.
+  const cachedUser = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
     const apply = (session: Session | null) => {
       if (!active) return;
+      const userId = session?.userId ?? null;
+      if (userId !== cachedUser.current) {
+        queryClient.clear();
+        cachedUser.current = userId;
+      }
       setState(session ? { status: 'signedIn', session } : { status: 'signedOut', session: null });
     };
     void auth.getSession().then(apply);
@@ -25,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       unsubscribe();
     };
-  }, [auth]);
+  }, [auth, queryClient]);
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 }
