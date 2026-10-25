@@ -176,4 +176,18 @@ describe('quote numbering', () => {
     expect((await u.client.rpc('next_quote_number')).data).toBe(1);
     expect((await u.client.rpc('next_quote_number')).data).toBe(2);
   });
+
+  // protects=quote numbers cannot be rewound; fails_when=a user can write quote_counter directly or can no longer edit the rest of the profile; no_claim=service-role access
+  it('users cannot write quote_counter but can edit their profile', async () => {
+    const u = await newUser();
+    expect((await u.client.rpc('next_quote_number')).data).toBe(1);
+    const rewind = await u.client.from('profiles').update({ quote_counter: 0 }).eq('user_id', u.id);
+    expect(rewind.error?.code).toBe('42501');
+    const edit = await u.client
+      .from('profiles')
+      .update({ business_name: 'Rossi Impianti' })
+      .eq('user_id', u.id);
+    expect(edit.error).toBeNull();
+    expect((await u.client.rpc('next_quote_number')).data).toBe(2);
+  });
 });
