@@ -21,6 +21,35 @@ describe('progress strip', () => {
     expect(states).toEqual(['done', 'done', 'done', 'done', 'done', 'done']);
   });
 
+  // protects=Plan stage without walls; fails_when=a plan drawn straight onto an empty floor keeps Plan as the next stage; no_claim=—
+  it('counts drawn elements as a plan even without walls or background', async () => {
+    const strip = await openStrip();
+    const plan = within(strip).getByRole('button', { name: /Plan/ });
+    act(() => {
+      store()
+        .getState()
+        .applyCommand('no walls', (d) => {
+          for (const f of d.doc.floors) {
+            f.walls = [];
+            delete f.background;
+          }
+        });
+    });
+    expect(plan).toHaveAttribute('data-state', 'done');
+    act(() => {
+      store()
+        .getState()
+        .applyCommand('empty', (d) => {
+          d.doc.segments = [];
+          d.doc.circuits = [];
+          d.doc.extraRuns = [];
+          d.doc.nodes = [];
+          for (const p of d.doc.panels) p.devices = [];
+        });
+    });
+    expect(plan).toHaveAttribute('aria-current', 'step');
+  });
+
   // protects=next stage and its link; fails_when=the first unfinished stage is not marked next or does not open its tool; no_claim=—
   it('points to the first unfinished stage and opens its tool', async () => {
     const strip = await openStrip();

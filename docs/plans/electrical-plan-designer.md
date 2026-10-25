@@ -405,6 +405,7 @@ Approved: yes (2026-10-25)
   - Catalog price inputs cut off the "Unpriced" placeholder — `fix: widen catalog price inputs so the placeholder fits`
   - Canvas labels overlapped conduits (Q1 under its conduit, "Living switch" on the light) — `fix: place canvas labels away from conduits with a halo`
   - The drawer's tab bar scrolled out of view with long tab content (circuit editor) — `fix: keep tab bars visible while their content scrolls`
+  - The progress strip kept Plan as the next stage on projects drawn without walls or background — `fix: count drawn elements as a plan in the progress strip`
 
 ### Decisions
 - Users: professional electrician, single account, projects per client (spec Phase 1).
@@ -449,7 +450,7 @@ Approved: yes (2026-10-25)
   the last bend again) creates a junction box there.
 - Drawer tab, connectivity filter and canvas focus requests live in the editor UI state
   (`drawerTab`, `hideConnectivity`, `focus`), so warnings and the progress strip can drive them.
-- Progress strip stages: Plan = walls or background, Panel = at least one panel device,
+- Progress strip stages: Plan = walls, background or any drawn element, Panel = at least one panel device,
   Circuits = a circuit with a target, BOM = a cable line (so routing a circuit completes it).
 - Issued quotes are appended with `appendIssuedQuote`, outside undo/redo. Inline prices on the
   quote page are saved as account price overrides keyed by the BOM line key.
@@ -472,8 +473,6 @@ Approved: yes (2026-10-25)
 ### Open questions
 - Dogfood checkpoint (step 19) deferred by the user on 2026-10-25: draw one real floor, compare
   the BOM with the hand count, record the time taken and every difference here.
-- Non-blocking findings left open: minor UI polish (progress strip on
-  plans drawn without walls or background).
 - Review ran a reduced `review` skill (no specialist subagents or adversarial pass).
 
 ### Next

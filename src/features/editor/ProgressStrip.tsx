@@ -22,7 +22,8 @@ function stages(doc: ProjectDoc, hasCable: boolean): StageDef[] {
   return [
     {
       stage: 'plan',
-      done: doc.floors.some((f) => f.background || f.walls.length > 0),
+      // Drawing straight onto an empty floor (no walls or background) also counts as a plan.
+      done: doc.nodes.length > 0 || doc.floors.some((f) => f.background || f.walls.length > 0),
       view: 'plan',
       ui: { tool: 'wall' },
     },
