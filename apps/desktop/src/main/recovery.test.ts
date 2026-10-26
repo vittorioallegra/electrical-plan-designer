@@ -55,7 +55,7 @@ describe('recovery service', () => {
     expect(loaded.assets).toEqual([{ id: 'bg_1', bytes: bytes(1, 2) }]);
     // The bound path may be written by Save again after a restart.
     expect(handedOut).toEqual([file.path]);
-    expect(readdirSync(dir).sort()).toEqual(['assets', 'meta.json', 'project.json']);
+    expect(readdirSync(dir).sort()).toEqual(['assets', 'copy.json']);
 
     await recovery.clear();
     expect(await recovery.load()).toBeNull();
@@ -93,9 +93,9 @@ describe('recovery service', () => {
     let renames = 0;
     const failing: RecoveryFsOps = {
       ...nodeFs,
-      // The meta.json rename succeeds, the project.json one fails.
+      // The first rename (copy.json) fails.
       rename: async (from, to) => {
-        if (++renames === 2) throw Object.assign(new Error('boom'), { code: 'ENOSPC' });
+        if (++renames === 1) throw Object.assign(new Error('boom'), { code: 'ENOSPC' });
         return nodeFs.rename(from, to);
       },
     };
@@ -103,6 +103,30 @@ describe('recovery service', () => {
     await expect(broken.save(copy({ project: '{"v":2}' }))).rejects.toThrow('boom');
     expect((await recovery.load())!.project).toBe('{"v":1}');
     expect(readdirSync(dir).filter((n) => n.endsWith('.tmp'))).toEqual([]);
+  });
+
+  // protects=crash consistency; fails_when=a failure after the new assets are written and before the commit pairs the new asset list with the previous project, or prunes an asset the previous copy still uses; no_claim=power loss
+  it('loads the previous project with its assets when a save fails before the commit', async () => {
+    const { recovery } = service();
+    await recovery.save(copy({ newAssets: [{ id: 'old', bytes: bytes(1) }] }, ['old']));
+    const failing: RecoveryFsOps = {
+      ...nodeFs,
+      rename: async (from, to) => {
+        if (String(to).endsWith('copy.json'))
+          throw Object.assign(new Error('boom'), { code: 'EIO' });
+        return nodeFs.rename(from, to);
+      },
+    };
+    const { recovery: broken } = service([file.path], failing);
+    // The new copy drops `old` and adds `new`.
+    await expect(
+      broken.save(
+        copy({ project: '{"v":2}', newAssets: [{ id: 'new', bytes: bytes(2) }] }, ['new']),
+      ),
+    ).rejects.toThrow('boom');
+    const loaded = (await recovery.load())!;
+    expect(loaded.meta.assets.map((a) => a.id)).toEqual(['old']);
+    expect(loaded.assets).toEqual([{ id: 'old', bytes: bytes(1) }]);
   });
 
   // protects=path allowlist; fails_when=a recovery copy can bind a restored project to a path main never handed out; no_claim=the IPC sender check
@@ -129,7 +153,7 @@ describe('recovery service', () => {
     );
     rmSync(join(dir, 'assets', 'a'));
     expect((await recovery.load())!.assets.map((a) => a.id)).toEqual(['b']);
-    writeFileSync(join(dir, 'meta.json'), '{ not json');
+    writeFileSync(join(dir, 'copy.json'), '{ not json');
     expect(await recovery.load()).toBeNull();
   });
 

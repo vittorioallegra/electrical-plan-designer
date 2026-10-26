@@ -43,7 +43,7 @@ and change in place (pre-release rule).
    recovery copy keeping the changes). Tests: unit for the file service and save flow; Electron E2E
    open → edit → save writes the same path, changed-on-disk prompt, quit prompt.
 3. **Recovery copy.** `RecoveryRepository` replaces `DraftRepository`: main stores
-   `recovery/project.json`, `recovery/meta.json` (file path, stat, savedToFile, savedAt) and
+   `recovery/copy.json` (project plus meta: file path, stat, savedToFile, savedAt) and
    `recovery/assets/<id>` (written once per id, pruned to referenced ones) in `userData`, with
    the same atomic write as Save so a crash mid-autosave leaves the previous copy readable.
    Autosave writes it as it writes the draft today; a successful Save or "Don't save" clears it.
@@ -234,6 +234,7 @@ Approved: yes (2026-10-26)
   - a plan image dropped from the recovery copy while unreferenced (then restored by undo) was never sent again, so a recovered project lost it — `fix: resend a recovery asset that main dropped and the project uses again`
 - review: done
   - Ctrl/Cmd+S could reach both the page shortcut and the native menu's Save, each with its own in-flight guard: two writes, the second with a stale stat, showed a false "changed on disk" question — `fix: run one save when the shortcut and the menu Save arrive together`
+  - the recovery copy wrote meta.json before project.json, so a crash between them paired the new asset list with the previous project — `fix: keep the recovery copy consistent when a write fails midway`
 
 ### Decisions
 - Desktop only: the web/PWA build is removed (no users yet).
@@ -262,9 +263,6 @@ Approved: yes (2026-10-26)
 - Review recommendations not taken for now: first-run company nudge, update count badge.
 
 ### Open questions
-- Recovery copy: `meta.json` is written before `project.json`, so a crash between the two pairs
-  the new asset list with the previous project (an asset only the previous project uses is not
-  loaded back). Write one file, or accept the window?
 - Library `.epl` import: main replaces the library file by file; a disk error midway leaves a
   mixed library on disk (the `.backup-<time>` folder holds the old one) while the store keeps the
   old one in memory. Also `replaceAll` is not queued with later writes. Make it stage-and-swap?

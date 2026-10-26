@@ -16,13 +16,16 @@ test('after a kill the edit is offered back and saving writes the original path'
     const before = floorCount(project.path);
     await first.page.getByRole('button', { name: 'Add floor' }).click();
     // Autosave writes the copy about a second after the edit.
-    const copy = join(userData, 'recovery', 'project.json');
+    const copy = join(userData, 'recovery', 'copy.json');
     await expect.poll(() => existsSync(copy), { timeout: 10_000 }).toBe(true);
     await expect
       .poll(
         () =>
-          (JSON.parse(readFileSync(copy, 'utf8')) as { doc: { floors: unknown[] } }).doc.floors
-            .length,
+          (
+            JSON.parse((JSON.parse(readFileSync(copy, 'utf8')) as { project: string }).project) as {
+              doc: { floors: unknown[] };
+            }
+          ).doc.floors.length,
       )
       .toBe(before + 1);
     // Only the process this test launched.

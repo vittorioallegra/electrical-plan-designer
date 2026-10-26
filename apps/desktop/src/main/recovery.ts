@@ -1,6 +1,8 @@
-// The recovery copy of the open project: `project.json`, `meta.json` and `assets/<id>` in a folder
-// of the app data. Every file goes through the same atomic write as Save, so a crash in the
-// middle of an autosave leaves the previous copy readable. No Electron imports: tested in Node.
+// The recovery copy of the open project: `copy.json` (project and meta together) and
+// `assets/<id>` in a folder of the app data. Every file goes through the same atomic write as
+// Save. Assets are only added before the commit point (the one `copy.json` rename) and pruned
+// after it, so a crash at any point leaves the previous or the new copy, never a mix.
+// No Electron imports: tested in Node.
 import * as nodeFs from 'node:fs/promises';
 import { join } from 'node:path';
 import type { RecoveryMeta, RecoverySaveArgs, RecoverySnapshot } from '@epd/bridge/bridge';
@@ -74,9 +76,12 @@ export function createRecoveryService({
         // A path main never handed out is not stored: Save would refuse it anyway.
         const file = args.meta.file && isAllowedPath(args.meta.file.path) ? args.meta.file : null;
         const meta: RecoveryMeta = { ...args.meta, file };
-        // The project goes last: a crash before it leaves the previous, consistent copy.
-        await atomicWrite(join(dir, 'meta.json'), encoder.encode(JSON.stringify(meta)), fs);
-        await atomicWrite(join(dir, 'project.json'), encoder.encode(args.project), fs);
+        // Commit point: project and meta in one file, so they can never be paired wrongly.
+        await atomicWrite(
+          join(dir, 'copy.json'),
+          encoder.encode(JSON.stringify({ meta, project: args.project })),
+          fs,
+        );
         const keep = new Set(meta.assets.map((a) => a.id));
         for (const name of await fs.readdir(assetsDir)) {
           if (!keep.has(name)) await fs.rm(join(assetsDir, name), { force: true });
@@ -86,9 +91,13 @@ export function createRecoveryService({
     load: () =>
       serialized(async () => {
         try {
-          const meta = parseMeta(await fs.readFile(join(dir, 'meta.json'), 'utf8'));
-          const project = await fs.readFile(join(dir, 'project.json'), 'utf8');
-          if (!meta) return null;
+          const stored = JSON.parse(await fs.readFile(join(dir, 'copy.json'), 'utf8')) as {
+            meta?: unknown;
+            project?: unknown;
+          } | null;
+          const meta = parseMeta(JSON.stringify(stored?.meta));
+          const project = stored?.project;
+          if (!meta || typeof project !== 'string') return null;
           const assets: RecoverySnapshot['assets'] = [];
           for (const { id } of meta.assets) {
             const bytes = await fs.readFile(join(assetsDir, id)).catch(() => null);
