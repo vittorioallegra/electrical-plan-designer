@@ -271,7 +271,7 @@ Phase F — wrap-up
 
 ## Progress
 
-Phase: verification
+Phase: done
 Branch: feat/react-modernization
 Base: main
 Spec: docs/specs/react-modernization.md
@@ -299,7 +299,7 @@ Approved: yes (2026-10-25)
 ### Verification
 - qa: done
   - Opening a project (route loader) left the list on screen with no loading sign until the record arrived (main showed "Loading" at once) — `fix: show a loading notice while a navigation is pending`
-- review: pending
+- review: done
 
 ### Decisions
 - Folder convention: Bulletproof React (not Feature-Sliced Design), see spec.
@@ -391,9 +391,7 @@ Approved: yes (2026-10-25)
 - None open. Answered by the user on 2026-10-25, see Decisions.
 
 ### Next
-Phase 4: run the qa subagent (spec docs/specs/react-modernization.md as reference), then the
-review subagent on `main..feat/react-modernization`; one commit per issue, each updating
-Verification above.
+Closing: summary and ask whether to ship.
 
 ## Review record
 
