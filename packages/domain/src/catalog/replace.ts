@@ -57,7 +57,10 @@ export function createProjectCatalog(
 }
 
 /** Catalog item ids referenced by the drawing or by box presets. */
-export function usedItemIds(doc: ProjectDoc, boxPresets: readonly BoxPreset[] = []): Set<string> {
+export function usedItemIds(
+  doc: Pick<ProjectDoc, 'nodes' | 'segments' | 'panels'>,
+  boxPresets: readonly BoxPreset[] = [],
+): Set<string> {
   const used = new Set<string>();
   for (const n of doc.nodes) {
     if (n.boxItemId !== undefined) used.add(n.boxItemId);
