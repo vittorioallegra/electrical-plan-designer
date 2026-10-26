@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { writeEpd } from '@/lib/projectFile/epd';
 import type { EditorStore } from '@/stores/editor/editorStore';
 import { demoProjectFile } from '@/testing/editor';
-import { createDraftPresence } from '@/lib/repositories/draftPresence';
 import { renderApp } from '@/testing/renderApp';
 
 /** The demo drawing with one imported catalog, as an `.epd` file. */
@@ -22,9 +21,9 @@ async function start() {
 }
 
 describe('start screen', () => {
-  // protects=new project; fails_when=a new project does not open in the editor with one floor or is not kept as a draft; no_claim=saving to a file (save.test)
-  it('creates a new project and keeps it as a draft', async () => {
-    const { router, drafts } = await start();
+  // protects=new project; fails_when=a new project does not open in the editor with one floor or is not kept in the recovery copy; no_claim=saving to a file (save.test)
+  it('creates a new project and keeps a recovery copy', async () => {
+    const { router, recovery } = await start();
     await userEvent.click(screen.getByRole('button', { name: 'New project' }));
     await userEvent.type(screen.getByLabelText('Project name'), 'Casa Rossi');
     await userEvent.type(screen.getByLabelText('Client'), 'Rossi');
@@ -37,7 +36,7 @@ describe('start screen', () => {
         .data.doc.floors.map((f) => f.name),
     ).toEqual(['Floor 1']);
     await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Draft'));
-    expect((await drafts.get())?.project.meta).toMatchObject({
+    expect((await recovery.get())?.project.meta).toMatchObject({
       name: 'Casa Rossi',
       clientName: 'Rossi',
     });
@@ -58,24 +57,89 @@ describe('start screen', () => {
     expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
   });
 
-  // protects=resume draft; fails_when=the draft is not offered on start or resumes without its unsaved state; no_claim=IndexedDB (drafts.test)
-  it('resumes the draft', async () => {
-    const { drafts, router } = await renderApp('/elsewhere', { exposeTestHandle: true });
+  // protects=AC 9 restore; fails_when=the recovery copy is not offered on start, restores without its unsaved state or its original path, or Save then writes elsewhere; no_claim=the desktop IPC (Electron E2E)
+  it('restores the recovery copy bound to its original path, still unsaved', async () => {
+    const { recovery, router, fileAccess } = await renderApp('/elsewhere', {
+      exposeTestHandle: true,
+    });
     const project = demoProjectFile();
-    project.meta.name = 'Draft house';
-    await drafts.save({
+    project.meta.name = 'Recovered house';
+    await recovery.save({
       project,
       assets: new Map(),
+      file: { path: 'house.epd', name: 'house.epd', stat: { mtimeMs: 1, size: 1 } },
       savedToFile: false,
       savedAt: '2026-10-25T10:00:00Z',
     });
     await act(() => router.navigate('/'));
-    const card = await screen.findByRole('region', { name: 'Draft on this device' });
-    expect(card).toHaveTextContent('Draft house');
+    const card = await screen.findByRole('region', { name: 'Recovered project' });
+    expect(card).toHaveTextContent('Recovered house');
+    expect(card).toHaveTextContent('File: house.epd');
     expect(card).toHaveTextContent('changes not saved to a file');
-    await userEvent.click(within(card).getByRole('button', { name: 'Resume' }));
-    expect(await screen.findByTestId('project-name')).toHaveTextContent('Draft house');
+    await userEvent.click(within(card).getByRole('button', { name: 'Restore' }));
+    expect(await screen.findByTestId('project-name')).toHaveTextContent('Recovered house');
     expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
+    expect(editorStore().getState().file?.path).toBe('house.epd');
+
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/ }));
+    // The stat of the memory file did not change (it never existed): saved in place.
+    await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'));
+    expect(fileAccess.writes).toEqual(['house.epd']);
+    // Saved: nothing left to recover.
+    await waitFor(async () => expect(await recovery.get()).toBeNull());
+  });
+
+  // protects=discard; fails_when=Discard deletes the copy without asking, Cancel deletes it, or the copy is still offered afterwards; no_claim=restoring (above)
+  it('asks before discarding the recovery copy', async () => {
+    const { recovery, router } = await renderApp('/elsewhere');
+    await recovery.save({
+      project: demoProjectFile(),
+      assets: new Map(),
+      file: null,
+      savedToFile: false,
+      savedAt: '2026-10-25T10:00:00Z',
+    });
+    await act(() => router.navigate('/'));
+    const card = await screen.findByRole('region', { name: 'Recovered project' });
+    expect(card).toHaveTextContent('never saved to a file');
+    await userEvent.click(within(card).getByRole('button', { name: 'Discard' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Discard the recovered project?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(await recovery.get()).not.toBeNull();
+
+    await userEvent.click(within(card).getByRole('button', { name: 'Discard' }));
+    await userEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Discard' }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('region', { name: 'Recovered project' })).toBeNull(),
+    );
+    expect(await recovery.get()).toBeNull();
+  });
+
+  // protects=no silent loss on start; fails_when=opening a file or starting a project replaces a recovery copy with changes not in a file without asking; no_claim=the discard button (above)
+  it('asks before another project replaces the recovery copy', async () => {
+    const { recovery, router, fileAccess } = await renderApp('/elsewhere');
+    const project = demoProjectFile();
+    project.meta.name = 'Crashed house';
+    await recovery.save({
+      project,
+      assets: new Map(),
+      file: null,
+      savedToFile: false,
+      savedAt: '2026-10-25T10:00:00Z',
+    });
+    await act(() => router.navigate('/'));
+    await screen.findByRole('region', { name: 'Recovered project' });
+    fileAccess.files.set('demo.epd', epd());
+    fileAccess.nextOpen = 'demo.epd';
+    await userEvent.click(screen.getByRole('button', { name: 'Open file…' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Discard unsaved changes?' });
+    expect(dialog).toHaveTextContent('“Crashed house”');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Discard and continue' }));
+    expect(await screen.findByTestId('project-name')).toHaveTextContent('Demo house');
+    // The opened file has every change: the old copy is replaced by nothing.
+    await waitFor(async () => expect(await recovery.get()).toBeNull());
   });
 
   // protects=no silent loss; fails_when=starting another project drops changes that are not in a file without asking, or Cancel still replaces them; no_claim=server projects (editor.test)
@@ -127,54 +191,5 @@ describe('start screen', () => {
     const { router } = await renderApp('/project/quote', { project: null });
     await screen.findByRole('heading', { name: 'Start' });
     expect(router.state.location.pathname).toBe('/');
-  });
-
-  // protects=second tab; fails_when=the draft another tab is editing opens editable without asking, the read-only view can be edited, or "Edit here" does not make the other tab let go; no_claim=real browser tabs (E2E)
-  it('opens the draft of another tab read-only, then takes it over', async () => {
-    const otherTab = createDraftPresence({ channelName: 'start-other-tab' });
-    let released = false;
-    otherTab.hold(() => ({ name: 'Demo house', unsaved: false }));
-    otherTab.onTakenOver(() => void (released = true));
-    const { drafts, router } = await renderApp('/elsewhere', {
-      exposeTestHandle: true,
-      channel: 'start-other-tab',
-    });
-    await drafts.save({
-      project: demoProjectFile(),
-      assets: new Map(),
-      savedToFile: true,
-      savedAt: '2026-10-26T10:00:00Z',
-    });
-    await act(() => router.navigate('/'));
-    const card = await screen.findByRole('region', { name: 'Draft on this device' });
-    expect(await within(card).findByText('Being edited in another tab.')).toBeInTheDocument();
-
-    await userEvent.click(within(card).getByRole('button', { name: 'Open read-only' }));
-    expect(
-      await screen.findByText('Read-only: this project is being edited in another tab.'),
-    ).toBeInTheDocument();
-    expect(editorStore().getState().readOnly).toBe(true);
-    expect(released).toBe(false);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Edit here' }));
-    await waitFor(() => expect(editorStore().getState().readOnly).toBe(false));
-    expect(released).toBe(true);
-    expect(screen.queryByText(/being edited in another tab/)).toBeNull();
-  });
-
-  // protects=second tab; fails_when=starting another project here silently replaces the draft another tab is editing, or does not warn that its unsaved changes are lost; no_claim=—
-  it('asks before taking the draft from another tab for a new project', async () => {
-    const otherTab = createDraftPresence({ channelName: 'start-new-over-tab' });
-    let released = false;
-    otherTab.hold(() => ({ name: 'Busy house', unsaved: true }));
-    otherTab.onTakenOver(() => void (released = true));
-    await renderApp('/', { channel: 'start-new-over-tab' });
-    await screen.findByRole('heading', { name: 'Start' });
-    await userEvent.click(screen.getByRole('button', { name: 'New project' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Project open in another tab' });
-    expect(dialog).toHaveTextContent('“Busy house” is being edited in another tab and has changes');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Continue here' }));
-    expect(await screen.findByRole('dialog', { name: 'New project' })).toBeInTheDocument();
-    expect(released).toBe(true);
   });
 });

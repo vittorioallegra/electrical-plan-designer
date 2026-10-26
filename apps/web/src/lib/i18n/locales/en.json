@@ -31,9 +31,9 @@
       "draft": "Draft",
       "unsaved": "Unsaved changes",
       "saved_hint": "Every change is in the project file",
-      "draft_hint": "Changes are kept on this device; save the project to keep them in the file",
-      "unsaved_hint": "Changes are being stored on this device",
-      "draftFailed": "Not stored on this device",
+      "draft_hint": "Changes are kept in a recovery copy; save the project to keep them in the file",
+      "unsaved_hint": "Changes are being stored in the recovery copy",
+      "draftFailed": "Recovery copy not saved",
       "retry": "Retry"
     },
     "undo": "Undo",
@@ -86,8 +86,6 @@
     "saveFailed": "Could not save the project. Your changes are still in the editor.",
     "narrowNotice": "The editor works best on screens at least 1024 px wide.",
     "dismissNotice": "Dismiss",
-    "readOnlyInUse": "Read-only: this project is being edited in another tab.",
-    "takenOver": "This project is now being edited in another tab, so this tab is read-only. Your changes up to then are kept.",
     "saveAs": "Save as…",
     "conflict": {
       "title": "The file changed on disk",
@@ -759,15 +757,17 @@
       "action": "Continue",
       "readOnly": "read-only"
     },
-    "draft": {
-      "title": "Draft on this device",
+    "recovery": {
+      "title": "Recovered project",
       "lastChange": "Last change {{date}}",
+      "file": "File: {{name}}",
+      "noFile": "never saved to a file",
       "notInFile": "changes not saved to a file",
-      "resume": "Resume",
-      "invalid": "The draft cannot be opened.",
-      "inUse": "Being edited in another tab.",
-      "openReadOnly": "Open read-only",
-      "editHere": "Edit here"
+      "restore": "Restore",
+      "discard": "Discard",
+      "discardTitle": "Discard the recovered project?",
+      "discardBody": "“{{name}}” has changes that exist only in the recovery copy. Discarding it loses them.",
+      "invalid": "The recovered project cannot be opened."
     },
     "failed": "Something went wrong. Try again.",
     "openErrors": {
@@ -780,12 +780,6 @@
       "title": "Discard unsaved changes?",
       "body": "“{{name}}” has changes that are not saved to a file. Opening another project discards them.",
       "confirm": "Discard and continue"
-    },
-    "otherTab": {
-      "title": "Project open in another tab",
-      "body": "“{{name}}” is being edited in another tab. Continuing here makes that tab read-only.",
-      "bodyUnsaved": "“{{name}}” is being edited in another tab and has changes not saved to a file. Continuing here makes that tab read-only and discards those changes.",
-      "confirm": "Continue here"
     }
   },
   "company": {

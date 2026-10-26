@@ -50,6 +50,32 @@ describe('window sync', () => {
     expect(fileAccess.writes).toEqual(['Demo-house.epd']);
   });
 
+  // protects=AC 9 recovery cleared on close; fails_when=Don't save or a successful Save from the close question leaves the recovery copy, so the next start offers a project that is already settled; no_claim=a kill (Electron E2E)
+  it('clears the recovery copy on Don’t save and on Save', async () => {
+    const { windowHost, recovery } = await openDemo();
+    const edit = () => userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+    const copied = () => waitFor(() => expect(recovery.copy).not.toBeNull(), { timeout: 3000 });
+    const answerWith = async (name: string) => {
+      requestClose(windowHost);
+      const dialog = await screen.findByRole('dialog');
+      await userEvent.click(
+        Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent === name)!,
+      );
+    };
+
+    await edit();
+    await copied();
+    await answerWith('Don’t save');
+    await waitFor(() => expect(windowHost.answers).toEqual(['close']));
+    expect(recovery.copy).toBeNull();
+
+    // The project is still open here (the fake window never closes): edit and save instead.
+    await edit();
+    await answerWith('Save');
+    await waitFor(() => expect(windowHost.answers).toEqual(['close', 'close']));
+    expect(recovery.copy).toBeNull();
+  });
+
   // protects=Save from the close question; fails_when=a cancelled Save As closes the window anyway; no_claim=Save error dialogs (save tests)
   it('keeps the window open when the save from the close question is cancelled', async () => {
     const { windowHost, fileAccess } = await openDemo();

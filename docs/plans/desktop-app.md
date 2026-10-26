@@ -221,7 +221,7 @@ Approved: yes (2026-10-26)
 ### Steps
 - [x] 1. Desktop shell — `feat: add the Electron desktop shell`
 - [x] 2. Files in place — `feat: open and save project files in place`
-- [ ] 3. Recovery copy
+- [x] 3. Recovery copy — `feat: keep a recovery copy of the open project in the app data folder`
 - [ ] 4. OS integration
 - [ ] 5. Library storage and pages
 - [ ] 6. Projects use the library
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 3 (recovery copy) on `feat/desktop-app`.
+Step 4 (OS integration) on `feat/desktop-app`.

@@ -6,9 +6,9 @@ import { renderApp } from '@/testing/renderApp';
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 describe('open project across pages', () => {
-  // protects=one open project per tab; fails_when=leaving the editor for the start screen and coming back loses the edits or reopens the project; no_claim=reload (start screen resume)
+  // protects=one open project per window; fails_when=leaving the editor for the start screen and coming back loses the edits or reopens the project; no_claim=reload (start screen restore)
   it('keeps the open project when leaving and re-entering the editor', async () => {
-    const { router, drafts } = await renderApp('/project/plan', { exposeTestHandle: true });
+    const { router, recovery } = await renderApp('/project/plan', { exposeTestHandle: true });
     await screen.findByTestId('project-name');
     const store = editorStore();
     act(() =>
@@ -23,7 +23,7 @@ describe('open project across pages', () => {
     expect(editorStore()).toBe(store);
     expect(store.getState().data.doc.nodes[0]!.label).toBe('first edit');
     await waitFor(
-      async () => expect((await drafts.get())?.project.doc.nodes[0]!.label).toBe('first edit'),
+      async () => expect((await recovery.get())?.project.doc.nodes[0]!.label).toBe('first edit'),
       { timeout: 3000 },
     );
   });

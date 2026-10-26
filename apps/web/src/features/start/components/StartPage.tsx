@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -10,7 +10,6 @@ import {
 } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
 import { readEpd, type OpenedProject, type ProjectAssets } from '@/lib/projectFile/epd';
-import { useDraftActions } from '@/hooks/useDraftActions';
 import { useEditorServices, useWorkspace } from '@/stores/editor/EditorContext';
 import { saveStatusOf, type EditorInit } from '@/stores/editor/editorStore';
 import { Button } from '@/components/ui/Button';
@@ -20,36 +19,27 @@ import { useToast } from '@/components/ui/Toast';
 
 type Creating = { template: OpenedProject | null; templateName?: string };
 
-/** What a start action would replace: changes not in a file, or the project of another tab. */
+/** What a start action would replace: changes that are not in a file, or the recovery copy. */
 type Confirm =
-  | { kind: 'unsaved'; name: string; run: () => void }
-  | { kind: 'other_tab'; name: string; unsaved: boolean; run: () => void };
+  { kind: 'unsaved'; name: string; run: () => void } | { kind: 'discard_recovery'; name: string };
 
 /**
- * `/`: start a project. New, new from a template file, open a file, resume the draft. Anything that would replace a project with changes not saved to a file, or the
- * project another tab is editing, asks first. The draft another tab holds opens read-only, or
- * is taken over (that tab turns read-only).
+ * `/`: start a project. New, new from a template file, open a file, restore the recovery copy a
+ * crash left (or discard it). Anything that would replace a project with changes not saved to a
+ * file asks first.
  */
 export function StartPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
-  const { drafts, presence, fileAccess, workspace } = useEditorServices();
+  const { recovery, fileAccess, workspace } = useEditorServices();
+  const queryClient = useQueryClient();
   const current = useWorkspace((s) => s.current);
-  const tabLock = useWorkspace((s) => s.tabLock);
-  const draftActions = useDraftActions();
-  const draft = useQuery({
-    queryKey: queryKeys.draft(),
-    queryFn: () => drafts.get(),
+  const recovered = useQuery({
+    queryKey: queryKeys.recovery(),
+    queryFn: () => recovery.get(),
     staleTime: 0,
   });
-  // The tab that holds the draft, if another one does.
-  const holder = useQuery({
-    queryKey: queryKeys.draftHolder(),
-    queryFn: () => presence.holder(),
-    staleTime: 0,
-  });
-  const elsewhere = holder.data ?? null;
   const [creating, setCreating] = useState<Creating | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
 
@@ -58,46 +48,55 @@ export function StartPage() {
     timeStyle: 'short',
   });
 
-  /**
-   * Runs `action` now, or after confirming when it would drop changes not in a file or take
-   * the draft from another tab (which is then made read-only first).
-   */
+  /** Runs `action` now, or after confirming when it would drop changes that are not in a file. */
   function guard(action: () => void | Promise<void>) {
-    const fail = () => toast(t('start.failed'), 'error');
-    const run = () => void Promise.resolve(action()).catch(fail);
-    if (elsewhere) {
-      const takeOver = () =>
-        void presence
-          .claim()
-          .then(() => {
-            draftActions.refresh();
-            return action();
-          })
-          .catch(fail);
-      setConfirm({
-        kind: 'other_tab',
-        name: elsewhere.name,
-        unsaved: elsewhere.unsaved,
-        run: takeOver,
-      });
-      return;
-    }
-    // A read-only project here (another tab's draft, a newer file) loses nothing.
+    const run = () => void Promise.resolve(action()).catch(() => toast(t('start.failed'), 'error'));
+    // A read-only project (a newer file) loses nothing.
     const open = current?.store.getState();
     const editable = open && !open.readOnly ? open : undefined;
     const atRisk = editable
       ? saveStatusOf(editable) !== 'saved'
-      : !current && draft.data
-        ? !draft.data.savedToFile
+      : !current && recovered.data
+        ? !recovered.data.savedToFile
         : false;
-    const name = editable?.data.meta.name ?? draft.data?.project.meta.name ?? '';
+    const name = editable?.data.meta.name ?? recovered.data?.project.meta.name ?? '';
     if (atRisk) setConfirm({ kind: 'unsaved', name, run });
     else run();
   }
 
+  const refreshRecovery = () =>
+    void queryClient.invalidateQueries({ queryKey: queryKeys.recovery() });
+
+  /** Opens the recovery copy bound to its original path, still unsaved. */
+  async function restore() {
+    // Read again: autosave may have written since the screen loaded.
+    const copy = await recovery.get().catch(() => null);
+    if (!copy) {
+      toast(t('start.recovery.invalid'), 'error');
+      return;
+    }
+    workspace.getState().open({
+      data: copy.project,
+      assets: copy.assets,
+      status: copy.savedToFile ? 'saved' : 'draft',
+      ...(copy.file ? { file: copy.file } : {}),
+    });
+    refreshRecovery();
+    navigate('/project/plan');
+  }
+
+  async function discardRecovery() {
+    try {
+      await recovery.clear();
+    } catch {
+      toast(t('start.failed'), 'error');
+    }
+    refreshRecovery();
+  }
+
   function openProject(init: EditorInit) {
     workspace.getState().open(init);
-    draftActions.refresh();
+    refreshRecovery();
     navigate('/project/plan');
   }
 
@@ -144,8 +143,8 @@ export function StartPage() {
     openProject({ data: project, assets, status: 'unsaved' });
   }
 
-  // The draft is this tab's open project unless that one is a read-only view.
-  const shownDraft = (!current || tabLock !== null) && draft.data ? draft.data : null;
+  // While a project is open the copy is that project's own.
+  const shown = !current && recovered.data ? recovered.data : null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -169,40 +168,32 @@ export function StartPage() {
         </section>
       ) : null}
 
-      {shownDraft ? (
+      {shown ? (
         <section
           className="flex items-center gap-3 rounded border border-border p-3"
-          aria-label={t('start.draft.title')}
+          aria-label={t('start.recovery.title')}
         >
           <div className="min-w-0 flex-1">
-            <p className="text-text-muted">{t('start.draft.title')}</p>
-            <p className="truncate font-medium">{shownDraft.project.meta.name}</p>
+            <p className="text-text-muted">{t('start.recovery.title')}</p>
+            <p className="truncate font-medium">{shown.project.meta.name}</p>
             <p className="text-text-muted">
-              {t('start.draft.lastChange', {
-                date: dateFormat.format(new Date(shownDraft.savedAt)),
+              {t('start.recovery.lastChange', {
+                date: dateFormat.format(new Date(shown.savedAt)),
               })}
-              {shownDraft.savedToFile ? null : ` · ${t('start.draft.notInFile')}`}
+              {shown.file
+                ? ` · ${t('start.recovery.file', { name: shown.file.name })}`
+                : ` · ${t('start.recovery.noFile')}`}
+              {shown.savedToFile ? null : ` · ${t('start.recovery.notInFile')}`}
             </p>
-            {elsewhere ? (
-              <p className="text-warning" role="status">
-                {t('start.draft.inUse')}
-              </p>
-            ) : null}
           </div>
-          {elsewhere ? (
-            <>
-              <Button onClick={() => void draftActions.openReadOnly()}>
-                {t('start.draft.openReadOnly')}
-              </Button>
-              <Button variant="primary" onClick={() => void draftActions.takeOver()}>
-                {t('start.draft.editHere')}
-              </Button>
-            </>
-          ) : (
-            <Button variant="primary" onClick={() => void draftActions.resume()}>
-              {t('start.draft.resume')}
-            </Button>
-          )}
+          <Button
+            onClick={() => setConfirm({ kind: 'discard_recovery', name: shown.project.meta.name })}
+          >
+            {t('start.recovery.discard')}
+          </Button>
+          <Button variant="primary" onClick={() => void restore()}>
+            {t('start.recovery.restore')}
+          </Button>
         </section>
       ) : null}
 
@@ -230,29 +221,31 @@ export function StartPage() {
         open={confirm !== null}
         onOpenChange={(open) => !open && setConfirm(null)}
         title={t(
-          confirm?.kind === 'other_tab' ? 'start.otherTab.title' : 'start.replaceDraft.title',
+          confirm?.kind === 'discard_recovery'
+            ? 'start.recovery.discardTitle'
+            : 'start.replaceDraft.title',
         )}
-        description={
-          confirm?.kind === 'other_tab'
-            ? t(confirm.unsaved ? 'start.otherTab.bodyUnsaved' : 'start.otherTab.body', {
-                name: confirm.name,
-              })
-            : t('start.replaceDraft.body', { name: confirm?.name ?? '' })
-        }
+        description={t(
+          confirm?.kind === 'discard_recovery'
+            ? 'start.recovery.discardBody'
+            : 'start.replaceDraft.body',
+          { name: confirm?.name ?? '' },
+        )}
         footer={
           <>
             <Button onClick={() => setConfirm(null)}>{t('common.cancel')}</Button>
             <Button
               variant="danger"
               onClick={() => {
-                const run = confirm?.run;
+                const choice = confirm;
                 setConfirm(null);
-                run?.();
+                if (choice?.kind === 'unsaved') choice.run();
+                else void discardRecovery();
               }}
             >
               {t(
-                confirm?.kind === 'other_tab'
-                  ? 'start.otherTab.confirm'
+                confirm?.kind === 'discard_recovery'
+                  ? 'start.recovery.discard'
                   : 'start.replaceDraft.confirm',
               )}
             </Button>

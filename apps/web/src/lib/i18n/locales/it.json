@@ -31,9 +31,9 @@
       "draft": "Bozza",
       "unsaved": "Modifiche non salvate",
       "saved_hint": "Tutte le modifiche sono nel file del progetto",
-      "draft_hint": "Le modifiche sono conservate su questo dispositivo; salva il progetto per averle nel file",
-      "unsaved_hint": "Le modifiche vengono conservate su questo dispositivo",
-      "draftFailed": "Non conservato su questo dispositivo",
+      "draft_hint": "Le modifiche sono conservate in una copia di recupero; salva il progetto per averle nel file",
+      "unsaved_hint": "Le modifiche vengono conservate nella copia di recupero",
+      "draftFailed": "Copia di recupero non salvata",
       "retry": "Riprova"
     },
     "undo": "Annulla",
@@ -86,8 +86,6 @@
     "saveFailed": "Impossibile salvare il progetto. Le modifiche sono ancora nell’editor.",
     "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
     "dismissNotice": "Chiudi",
-    "readOnlyInUse": "Sola lettura: questo progetto è in modifica in un'altra scheda.",
-    "takenOver": "Questo progetto ora è in modifica in un'altra scheda, quindi qui è in sola lettura. Le modifiche fatte fin qui sono conservate.",
     "saveAs": "Salva come…",
     "conflict": {
       "title": "Il file è cambiato sul disco",
@@ -759,15 +757,17 @@
       "action": "Continua",
       "readOnly": "sola lettura"
     },
-    "draft": {
-      "title": "Bozza su questo dispositivo",
+    "recovery": {
+      "title": "Progetto recuperato",
       "lastChange": "Ultima modifica {{date}}",
+      "file": "File: {{name}}",
+      "noFile": "mai salvato in un file",
       "notInFile": "modifiche non salvate in un file",
-      "resume": "Riprendi",
-      "invalid": "Impossibile aprire la bozza.",
-      "inUse": "In modifica in un'altra scheda.",
-      "openReadOnly": "Apri in sola lettura",
-      "editHere": "Modifica qui"
+      "restore": "Ripristina",
+      "discard": "Scarta",
+      "discardTitle": "Scartare il progetto recuperato?",
+      "discardBody": "“{{name}}” ha modifiche che esistono solo nella copia di recupero. Scartandola vanno perse.",
+      "invalid": "Impossibile aprire il progetto recuperato."
     },
     "failed": "Qualcosa è andato storto. Riprova.",
     "openErrors": {
@@ -780,12 +780,6 @@
       "title": "Scartare le modifiche non salvate?",
       "body": "“{{name}}” ha modifiche non salvate in un file. Aprendo un altro progetto vanno perse.",
       "confirm": "Scarta e continua"
-    },
-    "otherTab": {
-      "title": "Progetto aperto in un'altra scheda",
-      "body": "“{{name}}” è in modifica in un'altra scheda. Continuando qui, quella scheda passa in sola lettura.",
-      "bodyUnsaved": "“{{name}}” è in modifica in un'altra scheda e ha modifiche non salvate in un file. Continuando qui, quella scheda passa in sola lettura e quelle modifiche vanno perse.",
-      "confirm": "Continua qui"
     }
   },
   "company": {

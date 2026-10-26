@@ -1,5 +1,4 @@
 import '@testing-library/jest-dom/vitest';
-import 'fake-indexeddb/auto';
 import { cleanup } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, vi } from 'vitest';

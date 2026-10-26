@@ -20,14 +20,14 @@ describe('editor shell', () => {
     );
   });
 
-  // protects=draft write failure; fails_when=a failed draft write looks stored or offers no retry; no_claim=storage quotas
-  it('shows a failed draft write with a retry', async () => {
-    const { drafts } = await renderApp(planPath);
-    const save = vi.spyOn(drafts, 'save').mockRejectedValueOnce(new Error('quota'));
+  // protects=recovery write failure; fails_when=a failed recovery write looks stored or offers no retry; no_claim=disk errors
+  it('shows a failed recovery write with a retry', async () => {
+    const { recovery } = await renderApp(planPath);
+    const save = vi.spyOn(recovery, 'save').mockRejectedValueOnce(new Error('quota'));
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await userEvent.click(await screen.findByRole('button', { name: 'Add floor' }));
     expect(
-      await screen.findByText('Not stored on this device', undefined, { timeout: 3000 }),
+      await screen.findByText('Recovery copy not saved', undefined, { timeout: 3000 }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Draft'));

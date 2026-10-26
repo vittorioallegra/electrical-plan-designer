@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
 import { loadDoc } from '@epd/domain/load';
-import { useEditor, useEditorContext, useWorkspace } from '@/stores/editor/EditorContext';
-import { useDraftActions } from '@/hooks/useDraftActions';
+import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
 import { Button } from '@/components/ui/Button';
 import { fileSafe } from '@/lib/download';
@@ -43,8 +42,6 @@ export function ProjectFrame() {
   const toast = useToast();
   const meta = useEditor((s) => s.data.meta);
   const readOnly = useEditor((s) => s.readOnly);
-  const tabLock = useWorkspace((s) => s.tabLock);
-  const draftActions = useDraftActions();
   const canUndo = useEditor((s) => s.past.length > 0 && !s.readOnly);
   const canRedo = useEditor((s) => s.future.length > 0 && !s.readOnly);
   const importInput = useRef<HTMLInputElement>(null);
@@ -214,17 +211,7 @@ export function ProjectFrame() {
           </Button>
         </div>
       ) : null}
-      {readOnly && tabLock ? (
-        <div
-          className="flex items-center gap-3 bg-warning-bg px-3 py-1.5 text-warning"
-          role="status"
-        >
-          <span>{t(tabLock === 'in_use' ? 'editor.readOnlyInUse' : 'editor.takenOver')}</span>
-          <Button variant="secondary" onClick={() => void draftActions.takeOver()}>
-            {t('start.draft.editHere')}
-          </Button>
-        </div>
-      ) : readOnly ? (
+      {readOnly ? (
         <p className="bg-warning-bg px-3 py-1.5 text-warning" role="status">
           {t('editor.readOnly')}
         </p>

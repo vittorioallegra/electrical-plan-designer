@@ -1,4 +1,4 @@
-// Persistence interfaces: the draft of the open project and access to project files.
+// Persistence interfaces: the recovery copy of the open project, project files and the window.
 import type { ProjectFile } from '@epd/domain/projectFile';
 import type { ProjectAssets } from '@/lib/projectFile/epd';
 
@@ -53,39 +53,22 @@ export interface WindowHost {
   answerClose(choice: CloseChoice): void;
 }
 
-/** The open project as autosave keeps it on this device. */
-export interface Draft {
+/** The open project as autosave keeps it in the recovery copy. */
+export interface RecoveryCopy {
   project: ProjectFile;
   /** Only the assets the project references. */
   assets: ProjectAssets;
-  /** True when the last opened or saved file already has every change in the draft. */
+  /** The file the project was bound to, so a restored project saves back to the same path. */
+  file: FileBinding | null;
+  /** True when the file already has every change in the copy. */
   savedToFile: boolean;
   savedAt: string;
 }
 
-/** One draft per app: the project open in the tab. */
-export interface DraftRepository {
-  get(): Promise<Draft | null>;
-  save(draft: Draft): Promise<void>;
+/** One recovery copy per app: the project open in the window. */
+export interface RecoveryRepository {
+  /** The copy a previous run left, or null (none, or one that is not a valid project). */
+  get(): Promise<RecoveryCopy | null>;
+  save(copy: RecoveryCopy): Promise<void>;
   clear(): Promise<void>;
-}
-
-/** The tab that holds the draft, as other tabs see it. */
-export interface DraftHolder {
-  /** Name of the project open there. */
-  name: string;
-  /** It has changes that are not in a file (they would be lost if another tab took over). */
-  unsaved: boolean;
-}
-
-/** Coordinates the tabs of one browser around the single draft. */
-export interface DraftPresence {
-  /** The other tab that holds the draft, or null when none answers. */
-  holder(): Promise<DraftHolder | null>;
-  /** Takes the draft over: the holding tab turns read-only before this resolves. */
-  claim(): Promise<void>;
-  /** While set, this tab holds the draft and answers other tabs with `info()`. */
-  hold(info: (() => DraftHolder) | null): void;
-  /** Called when another tab takes the draft over; the claim waits for it to settle. */
-  onTakenOver(listener: () => void | Promise<void>): () => void;
 }

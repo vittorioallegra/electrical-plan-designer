@@ -11,12 +11,13 @@ const hasUnsavedChanges = (s: EditorState) => !s.readOnly && saveStatusOf(s) !==
 /**
  * Keeps the window in step with the open project: its name and unsaved state for the title and
  * the document-edited dot, and the Save / Don't save / Cancel question when the window closes or
- * the app quits with changes that are not in the file.
+ * the app quits with changes that are not in the file (Don't save deletes the recovery copy).
  */
 export function WindowSync() {
   const { t } = useTranslation();
   const { windowHost } = useEditorServices();
-  const store = useWorkspace((s) => s.current?.store ?? null);
+  const current = useWorkspace((s) => s.current);
+  const store = current?.store ?? null;
   const saver = useSaveProject(store);
   const { save } = saver;
   const [asking, setAsking] = useState<string | null>(null);
@@ -48,9 +49,19 @@ export function WindowSync() {
     [store, windowHost],
   );
 
+  /** "Don't save": the recovery copy goes too, or it would be offered again at the next start. */
+  async function discardAndClose() {
+    setAsking(null);
+    await current?.autosave.discard().catch(() => undefined);
+    windowHost.answerClose('close');
+  }
+
   async function saveAndClose() {
     setAsking(null);
-    windowHost.answerClose((await save()) ? 'close' : 'cancel');
+    const saved = await save();
+    // The copy is cleared as the file catches up; wait for it so it is not offered again.
+    if (saved) await current?.autosave.writeNow().catch(() => undefined);
+    windowHost.answerClose(saved ? 'close' : 'cancel');
   }
 
   return (
@@ -75,13 +86,7 @@ export function WindowSync() {
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                setAsking(null);
-                windowHost.answerClose('close');
-              }}
-            >
+            <Button variant="danger" onClick={() => void discardAndClose()}>
               {t('editor.close.discard')}
             </Button>
             <Button variant="primary" onClick={() => void saveAndClose()}>

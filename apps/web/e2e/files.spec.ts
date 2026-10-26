@@ -33,13 +33,9 @@ test('open the demo file, edit, save it in place and reopen it', async ({ page }
   expect(saved.catalogs.length).toBeGreaterThan(0);
   expect(saved.company.businessName).not.toBe('');
 
-  // A reload closes the project; the draft is offered and matches the saved file.
+  // A reload closes the project (the fake files start empty); reopening the saved file gives
+  // the same project.
   await page.reload();
-  const draft = page.getByRole('region', { name: 'Draft on this device' });
-  await expect(draft).toContainText('Demo house');
-  await expect(draft).not.toContainText('changes not saved to a file');
-
-  // Reopening the saved file gives the same project (the fake files start empty after a reload).
   await offerFile(page, 'demo-project.epd', bytes);
   await page.getByRole('button', { name: 'Open file…' }).click();
   await expect(page.getByTestId('project-name')).toHaveText('Demo house');

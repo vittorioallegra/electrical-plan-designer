@@ -2,7 +2,7 @@
 
 Backend-free web app (installable PWA) for electricians: floor plan, panel, circuits through
 conduits, BOM, checks, PDF/CSV exports and quotes. A project is one `.epd` file; the open
-project is kept as a draft in IndexedDB. Spec: docs/specs/electrical-plan-designer.md; plan
+while it is open, autosave keeps a recovery copy in the app data folder (desktop app). Spec: docs/specs/electrical-plan-designer.md; plan
 and decisions: docs/plans/local-first.md; deploy: docs/deploy.md.
 
 ## Commands
@@ -37,7 +37,8 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
 with icons and the static-host `_headers`/`_redirects`).
 
 - `apps/desktop/` — `@epd/desktop`: Electron shell. `src/main` (window, `app://` scheme serving
-  the built renderer, CSP), `src/preload` (exposes `window.epd`), `e2e/`; electron-vite builds
+  the built renderer, CSP, `files.ts` dialogs + atomic writes, `atomicWrite.ts` shared by Save and
+  the recovery copy, `recovery.ts` the `userData/recovery/` copy), `src/preload` (exposes `window.epd`), `e2e/`; electron-vite builds
   main, preload and the renderer (apps/web source, no PWA, base `/`); electron-builder packs
 - `packages/bridge/` — `@epd/bridge`: IPC contract (`EpdBridge`, channel names), types only;
   imported by desktop main/preload and the web app, imports nothing from the apps
@@ -49,13 +50,13 @@ with icons and the static-host `_headers`/`_redirects`).
   exports, settings; sub-folders `components/ hooks/ utils/` as needed
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared;
   `useCatalog` reads catalogs, prices, presets, company of the open project), `src/config/`
-- `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` path-based
-  files (open, save in place, saveAs, exportFile) over `window.epd` or an in-memory fake;
-  `windowHost.ts` title state and close question; `draftPresence.ts` which tab may write the
-  draft, over BroadcastChannel; `idb.ts`), `i18n/` (`locales/en.json` base,
+- `src/lib/` — `repositories/` (`types.ts`; `recovery.ts` recovery copy of the open project;
+  `fileAccess.ts` path-based files (open, save in place, saveAs, exportFile); both over
+  `window.epd` or an in-memory fake; `windowHost.ts` title state and close question), `i18n/` (`locales/en.json` base,
   `it.json`), `projectFile/` (`.epd` zip read/write with `fflate`), formatting helpers
-- `src/stores/editor/` — `workspace.ts` (the tab's one open project), editor store
-  (`ProjectFile` and assets, zustand + immer patches), undo/redo, autosave to the draft
+- `src/stores/editor/` — `workspace.ts` (the window's one open project), editor store
+  (`ProjectFile` and assets, zustand + immer patches), undo/redo, autosave to the recovery copy
+  (cleared once the file has every change or on "Don't save")
 - `src/testing/` (`renderApp`, `editor`, `pdfText`, setup), `scripts/` (build-demo-epd),
   `tests/fixtures/` (shared; e2e uses `fixture(name)`), `tests/lint/` (lint rule tests)
 
@@ -68,9 +69,9 @@ with icons and the static-host `_headers`/`_redirects`).
   `config`, `hooks`, `lib`, `stores`) never import `features` or `app`; `testing` may import
   `app`; no barrels; `@epd/domain` imports nothing from the app. Alias `@/` = `src/`.
 - Data: the open project lives in the workspace's editor store; every change goes through
-  `applyCommand` (undoable; issuing a quote is the one exception) and autosave writes the draft.
-  Services (`drafts`, `fileAccess`, `workspace`) come from `useEditorServices()`. TanStack Query
-  only for local async reads (draft, its holder tab, images), never `useEffect` fetches.
+  `applyCommand` (undoable; issuing a quote is the one exception) and autosave writes the recovery copy.
+  Services (`recovery`, `fileAccess`, `windowHost`, `workspace`) come from `useEditorServices()`.
+  TanStack Query only for local async reads (the recovery copy, images), never `useEffect` fetches.
 - Routes: `/` start screen; `/project/<view>` shows the open project (none → `/`); every route
   has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo
   project for `/project/...` paths (`project: null` to skip) and waits for the first navigation.

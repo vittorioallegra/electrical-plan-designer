@@ -14,9 +14,12 @@ export interface LaunchedApp {
   close: () => Promise<void>;
 }
 
-/** Launches the built app with a fresh, temporary `userData` folder. */
-export async function launchApp(): Promise<LaunchedApp> {
-  const userData = mkdtempSync(join(tmpdir(), 'epd-e2e-'));
+/**
+ * Launches the built app with a fresh, temporary `userData` folder, or with `userData` of an
+ * earlier launch (a relaunch); a folder passed in is left for the caller to remove.
+ */
+export async function launchApp(reuseUserData?: string): Promise<LaunchedApp> {
+  const userData = reuseUserData ?? mkdtempSync(join(tmpdir(), 'epd-e2e-'));
   // A dev server URL in the environment would make the app skip app://.
   const { ELECTRON_RENDERER_URL: _dev, ...env } = process.env;
   const app = await _electron.launch({
@@ -32,7 +35,7 @@ export async function launchApp(): Promise<LaunchedApp> {
     close: async () => {
       // A test may have quit the app already.
       if (app.process().exitCode === null && app.process().signalCode === null) await app.close();
-      rmSync(userData, { recursive: true, force: true });
+      if (!reuseUserData) rmSync(userData, { recursive: true, force: true });
     },
   };
 }

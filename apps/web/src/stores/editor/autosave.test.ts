@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
+import { createMemoryRecoveryRepository } from '@/lib/repositories/recovery';
 import { startAutosave, type Autosave } from './autosave';
 import { saveStatusOf, type EditorInit, type EditorStore } from './editorStore';
 import { demoStore } from '@/testing/editor';
@@ -18,19 +18,20 @@ afterEach(() => {
 
 async function setup(init: Partial<EditorInit> = {}) {
   const { store } = demoStore(init);
-  const drafts = createMemoryDraftRepository();
-  const save = vi.spyOn(drafts, 'save');
+  const recovery = createMemoryRecoveryRepository();
+  const save = vi.spyOn(recovery, 'save');
+  const clear = vi.spyOn(recovery, 'clear');
   autosave = startAutosave(store, {
-    drafts,
+    recovery,
     now: () => new Date('2026-10-26T10:00:00Z'),
   });
-  return { store, drafts, save };
+  return { store, recovery, save, clear };
 }
 
 describe('autosave', () => {
-  // protects=debounce; fails_when=each keystroke writes the draft; no_claim=exact timing in the browser
-  it('debounces edits into one draft write after 1 s', async () => {
-    const { store, drafts, save } = await setup();
+  // protects=debounce; fails_when=each keystroke writes the recovery copy; no_claim=exact timing in the browser
+  it('debounces edits into one recovery write after 1 s', async () => {
+    const { store, recovery, save } = await setup();
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(500);
     edit(store, 'b');
@@ -40,40 +41,56 @@ describe('autosave', () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(save).toHaveBeenCalledTimes(1);
     expect(saveStatusOf(store.getState())).toBe('draft');
-    expect(drafts.draft).toMatchObject({
+    expect(recovery.copy).toMatchObject({
       savedToFile: false,
       savedAt: '2026-10-26T10:00:00.000Z',
     });
-    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('b');
+    expect(recovery.copy!.project.doc.nodes[0]!.label).toBe('b');
   });
 
-  // protects=draft follows the open project; fails_when=opening a project leaves the previous project's draft, or a save to a file is not reflected in the draft; no_claim=file writing (useSaveProject)
-  it('writes the draft on start and after a save to a file', async () => {
-    const { store, drafts, save } = await setup();
+  // protects=AC 9 recovery follows the open project; fails_when=a project whose file has every change leaves a recovery copy, an edit does not write one bound to its file, or a save to the file does not clear it; no_claim=file writing (useSaveProject)
+  it('keeps a copy only while the file lacks changes', async () => {
+    const file = { path: 'a.epd', name: 'a.epd', stat: { mtimeMs: 1, size: 1 } };
+    const { store, recovery, save, clear } = await setup({ file });
     await vi.advanceTimersByTimeAsync(0);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(drafts.draft).toMatchObject({ savedToFile: true });
+    // Opened from a file: nothing to recover.
+    expect(save).not.toHaveBeenCalled();
+    expect(clear).toHaveBeenCalledTimes(1);
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
-    expect(drafts.draft).toMatchObject({ savedToFile: false });
-    store.getState().markSaved(store.getState().revision, {
-      path: 'a.epd',
-      name: 'a.epd',
-      stat: { mtimeMs: 1, size: 1 },
-    });
+    expect(recovery.copy).toMatchObject({ savedToFile: false, file });
+    store.getState().markSaved(store.getState().revision, file);
     await vi.advanceTimersByTimeAsync(0);
-    expect(save).toHaveBeenCalledTimes(3);
-    expect(drafts.draft).toMatchObject({ savedToFile: true });
+    expect(recovery.copy).toBeNull();
     expect(saveStatusOf(store.getState())).toBe('saved');
+    // Later edits write a copy again.
+    edit(store, 'b');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(recovery.copy!.project.doc.nodes[0]!.label).toBe('b');
   });
 
-  // protects=no lost edit during a write; fails_when=an edit made while the draft is being written is never stored; no_claim=—
+  // protects="Don't save"; fails_when=discarding leaves the copy, lets a pending edit write it back afterwards, or autosave keeps running; no_claim=the close dialog (WindowSync tests)
+  it('discard deletes the copy and stops writing', async () => {
+    const { store, recovery, save } = await setup({ status: 'unsaved' });
+    edit(store, 'a');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(recovery.copy).not.toBeNull();
+    edit(store, 'b');
+    await autosave!.discard();
+    expect(recovery.copy).toBeNull();
+    const writes = save.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(save).toHaveBeenCalledTimes(writes);
+    expect(recovery.copy).toBeNull();
+  });
+
+  // protects=no lost edit during a write; fails_when=an edit made while the copy is being written is never stored; no_claim=—
   it('writes again when an edit arrives during a write', async () => {
-    const { store, drafts, save } = await setup();
+    const { store, recovery, save } = await setup();
     let release!: () => void;
-    save.mockImplementationOnce(async (draft) => {
+    save.mockImplementationOnce(async (copy) => {
       await new Promise<void>((r) => (release = r));
-      drafts.draft = structuredClone(draft);
+      recovery.copy = structuredClone(copy);
     });
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
@@ -84,10 +101,10 @@ describe('autosave', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(save).toHaveBeenCalledTimes(2);
     expect(saveStatusOf(store.getState())).toBe('draft');
-    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('b');
+    expect(recovery.copy!.project.doc.nodes[0]!.label).toBe('b');
   });
 
-  // protects=draft write failures; fails_when=a failed write looks stored, or is not retried on the next edit or on Retry; no_claim=UI text
+  // protects=recovery write failures; fails_when=a failed write looks stored, or is not retried on the next edit or on Retry; no_claim=UI text
   it('flags a failed write and retries on the next edit or flush', async () => {
     const { store, save } = await setup();
     save.mockRejectedValueOnce(new Error('quota')).mockRejectedValueOnce(new Error('quota'));
@@ -105,9 +122,9 @@ describe('autosave', () => {
     expect(saveStatusOf(store.getState())).toBe('draft');
   });
 
-  // protects=assets in the draft; fails_when=the draft misses a referenced asset or keeps one nothing references; no_claim=asset decoding
+  // protects=assets in the copy; fails_when=the copy misses a referenced asset or keeps one nothing references; no_claim=asset decoding
   it('stores only the assets the project references', async () => {
-    const { store, drafts } = await setup();
+    const { store, recovery } = await setup();
     const png = { mimeType: 'image/png' as const, bytes: new Uint8Array([1, 2]) };
     store.getState().addAsset('used', png);
     store.getState().addAsset('unused', png);
@@ -123,19 +140,19 @@ describe('autosave', () => {
       };
     });
     await vi.advanceTimersByTimeAsync(1000);
-    expect([...drafts.draft!.assets.keys()]).toEqual(['used']);
+    expect([...recovery.copy!.assets.keys()]).toEqual(['used']);
   });
 
   // protects=edits right before leaving the editor; fails_when=stopping autosave drops changes still waiting for the debounce; no_claim=closing the window (the close guard asks about unsaved changes)
   it('writes pending changes when stopped', async () => {
-    const { store, drafts } = await setup();
+    const { store, recovery } = await setup();
     edit(store, 'last');
     autosave!.stop();
     await vi.advanceTimersByTimeAsync(0);
-    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('last');
+    expect(recovery.copy!.project.doc.nodes[0]!.label).toBe('last');
   });
 
-  // protects=read-only docs; fails_when=a newer, read-only doc is written to the draft; no_claim=—
+  // protects=read-only docs; fails_when=a newer, read-only doc is written to the recovery copy; no_claim=—
   it('never writes a read-only project', async () => {
     const { save } = await setup({ readOnly: true, status: 'unsaved' });
     await vi.advanceTimersByTimeAsync(5000);

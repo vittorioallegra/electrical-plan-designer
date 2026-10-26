@@ -36,7 +36,7 @@ const MIME_TYPES = new Map<string, AssetMimeType>(
 
 /** The asset as a Blob, e.g. to decode an image. */
 export function assetBlob(asset: ProjectAsset): Blob {
-  // fflate and IndexedDB always hand out plain ArrayBuffer-backed arrays.
+  // fflate and Electron IPC always hand out plain ArrayBuffer-backed arrays.
   return new Blob([asset.bytes as Uint8Array<ArrayBuffer>], { type: asset.mimeType });
 }
 
