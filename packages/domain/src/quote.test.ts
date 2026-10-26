@@ -15,7 +15,6 @@ import type { QuoteSettings } from './types';
 
 const userSocket: CatalogItem = {
   id: 'u1',
-  ownerId: 'user-a',
   category: 'device',
   name: 'Brand socket',
   code: 'BR-123',
@@ -109,7 +108,6 @@ describe('quote math', () => {
   it('a priced user cable item prices the matching cable line', () => {
     const cable: CatalogItem = {
       id: 'u-cable',
-      ownerId: 'user-a',
       category: 'cable',
       name: 'Brown 2.5',
       unitPrice: 60,
@@ -145,7 +143,7 @@ describe('quote math', () => {
 });
 
 describe('issued quotes', () => {
-  // protects=frozen snapshots; fails_when=a price edit after issuing changes the issued quote; no_claim=storage
+  // protects=frozen snapshots; fails_when=a price edit after issuing changes the issued quote or the snapshot is not pending; no_claim=storage
   it('an issued snapshot is unchanged after a price edit', () => {
     const bom = computeBom(ac4Doc(), defaultProjectSettings(), createCatalogLookup());
     const overrides = { 'builtin:box_503': { unitPrice: 120 } };
@@ -163,6 +161,7 @@ describe('issued quotes', () => {
     overrides['builtin:box_503'].unitPrice = 999;
     settings.vatPercent = 10;
     expect(issued).toEqual(before);
+    expect(issued).toMatchObject({ status: 'issued', note: '' });
     expect(formatQuoteNumber(issued)).toBe('2026-007');
   });
 });

@@ -1,6 +1,11 @@
 // Generic built-in catalog. Read-only; names are i18n keys. Ids are stable forever:
 // they are stored in documents, BOM line keys and purchase marks.
-import type { CatalogAttributes, CatalogCategory, CatalogItem } from './types';
+import {
+  BUILTIN_PREFIX,
+  type CatalogAttributes,
+  type CatalogCategory,
+  type CatalogItem,
+} from './types';
 
 function item(
   slug: string,
@@ -10,8 +15,7 @@ function item(
   modules?: number,
 ): CatalogItem {
   return {
-    id: `builtin:${slug}`,
-    ownerId: null,
+    id: `${BUILTIN_PREFIX}${slug}`,
     category,
     name: `catalog.builtin.${slug}`,
     unit,

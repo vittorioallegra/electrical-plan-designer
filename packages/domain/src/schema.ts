@@ -296,28 +296,51 @@ export const quoteTotalsSchema = z.object({
   unpricedCount: z.number().int().nonnegative(),
 });
 
+export const quoteStatusSchema = z.enum(['issued', 'approved', 'rejected', 'superseded']);
+
 export const issuedQuoteSchema = z.object({
+  /** Per project: 1, 2, 3… */
   number: z.number().int().positive(),
   issuedAt: z.string(),
   language: z.string(),
   lines: z.array(quoteLineSchema),
   settings: quoteSettingsSchema,
   totals: quoteTotalsSchema,
+  /** Defaults cover snapshots stored before quotes had a status. */
+  status: quoteStatusSchema.default('issued'),
+  /** Absent until the status first changes. */
+  statusChangedAt: z.string().optional(),
+  note: z.string().default(''),
 });
 
-/** projects.quote: the editable settings plus append-only issued snapshots. */
-export const projectQuoteSchema = z.object({
-  settings: quoteSettingsSchema,
-  issued: z.array(issuedQuoteSchema),
-});
+/** The quote of a project: the editable settings plus issued snapshots (immutable but status and note). */
+export const projectQuoteSchema = z
+  .object({
+    settings: quoteSettingsSchema,
+    issued: z.array(issuedQuoteSchema),
+  })
+  .superRefine((quote, ctx) => {
+    const numbers = new Set<number>();
+    quote.issued.forEach((q, i) => {
+      if (numbers.has(q.number))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['issued', i, 'number'],
+          message: 'duplicate number',
+        });
+      numbers.add(q.number);
+    });
+    if (quote.issued.filter((q) => q.status === 'approved').length > 1)
+      ctx.addIssue({ code: 'custom', path: ['issued'], message: 'more than one approved quote' });
+  });
 
-/** profiles.price_overrides: itemId or cable line key → price (cents) and code. */
+/** Price list: itemId or cable line key → price (cents) and code. */
 export const priceOverridesSchema = z.record(
   z.string(),
   z.object({ unitPrice: cents.nonnegative(), code: z.string().optional() }),
 );
 
-/** profiles.box_presets: a box with its contents, applied on placement. */
+/** A box preset: a box with its contents, applied on placement. */
 export const boxPresetSchema = z.object({
   id,
   name: z.string(),

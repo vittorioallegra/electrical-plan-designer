@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next';
 import { GState } from 'jspdf';
 import { bomCategoryOrder, type BomLine } from '@epd/domain/bom';
 import type { CatalogLookup } from '@epd/domain/catalog/lookup';
+import { isBuiltin } from '@epd/domain/catalog/types';
 import type { Warning } from '@epd/domain/checks';
 import {
   backgroundMetersPerPixel,
@@ -74,7 +75,7 @@ export function buildProjectPdf(input: ProjectPdfInput): PdfWriter {
   const itemName = (id: string | undefined) => {
     const item = id ? lookup(id) : undefined;
     if (!item) return id ? t('catalog.missingItem', { id }) : '—';
-    return item.ownerId === null ? t(item.name) : item.name;
+    return isBuiltin(item) ? t(item.name) : item.name;
   };
   const nodeLabel = (id: string) => doc.nodes.find((n) => n.id === id)?.label || '?';
   const floors = [...doc.floors].sort((a, b) => a.order - b.order);

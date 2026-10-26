@@ -104,7 +104,7 @@ export interface ProfileRepository {
   nextQuoteNumber(): Promise<number>;
 }
 
-export type NewCatalogItem = Omit<CatalogItem, 'id' | 'ownerId'>;
+export type NewCatalogItem = Omit<CatalogItem, 'id'>;
 
 export interface CatalogRepository {
   /** User items, archived ones included. */

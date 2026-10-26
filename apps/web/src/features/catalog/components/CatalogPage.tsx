@@ -1,7 +1,7 @@
 import { Archive, ArchiveRestore, Copy, Pencil } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
+import { isBuiltin, type CatalogCategory, type CatalogItem } from '@epd/domain/catalog/types';
 import { Button } from '@/components/ui/Button';
 import { formatMoney } from '@/lib/format';
 import { NumberInput } from '@/components/ui/NumberInput';
@@ -117,7 +117,7 @@ export function CatalogPage() {
         </thead>
         <tbody>
           {visible.map((item) => {
-            const builtin = item.ownerId === null;
+            const builtin = isBuiltin(item);
             const override = profile?.priceOverrides[item.id]?.unitPrice;
             return (
               <tr
@@ -173,7 +173,7 @@ export function CatalogPage() {
                       variant="ghost"
                       aria-label={t('catalog.duplicate', { name: itemName(item) })}
                       onClick={() => {
-                        const { id: _id, ownerId: _ownerId, ...copy } = item;
+                        const { id: _id, ...copy } = item;
                         setEditing({
                           title: t('catalog.duplicateTitle'),
                           initial: {

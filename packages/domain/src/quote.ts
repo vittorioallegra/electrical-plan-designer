@@ -2,7 +2,7 @@
 import type { BomLine } from './bom';
 import { builtinCableId } from './catalog/builtin';
 import type { CatalogLookup } from './catalog/lookup';
-import type { CatalogItem } from './catalog/types';
+import { isBuiltin, type CatalogItem } from './catalog/types';
 import type { IssuedQuote, PriceOverrides, QuoteLine, QuoteSettings, QuoteTotals } from './types';
 
 /** What a quote export renders: the live quote or an issued snapshot. */
@@ -45,7 +45,7 @@ export function lookupPrice(line: BomLine, ctx: PriceContext): ResolvedPrice {
         i.attributes.color === color,
     );
   }
-  if (item && item.ownerId !== null && item.unitPrice !== undefined) {
+  if (item && !isBuiltin(item) && item.unitPrice !== undefined) {
     return { unitPrice: item.unitPrice, ...(item.code ? { code: item.code } : {}), source: 'item' };
   }
   const override =
@@ -139,6 +139,8 @@ export function issueQuote(
     lines,
     settings,
     totals,
+    status: 'issued',
+    note: '',
   });
 }
 

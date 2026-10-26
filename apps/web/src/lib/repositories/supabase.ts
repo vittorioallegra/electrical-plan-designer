@@ -44,7 +44,6 @@ const toMeta = (
 
 const toItem = (row: CatalogRow): CatalogItem => ({
   id: row.id,
-  ownerId: row.owner_id,
   category: row.category as CatalogItem['category'],
   name: row.name,
   ...(row.code ? { code: row.code } : {}),

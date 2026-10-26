@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { IssuedQuote } from '@epd/domain/types';
 import { CommandError } from './editorStore';
 import { demoStore } from '@/testing/editor';
 
@@ -75,7 +76,7 @@ describe('editor store', () => {
     store.getState().applyCommand('vat', (d) => {
       d.quote.settings.vatPercent = 10;
     });
-    const issued = {
+    const issued: IssuedQuote = {
       number: 1,
       issuedAt: '2026-10-25T10:00:00.000Z',
       language: 'en',
@@ -91,6 +92,8 @@ describe('editor store', () => {
         total: 0,
         unpricedCount: 0,
       },
+      status: 'issued',
+      note: '',
     };
     expect(store.getState().appendIssuedQuote(issued)).toEqual({ ok: true });
     expect(store.getState().saveStatus).toBe('dirty');

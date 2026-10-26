@@ -38,7 +38,7 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
 Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright configs, `e2e/`).
 
 - `packages/domain/` — `@epd/domain`: pure TS (model, geometry, lengths, routing, BOM, checks,
-  quote, built-in catalog); source-only, imported as `@epd/domain/<module>`, no barrel
+  quote, catalogs, `.epd` project file schema); source-only, imported as `@epd/domain/<module>`, no barrel
 - `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes({ repos, queryClient })`),
   `auth.ts` (auth middleware), `layouts/`, `routes/` (route modules composing features)
 - `src/features/<name>/` — auth, projects, editor, panel, circuits, catalog, bom, checks, quote,
@@ -70,6 +70,9 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   canvas and PDF code are lazy. `renderApp()` (real routes, in-memory repos, fresh query client)
   waits for the first navigation; `prepare` installs spies before loaders run.
 - Tests next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
+- Project file (`packages/domain/src/projectFile.ts`): every schema change bumps
+  `PROJECT_FILE_SCHEMA_VERSION`, adds a migration in `projectFile/migrations.ts` and freezes
+  a fixture of the previous version in `projectFile/fixtures/`; old files must always open.
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents.
 - PDFs (jsPDF Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
 - Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).

@@ -45,6 +45,8 @@ export interface MemoryControl {
   projects: Map<string, StoredProject>;
   profiles: Map<string, Profile & { quoteCounter: number }>;
   catalog: Map<string, CatalogItem>;
+  /** Catalog item id → owning user id. */
+  catalogOwners: Map<string, string>;
   marks: Map<string, Map<string, number | null>>;
   files: Map<string, Blob>;
   /** Runs before every save; throw a SaveError to simulate a failure, await to delay. */
@@ -69,6 +71,7 @@ export function createMemoryRepositories(): { repos: Repositories; control: Memo
     projects: new Map(),
     profiles: new Map(),
     catalog: new Map(),
+    catalogOwners: new Map(),
     marks: new Map(),
     files: new Map(),
     saveCalls: [],
@@ -211,20 +214,22 @@ export function createMemoryRepositories(): { repos: Repositories; control: Memo
     catalog: {
       async list() {
         const userId = me().userId;
-        return [...control.catalog.values()].filter((i) => i.ownerId === userId).map(clone);
+        return [...control.catalog.values()]
+          .filter((i) => control.catalogOwners.get(i.id) === userId)
+          .map(clone);
       },
       async create(item) {
         const created: CatalogItem = {
           ...clone(item),
           id: crypto.randomUUID(),
-          ownerId: me().userId,
         };
         control.catalog.set(created.id, created);
+        control.catalogOwners.set(created.id, me().userId);
         return clone(created);
       },
       async update(id, patch) {
         const item = control.catalog.get(id);
-        if (!item || item.ownerId !== me().userId) throw new Error('not found');
+        if (!item || control.catalogOwners.get(id) !== me().userId) throw new Error('not found');
         Object.assign(item, clone(patch));
       },
     },

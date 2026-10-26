@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import type { BomLine } from '@epd/domain/bom';
 import type { CableColor } from '@epd/domain/types';
 import type { CatalogLookup } from '@epd/domain/catalog/lookup';
-import type { CatalogItem } from '@epd/domain/catalog/types';
+import { isBuiltin, type CatalogItem } from '@epd/domain/catalog/types';
 import { formatNumber, type Locale } from './format';
 
 /** Human description of a BOM line in the UI language. */
@@ -20,7 +20,7 @@ export function describeBomLine(
   }
   const item: CatalogItem | undefined = line.itemId ? lookup(line.itemId) : undefined;
   if (!item) return t('catalog.missingItem', { id: line.itemId ?? line.key });
-  return item.ownerId === null ? t(item.name) : item.name;
+  return isBuiltin(item) ? t(item.name) : item.name;
 }
 
 /** Description of a purchase mark whose line may have left the BOM (key only). */

@@ -1,0 +1,275 @@
+{
+  "manifest": {
+    "format": "epd",
+    "schemaVersion": 1,
+    "appVersion": "0.1.0",
+    "savedAt": "2026-10-26T09:00:00.000Z"
+  },
+  "project": {
+    "meta": {
+      "name": "Fixture house",
+      "clientName": "Fixture client",
+      "address": "Via Roma 1",
+      "createdAt": "2026-10-26T09:00:00.000Z"
+    },
+    "company": {
+      "businessName": "Fixture Electric",
+      "vatNumber": "IT00000000000",
+      "address": "Via Verdi 2",
+      "phone": "+39 000",
+      "email": "office@example.test",
+      "logoAssetId": "logo1"
+    },
+    "settings": {
+      "mountingHeights": {
+        "socket": 0.3,
+        "switch": 1.1,
+        "junctionBox": 0.25,
+        "panel": 1.5
+      },
+      "defaultFloorHeight": 2.7,
+      "defaultRunElevation": "floor",
+      "terminationSlack": 0.2,
+      "wastePercent": 10,
+      "conduitFillFactor": 1.3
+    },
+    "quote": {
+      "settings": {
+        "materialAdjustmentPercent": 0,
+        "vatPercent": 22,
+        "laborLines": []
+      },
+      "issued": [
+        {
+          "number": 1,
+          "issuedAt": "2026-10-26T09:00:00.000Z",
+          "language": "en",
+          "lines": [
+            {
+              "key": "cat1:BR-1",
+              "description": "Brand socket",
+              "code": "BR-1",
+              "quantity": 1,
+              "unit": "pcs",
+              "unitPrice": 450,
+              "total": 450
+            }
+          ],
+          "settings": {
+            "materialAdjustmentPercent": 0,
+            "vatPercent": 22,
+            "laborLines": []
+          },
+          "totals": {
+            "materialsBeforeAdjustment": 450,
+            "adjustment": 0,
+            "materials": 450,
+            "labor": 0,
+            "taxable": 450,
+            "vat": 99,
+            "total": 549,
+            "unpricedCount": 0
+          },
+          "status": "approved",
+          "statusChangedAt": "2026-10-26T09:00:00.000Z",
+          "note": "Signed"
+        }
+      ]
+    },
+    "catalogs": [
+      {
+        "id": "cat1",
+        "name": "Brand 2026",
+        "importedAt": "2026-10-26T09:00:00.000Z",
+        "source": "brand-2026.csv",
+        "items": [
+          {
+            "id": "cat1:BR-1",
+            "category": "device",
+            "name": "Brand socket",
+            "code": "BR-1",
+            "unitPrice": 450,
+            "unit": "pcs",
+            "modules": 1,
+            "attributes": {
+              "deviceType": "socket"
+            }
+          },
+          {
+            "id": "cat1:BR-2",
+            "category": "plate",
+            "name": "Brand plate",
+            "code": "BR-2",
+            "unitPrice": 300,
+            "unit": "pcs",
+            "attributes": {},
+            "editedAt": "2026-10-26T09:00:00.000Z"
+          }
+        ]
+      }
+    ],
+    "priceOverrides": {
+      "builtin:conduit_20": {
+        "unitPrice": 80
+      }
+    },
+    "boxPresets": [
+      {
+        "id": "preset1",
+        "name": "Socket",
+        "mounting": "socket",
+        "boxItemId": "builtin:box_503",
+        "contents": [
+          {
+            "itemId": "cat1:BR-1",
+            "qty": 1
+          }
+        ]
+      }
+    ],
+    "doc": {
+      "schemaVersion": 1,
+      "floors": [
+        {
+          "id": "f0",
+          "name": "f0",
+          "order": 0,
+          "height": 2.7,
+          "walls": []
+        }
+      ],
+      "nodes": [
+        {
+          "id": "P",
+          "floorId": "f0",
+          "kind": "panel",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "label": "P",
+          "status": "active"
+        },
+        {
+          "id": "JB",
+          "floorId": "f0",
+          "kind": "junction_box",
+          "position": {
+            "x": 5,
+            "y": 0
+          },
+          "label": "JB",
+          "status": "active",
+          "boxItemId": "builtin:junction_box_92x92"
+        },
+        {
+          "id": "S",
+          "floorId": "f0",
+          "kind": "terminal_box",
+          "position": {
+            "x": 5,
+            "y": 3
+          },
+          "label": "S",
+          "status": "active",
+          "mounting": "socket",
+          "boxItemId": "builtin:box_503",
+          "contents": [
+            {
+              "itemId": "builtin:socket_10_16",
+              "qty": 1
+            },
+            {
+              "itemId": "builtin:blanking_cover",
+              "qty": 2
+            },
+            {
+              "itemId": "builtin:plate_3m",
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "segments": [
+        {
+          "id": "S1",
+          "fromNodeId": "P",
+          "toNodeId": "JB",
+          "vertices": [],
+          "conduitItemId": "builtin:conduit_20",
+          "runElevation": "floor"
+        },
+        {
+          "id": "S2",
+          "fromNodeId": "JB",
+          "toNodeId": "S",
+          "vertices": [],
+          "conduitItemId": "builtin:conduit_20",
+          "runElevation": "floor"
+        }
+      ],
+      "panels": [
+        {
+          "id": "panel",
+          "nodeId": "P",
+          "enclosureItemId": "builtin:enclosure_12m",
+          "dinRails": 1,
+          "modulesPerRail": 12,
+          "devices": [
+            {
+              "id": "rcd",
+              "itemId": "builtin:rcd_2p_40a_30ma_a",
+              "rail": 0,
+              "slot": 0,
+              "label": "RCD"
+            },
+            {
+              "id": "mcb16",
+              "itemId": "builtin:mcb_1pn_c16",
+              "rail": 0,
+              "slot": 2,
+              "upstreamDeviceId": "rcd",
+              "label": "MCB 16"
+            },
+            {
+              "id": "mcb10",
+              "itemId": "builtin:mcb_1pn_c10",
+              "rail": 0,
+              "slot": 3,
+              "upstreamDeviceId": "rcd",
+              "label": "MCB 10"
+            }
+          ]
+        }
+      ],
+      "circuits": [
+        {
+          "id": "c1",
+          "name": "c1",
+          "type": "sockets",
+          "panelDeviceId": "mcb16",
+          "crossSection": 2.5,
+          "conductors": [
+            {
+              "role": "L",
+              "color": "brown"
+            },
+            {
+              "role": "N",
+              "color": "blue"
+            },
+            {
+              "role": "PE",
+              "color": "yellow_green"
+            }
+          ],
+          "targetNodeIds": ["S"],
+          "routing": {
+            "mode": "auto"
+          }
+        }
+      ],
+      "extraRuns": []
+    }
+  }
+}
