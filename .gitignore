@@ -7,3 +7,4 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 .claude/launch.json
+dist-e2e/

@@ -12,13 +12,14 @@ missing), pnpm 12. No Docker or backend needed.
 
 - `pnpm setup` — install dependencies and Playwright's Chromium
 - `pnpm dev` — dev server on :5173
-- `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm format`. `typecheck` runs TypeScript 7
+- `pnpm build` (static site in `apps/web/dist`, PWA via vite-plugin-pwa) / `pnpm typecheck` / `pnpm lint` / `pnpm format`. `typecheck` runs TypeScript 7
   (`typescript7` npm alias); `typescript` stays 6.0 because typescript-eslint needs its API
 - `pnpm test` — Vitest (projects: web/jsdom, domain/node, repo). Quiet, failures only:
   `pnpm exec vitest run --reporter=dot --silent`. One file, from the root:
   `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot` (one test: `-t "riser"`)
-- `pnpm test:e2e` — Playwright (`apps/web/e2e`, own Vite server on :5174 in `e2e` mode);
-  quiet: `pnpm test:e2e --reporter=dot`
+- `pnpm test:e2e` — Playwright (`apps/web/e2e`): Vite dev server on :5174 in `e2e` mode, plus
+  a production build previewed on :5175 for `offline.spec.ts` (service worker); quiet:
+  `pnpm test:e2e --reporter=dot`
 - `pnpm verify` — typecheck, lint, test, test:e2e (the gate; no CI yet)
 - `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (drawing from
   `demo-project.json`, business data in `scripts/build-demo-epd.mjs`; a unit test checks drift)
@@ -27,7 +28,8 @@ missing), pnpm 12. No Docker or backend needed.
 
 pnpm workspace (Bulletproof React folders). Root: scripts proxying to `pnpm --filter @epd/web`,
 one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` (Vite `envDir`).
-Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright configs, `e2e/`).
+Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright configs, `e2e/`,
+`public/` with icons and the static-host `_headers`/`_redirects`). Deploy: docs/deploy.md.
 
 - `packages/domain/` — `@epd/domain`: pure TS (model, geometry, lengths, routing, BOM, checks,
   quote and issued quotes, catalogs with CSV/`.epc` import, `.epd` project file schema);

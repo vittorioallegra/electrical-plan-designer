@@ -175,7 +175,7 @@ decoding), the per-user query keys go.
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
 compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
-(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed); step 9 (E2E on files). Decisions and deferrals the remaining steps
+(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed); step 9 (E2E on files); step 10 (PWA and deploy). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -247,6 +247,13 @@ must pick up:
   reload and reopens the saved bytes; a new project goes through Save as; one test removes the
   picker APIs (`__epdRealFiles`) and uses the real file input and download. The drawing specs
   still start from a new project, not from the demo file.
+- **PWA and deploy** (step 10): vite-plugin-pwa 2 (`autoUpdate`, `script-defer`) precaches
+  every built file (about 4 MB, pdf.js worker and wasm included); icons in `apps/web/public/`
+  were rendered once from `icon.svg` with Playwright's Chromium (no script kept). Playwright
+  has a second project (`offline`) against `vite build --mode e2e` + `vite preview` on :5175.
+  `_redirects`/`_headers` cover Netlify and Cloudflare Pages; docs/deploy.md describes them and
+  GitHub Pages (custom domain, `404.html` copy). Not done: `file_handlers` in the manifest (open
+  `.epd` files from the OS into the installed app), an "update available" prompt.
 - **Templates**: `projectFileFromTemplate` copies VAT and material adjustment but not labor
   lines; the logo asset must be copied along by the caller.
 - **Catalog item fields**: `CatalogItem` gained `editedAt` (set on manual edits, step 6) and

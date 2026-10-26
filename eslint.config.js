@@ -15,7 +15,14 @@ const features = readdirSync(new URL(`${web}/features`, import.meta.url), { with
 
 export default defineConfig(
   {
-    ignores: ['.gstack', '**/dist', '**/node_modules', '**/playwright-report', '**/test-results'],
+    ignores: [
+      '.gstack',
+      '**/dist',
+      '**/dist-e2e',
+      '**/node_modules',
+      '**/playwright-report',
+      '**/test-results',
+    ],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
