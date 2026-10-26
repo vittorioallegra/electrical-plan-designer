@@ -94,6 +94,29 @@ export interface RecentFile {
   missing: boolean;
 }
 
+/** The company logo of the library: a PNG or JPEG file. */
+export interface LibraryLogo {
+  mimeType: 'image/png' | 'image/jpeg';
+  bytes: Uint8Array;
+}
+
+/**
+ * The library as main found it. `library` is JSON main already validated (the renderer validates
+ * it again); a part that failed validation is absent (defaults) and listed in `invalid`.
+ */
+export interface LibrarySnapshot {
+  library: unknown;
+  logo: LibraryLogo | null;
+  /** Files main set aside because they were invalid, as the names they were renamed to. */
+  invalid: string[];
+}
+
+/** A whole library to store in place of the current one (an imported `.epl`). */
+export interface LibraryReplacement {
+  library: unknown;
+  logo: LibraryLogo | null;
+}
+
 /** The menu texts main cannot know: the renderer sends them in the app's language. */
 export const menuLabelKeys = [
   'file',
@@ -173,6 +196,25 @@ export interface EpdBridge {
     /** Deletes the recovery copy. */
     clear(): Promise<void>;
   };
+  library: {
+    /**
+     * Reads the library files. A file that fails validation is renamed `<name>.invalid-<time>`
+     * (never overwritten) and that part comes back as defaults.
+     */
+    load(): Promise<LibrarySnapshot>;
+    /** Writes `library.json` (everything but the catalogs). */
+    saveCore(core: unknown): Promise<void>;
+    /** Writes `catalogs/<id>.json`. */
+    saveCatalog(catalog: unknown): Promise<void>;
+    removeCatalog(id: string): Promise<void>;
+    /** Writes or removes the logo file. */
+    setLogo(logo: LibraryLogo | null): Promise<void>;
+    /**
+     * Replaces the whole library after validating it; the old files are first copied to
+     * `library.backup-<time>/` in the app data folder.
+     */
+    replace(replacement: LibraryReplacement): Promise<void>;
+  };
   window: {
     /** Tells main the open project's name and whether it has unsaved changes. */
     setState(state: WindowState): void;
@@ -201,6 +243,12 @@ export const channels = {
   recoverySave: 'recovery:save',
   recoveryLoad: 'recovery:load',
   recoveryClear: 'recovery:clear',
+  libraryLoad: 'library:load',
+  librarySaveCore: 'library:save-core',
+  librarySaveCatalog: 'library:save-catalog',
+  libraryRemoveCatalog: 'library:remove-catalog',
+  librarySetLogo: 'library:set-logo',
+  libraryReplace: 'library:replace',
   windowState: 'window:state',
   closeRequested: 'window:close-requested',
   closeAck: 'window:close-ack',

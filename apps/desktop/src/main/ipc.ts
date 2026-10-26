@@ -13,12 +13,15 @@ import { channels, type MenuCommand } from '@epd/bridge/bridge';
 import { createAppMenu, type AppMenu } from './appMenu';
 import { createOpenRequests, type OpenRequests } from './openRequests';
 import { createRecentService, type RecentService } from './recent';
+import { createLibraryService, type LibraryService } from './library';
 import { createRecoveryService, type RecoveryService } from './recovery';
 import { createFileService, type FileDialogs, type FileService } from './files';
 import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseLibraryLogo,
+  parseLibraryReplacement,
   parseMenuLabels,
   parsePathArg,
   parseRecoverySaveArgs,
@@ -81,6 +84,9 @@ export let files: FileService<BrowserWindow>;
 /** The recovery copy of the open project, in the app data folder. */
 export let recovery: RecoveryService;
 
+/** The library (company, catalogs, prices, presets, defaults) in the app data folder. */
+export let library: LibraryService;
+
 /** The recent project files and the application menu built from them. */
 export let recent: RecentService;
 export let appMenu: AppMenu;
@@ -127,6 +133,7 @@ export function registerIpc(): void {
     isAllowedPath: (path) => files.isAllowed(path),
     allowPath: (path) => files.allow(path),
   });
+  library = createLibraryService({ dir: join(app.getPath('userData'), 'library') });
 
   invoke(channels.filesOpen, (win) => files.open(win));
   invoke(channels.filesOpenPath, (_win, args) => files.openPath(parsePathArg(args)));
@@ -150,6 +157,13 @@ export function registerIpc(): void {
   invoke(channels.recoverySave, (_win, args) => recovery.save(parseRecoverySaveArgs(args)));
   invoke(channels.recoveryLoad, () => recovery.load());
   invoke(channels.recoveryClear, () => recovery.clear());
+
+  invoke(channels.libraryLoad, () => library.load());
+  invoke(channels.librarySaveCore, (_win, [core]) => library.saveCore(core));
+  invoke(channels.librarySaveCatalog, (_win, [catalog]) => library.saveCatalog(catalog));
+  invoke(channels.libraryRemoveCatalog, (_win, [id]) => library.removeCatalog(id as string));
+  invoke(channels.librarySetLogo, (_win, [logo]) => library.setLogo(parseLibraryLogo(logo)));
+  invoke(channels.libraryReplace, (_win, args) => library.replace(parseLibraryReplacement(args)));
 
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);

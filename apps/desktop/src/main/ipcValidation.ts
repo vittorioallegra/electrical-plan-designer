@@ -5,6 +5,8 @@ import type {
   CloseChoice,
   ExportFilter,
   FileStat,
+  LibraryLogo,
+  LibraryReplacement,
   MenuLabels,
   RecoveryMeta,
   RecoverySaveArgs,
@@ -201,4 +203,25 @@ export function parseMenuLabels(value: unknown): MenuLabels {
   const result = {} as Record<string, string>;
   for (const key of menuLabelKeys) result[key] = text(labels[key], `menu label ${key}`, 128);
   return result as MenuLabels;
+}
+
+/** A logo (or none): the library service checks its type, size and first bytes. */
+export function parseLibraryLogo(value: unknown): LibraryLogo | null {
+  if (value === null) return null;
+  const logo = value as Partial<LibraryLogo> | null;
+  if (typeof logo !== 'object' || logo === null || typeof logo.mimeType !== 'string') fail('logo');
+  return { mimeType: logo.mimeType as LibraryLogo['mimeType'], bytes: bytesOf(logo.bytes) };
+}
+
+/** A whole library and its logo; the library service validates the library itself. */
+export function parseLibraryReplacement(args: unknown[]): LibraryReplacement {
+  const value = args[0] as Partial<LibraryReplacement> | null;
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    typeof value.library !== 'object' ||
+    value.library === null
+  )
+    fail('library');
+  return { library: value.library, logo: parseLibraryLogo(value.logo ?? null) };
 }

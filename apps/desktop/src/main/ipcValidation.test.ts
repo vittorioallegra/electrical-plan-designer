@@ -5,6 +5,8 @@ import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseLibraryLogo,
+  parseLibraryReplacement,
   parseMenuLabels,
   parsePathArg,
   parseRecoverySaveArgs,
@@ -103,5 +105,20 @@ describe('menu and path arguments', () => {
     expect(parsePathArg(['/tmp/a.epd'])).toBe('/tmp/a.epd');
     expect(() => parsePathArg(['a.epd'])).toThrow(InvalidArgument);
     expect(() => parsePathArg([])).toThrow(InvalidArgument);
+  });
+});
+
+describe('library arguments', () => {
+  // protects=main never takes a malformed logo or library from the renderer; fails_when=a non-bytes logo, a missing library or a null library is accepted; no_claim=the library's content (the library service validates it)
+  it('validates a logo and a replacement', () => {
+    const logo = { mimeType: 'image/png', bytes: new Uint8Array(3) };
+    expect(parseLibraryLogo(null)).toBeNull();
+    expect(parseLibraryLogo(logo)).toEqual(logo);
+    expect(() => parseLibraryLogo({ mimeType: 'image/png', bytes: [1] })).toThrow(InvalidArgument);
+    expect(() => parseLibraryLogo({ bytes: new Uint8Array(1) })).toThrow(InvalidArgument);
+    expect(parseLibraryReplacement([{ library: {}, logo }]).logo).toEqual(logo);
+    expect(parseLibraryReplacement([{ library: {} }]).logo).toBeNull();
+    expect(() => parseLibraryReplacement([{ library: null }])).toThrow(InvalidArgument);
+    expect(() => parseLibraryReplacement([])).toThrow(InvalidArgument);
   });
 });

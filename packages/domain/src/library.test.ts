@@ -22,7 +22,7 @@ const catalog = (id: string) => ({
       name: 'Vimar socket',
       code: 'V1',
       unitPrice: 520,
-      unit: 'pcs',
+      unit: 'pcs' as const,
       attributes: { deviceType: 'socket' },
     },
   ],

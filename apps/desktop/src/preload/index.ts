@@ -38,6 +38,14 @@ const bridge: EpdBridge = {
     load: () => ipcRenderer.invoke(channels.recoveryLoad),
     clear: () => ipcRenderer.invoke(channels.recoveryClear),
   },
+  library: {
+    load: () => ipcRenderer.invoke(channels.libraryLoad),
+    saveCore: (core) => ipcRenderer.invoke(channels.librarySaveCore, core),
+    saveCatalog: (catalog) => ipcRenderer.invoke(channels.librarySaveCatalog, catalog),
+    removeCatalog: (id) => ipcRenderer.invoke(channels.libraryRemoveCatalog, id),
+    setLogo: (logo) => ipcRenderer.invoke(channels.librarySetLogo, logo),
+    replace: (replacement) => ipcRenderer.invoke(channels.libraryReplace, replacement),
+  },
   window: {
     setState: (state) => ipcRenderer.send(channels.windowState, state),
     onCloseRequested: (listener) => {
