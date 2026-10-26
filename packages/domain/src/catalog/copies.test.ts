@@ -7,6 +7,8 @@ import { ac4Doc, extraRun } from '../testing/builders';
 import type { CablePrices } from '../types';
 import { builtinById } from './builtin';
 import {
+  applyCatalogUpdate,
+  catalogUpdateDiff,
   cableKeysOf,
   copyUsedItems,
   createLibrarySource,
@@ -288,5 +290,151 @@ describe('setProjectPrice', () => {
     expect(p.cablePrices).toEqual({ 'cable:2.5:brown': { unitPrice: 60 } });
     expect(setProjectPrice(p, 'gone:X', 1)).toBe(false);
     expect(p.items).toHaveLength(1);
+  });
+});
+
+describe('update from library', () => {
+  const used = () => {
+    const doc = ac4Doc();
+    doc.nodes[2]!.contents!.push({ itemId: 'c1:BR-1', qty: 1 });
+    return doc;
+  };
+  const copied = (patch: Partial<Library> = {}) => {
+    const p = project(used());
+    copyUsedItems(p, createLibrarySource(libraryWith({ priceOverrides: {}, ...patch })));
+    return p;
+  };
+  const priceOf = (p: ReturnType<typeof project>, id: string) =>
+    p.items.find((i) => i.id === id)?.unitPrice;
+
+  // protects=AC 12 a library change reaches the project only through the update; fails_when=an unchanged library lists differences, or a changed price or attribute is not listed with both sides; no_claim=the dialog
+  it('lists nothing when the library is unchanged and price and attribute changes when it moved', () => {
+    const p = copied();
+    expect(catalogUpdateDiff(p, createLibrarySource(libraryWith())).updates).toEqual([]);
+
+    const moved = libraryWith({
+      catalogs: [
+        {
+          id: 'c1',
+          name: 'Brand',
+          importedAt: '2026-10-01',
+          items: [{ ...brandSocket, unitPrice: 500, modules: 2 }],
+        },
+      ],
+      priceOverrides: { 'builtin:box_503': { unitPrice: 120 } },
+    });
+    const { updates, missing } = catalogUpdateDiff(p, createLibrarySource(moved));
+    expect(missing).toEqual([]);
+    expect(updates).toHaveLength(2);
+    expect(updates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: 'c1:BR-1',
+          priceChanged: true,
+          changedFields: ['modules'],
+          before: expect.objectContaining({ unitPrice: 450, modules: 1 }),
+          after: expect.objectContaining({ unitPrice: 500, modules: 2 }),
+        }),
+        expect.objectContaining({
+          key: 'builtin:box_503',
+          priceChanged: true,
+          changedFields: [],
+          after: expect.objectContaining({ unitPrice: 120 }),
+        }),
+      ]),
+    );
+    // Reading the diff changes nothing.
+    expect(priceOf(p, 'c1:BR-1')).toBe(450);
+  });
+
+  // protects=prices typed in the quote are visible as differences; fails_when=a project price that differs from the library's is not listed with both values, for an item or a cable; no_claim=ticking
+  it('shows a price typed in the project next to the library price', () => {
+    const p = copied({ priceOverrides: { 'builtin:box_503': { unitPrice: 120 } } });
+    setProjectPrice(p, 'builtin:box_503', 99);
+    setProjectPrice(p, 'cable:2.5:brown', 77);
+    const { updates } = catalogUpdateDiff(
+      p,
+      createLibrarySource(
+        libraryWith({ priceOverrides: { 'builtin:box_503': { unitPrice: 120 } } }),
+      ),
+    );
+    expect(updates).toEqual([
+      expect.objectContaining({
+        key: 'builtin:box_503',
+        before: expect.objectContaining({ unitPrice: 99 }),
+        after: expect.objectContaining({ unitPrice: 120 }),
+      }),
+      {
+        kind: 'cable',
+        key: 'cable:2.5:brown',
+        crossSection: 2.5,
+        color: 'brown',
+        before: { unitPrice: 77 },
+      },
+    ]);
+  });
+
+  // protects=cable prices follow the library on request; fails_when=a changed or new library cable price is not listed, or applying it does not set the price; no_claim=cable items
+  it('lists and applies cable price changes', () => {
+    const p = copied({ priceOverrides: { 'cable:2.5:brown': { unitPrice: 55 } } });
+    const source = createLibrarySource(
+      libraryWith({
+        priceOverrides: {
+          'cable:2.5:brown': { unitPrice: 60 },
+          'cable:2.5:blue': { unitPrice: 40 },
+        },
+      }),
+    );
+    const keys = catalogUpdateDiff(p, source).updates.map((u) => u.key);
+    expect(keys.sort()).toEqual(['cable:2.5:blue', 'cable:2.5:brown']);
+    applyCatalogUpdate(p, source, new Set(['cable:2.5:brown']));
+    expect(p.cablePrices['cable:2.5:brown']).toEqual({ unitPrice: 60 });
+    expect(p.cablePrices['cable:2.5:blue']).toBeUndefined();
+  });
+
+  // protects=only ticked entries change the project; fails_when=an unticked item or cable is changed, or a ticked copy keeps its old price or attributes; no_claim=undo (store test)
+  it('applies the ticked entries only', () => {
+    const p = copied();
+    const source = createLibrarySource(
+      libraryWith({
+        catalogs: [
+          {
+            id: 'c1',
+            name: 'Brand',
+            importedAt: '2026-10-01',
+            items: [{ ...brandSocket, unitPrice: 500, modules: 2 }],
+          },
+        ],
+        priceOverrides: { 'builtin:box_503': { unitPrice: 120 } },
+      }),
+    );
+    applyCatalogUpdate(p, source, new Set(['c1:BR-1']));
+    expect(p.items.find((i) => i.id === 'c1:BR-1')).toMatchObject({ unitPrice: 500, modules: 2 });
+    expect(priceOf(p, 'builtin:box_503')).toBeUndefined();
+    expect(catalogUpdateDiff(p, source).updates.map((u) => u.key)).toEqual(['builtin:box_503']);
+  });
+
+  // protects=items gone from the library keep their copy; fails_when=a copy the library lacks is listed as an update, dropped or changed by an apply; no_claim=check 10 (checks tests)
+  it('reports copies missing from the library and leaves them alone', () => {
+    const p = copied();
+    const gone = createLibrarySource(libraryWith({ catalogs: [] }));
+    const { updates, missing } = catalogUpdateDiff(p, gone);
+    expect(missing.map((i) => i.id)).toEqual(['c1:BR-1']);
+    expect(updates).toEqual([]);
+    applyCatalogUpdate(p, gone, new Set(['c1:BR-1']));
+    expect(priceOf(p, 'c1:BR-1')).toBe(450);
+  });
+
+  // protects=files without copies get priced; fails_when=a used, priced library item with no project copy is not listed and added on apply, or an unpriced one is listed; no_claim=web-build files
+  it('adds a priced item the project never copied', () => {
+    const p = project(used());
+    const source = createLibrarySource(
+      libraryWith({ priceOverrides: { 'builtin:box_503': { unitPrice: 120 } } }),
+    );
+    const updates = catalogUpdateDiff(p, source).updates.filter((u) => u.kind === 'item');
+    expect(updates.map((u) => u.key).sort()).toEqual(['builtin:box_503', 'c1:BR-1']);
+    expect(updates.every((u) => u.kind === 'item' && u.before === undefined)).toBe(true);
+    applyCatalogUpdate(p, source, new Set(['builtin:box_503']));
+    expect(p.items).toEqual([expect.objectContaining({ id: 'builtin:box_503', unitPrice: 120 })]);
   });
 });

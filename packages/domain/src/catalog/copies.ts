@@ -170,3 +170,134 @@ export function setProjectPrice(
   project.items.push({ ...structuredClone(builtin), unitPrice });
   return true;
 }
+
+type CablePrice = CablePrices[string];
+
+/** An item copy that differs from the library's item, or that the project has no copy of yet. */
+export interface ItemUpdate {
+  kind: 'item';
+  /** The item id. */
+  key: string;
+  /** The project's copy; absent when the drawing uses the item but the project never copied it. */
+  before?: CatalogItem;
+  /** The library's item, with its price applied. */
+  after: CatalogItem;
+  priceChanged: boolean;
+  /** Changed fields other than the price: `name`, `code`, `category`, `unit`, `modules`, `attributes.<key>`. */
+  changedFields: string[];
+}
+
+/** A cable price that differs from the library's, or that the project does not have yet. */
+export interface CableUpdate {
+  kind: 'cable';
+  /** The BOM cable key, `cable:<section>:<color>`. */
+  key: string;
+  crossSection: number;
+  color: CableColor;
+  /** The project's price; absent when it has none. */
+  before?: CablePrice;
+  /** The library's price; absent when the library prices no such cable. */
+  after?: CablePrice;
+}
+
+export type CatalogUpdate = ItemUpdate | CableUpdate;
+
+export interface CatalogUpdateDiff {
+  /** What the library would change in the project, each applicable on its own. */
+  updates: CatalogUpdate[];
+  /** Item copies the library no longer has: they stay as they are. */
+  missing: CatalogItem[];
+}
+
+function changedFieldsOf(before: CatalogItem, after: CatalogItem): string[] {
+  const fields: string[] = [];
+  for (const f of ['name', 'code', 'category', 'unit', 'modules'] as const) {
+    if (before[f] !== after[f]) fields.push(f);
+  }
+  const a = before.attributes as Record<string, unknown>;
+  const b = after.attributes as Record<string, unknown>;
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (a[k] !== b[k]) fields.push(`attributes.${k}`);
+  }
+  return fields;
+}
+
+/**
+ * What "Update catalog from library" would change: per item copy a price or attribute change
+ * (the project's price next to the library's, so a price typed in the quote shows up as a
+ * difference), per used item without a copy the library's item, per cable the library's price,
+ * and the copies the library no longer has. Cables the library does not price are listed only
+ * when the project has a price for them.
+ */
+export function catalogUpdateDiff(
+  project: Pick<CopyTarget, 'doc' | 'items' | 'cablePrices'>,
+  source: LibrarySource,
+): CatalogUpdateDiff {
+  const updates: CatalogUpdate[] = [];
+  const missing: CatalogItem[] = [];
+  const copies = new Map(project.items.map((i) => [i.id, i]));
+  for (const copy of project.items) {
+    const after = source.item(copy.id);
+    if (!after) {
+      missing.push(copy);
+      continue;
+    }
+    const priceChanged = copy.unitPrice !== after.unitPrice;
+    const changedFields = changedFieldsOf(copy, after);
+    if (priceChanged || changedFields.length > 0) {
+      updates.push({
+        kind: 'item',
+        key: copy.id,
+        before: copy,
+        after,
+        priceChanged,
+        changedFields,
+      });
+    }
+  }
+  for (const id of referencedItemIds(project.doc)) {
+    if (copies.has(id)) continue;
+    const after = source.item(id);
+    // An unpriced item gains nothing from a copy: the built-in and the library still resolve it.
+    if (after?.unitPrice !== undefined) {
+      updates.push({ kind: 'item', key: id, after, priceChanged: true, changedFields: [] });
+    }
+  }
+  for (const [key, spec] of cableKeysOf(project.doc)) {
+    const before = project.cablePrices[key];
+    const after = source.cablePrice(spec.crossSection, spec.color);
+    if (before?.unitPrice === after?.unitPrice && before?.code === after?.code) continue;
+    updates.push({
+      kind: 'cable',
+      key,
+      ...spec,
+      ...(before ? { before } : {}),
+      ...(after ? { after } : {}),
+    });
+  }
+  return { updates, missing };
+}
+
+/**
+ * Applies the listed updates (by item id or cable key) from the library, in place: an item copy
+ * is replaced by the library's item, a cable price by the library's price. Written to run inside
+ * one command's recipe. Entries that are no longer a difference are skipped.
+ */
+export function applyCatalogUpdate(
+  project: CopyTarget,
+  source: LibrarySource,
+  keys: ReadonlySet<string>,
+): void {
+  for (const update of catalogUpdateDiff(project, source).updates) {
+    if (!keys.has(update.key)) continue;
+    if (update.kind === 'cable') {
+      if (update.after) project.cablePrices[update.key] = { ...update.after };
+      else delete project.cablePrices[update.key];
+      continue;
+    }
+    const next = structuredClone(update.after);
+    const index = project.items.findIndex((i) => i.id === update.key);
+    if (index >= 0) project.items[index] = next;
+    else project.items.push(next);
+  }
+}
