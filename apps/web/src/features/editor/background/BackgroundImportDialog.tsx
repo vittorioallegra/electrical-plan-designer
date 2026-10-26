@@ -6,6 +6,7 @@ import type { Background } from '@epd/domain/types';
 import { useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { FileDropZone } from '@/components/ui/FileDropZone';
 import { cn } from '@/lib/cn';
 import { useSession } from '@/lib/auth/AuthProvider';
 import { usePrimeBackgroundImage } from '../canvas/useBackgroundImage';
@@ -155,19 +156,11 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
         </p>
       ) : null}
       {step.kind === 'pick' ? (
-        <label className="flex flex-col gap-1">
-          {t('background.file')}
-          <input
-            type="file"
-            accept="application/pdf,image/png,image/jpeg"
-            data-testid="background-file"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (file) void onFile(file);
-            }}
-          />
-        </label>
+        <FileDropZone
+          accept="application/pdf,image/png,image/jpeg"
+          inputTestId="background-file"
+          onFile={(file) => void onFile(file)}
+        />
       ) : null}
       {step.kind === 'reading' ? <p role="status">{t('background.reading')}</p> : null}
       {step.kind === 'uploading' ? <p role="status">{t('background.uploading')}</p> : null}

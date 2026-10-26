@@ -243,6 +243,11 @@
       "other": "Altro"
     }
   },
+  "fileDrop": {
+    "drag": "Trascina qui un file",
+    "or": "oppure",
+    "choose": "Scegli file"
+  },
   "common": {
     "loading": "Caricamento…",
     "cancel": "Annulla",
@@ -384,7 +389,6 @@
     "import": "Importa pianta",
     "importTitle": "Importa pianta",
     "importHint": "PDF, PNG o JPG fino a 20 MB. Una pagina PDF viene convertita in immagine.",
-    "file": "File",
     "reading": "Lettura del file…",
     "uploading": "Caricamento…",
     "retryUpload": "Riprova caricamento",

@@ -243,6 +243,11 @@
       "other": "Other"
     }
   },
+  "fileDrop": {
+    "drag": "Drag a file here",
+    "or": "or",
+    "choose": "Choose file"
+  },
   "common": {
     "loading": "Loading…",
     "cancel": "Cancel",
@@ -384,7 +389,6 @@
     "import": "Import plan",
     "importTitle": "Import floor plan",
     "importHint": "PDF, PNG or JPG up to 20 MB. A PDF page is converted to an image.",
-    "file": "File",
     "reading": "Reading the file…",
     "uploading": "Uploading…",
     "retryUpload": "Retry upload",
