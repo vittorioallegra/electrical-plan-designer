@@ -1,6 +1,7 @@
 # Spec: Electrical Plan Designer (epic)
 
-Status: draft (2026-10-25)
+Status: draft (2026-10-25); revised 2026-10-26 for the backend-free, file-based app
+(docs/plans/local-first.md)
 
 ## Context
 
@@ -18,11 +19,16 @@ terminal boxes, and get two things out of it:
    per diameter, boxes, devices, plates, panel devices, priced for a quote.
 
 First real use: the author's own house. Primary user: a professional electrician
-(single account, many client projects).
+working on a desktop computer, one `.epd` file per client project. There are no
+accounts and no server: the app is a static web app and every project lives in a file
+the user opens and saves.
 
 ## Current State
 
-Greenfield. The project folder is empty; no code, no existing tool to integrate.
+Milestones 1–8 below were built on a Supabase backend (accounts, Postgres, Storage) with
+a mobile light view. Milestone 9 replaces that backend with `.epd` files, removes
+accounts and the mobile view, and moves catalogs, price list, box presets and company
+data into the project. No users or cloud data exist yet, so nothing is migrated.
 Reference workflow being replaced: paper drawing + manual counting.
 
 ## Goals and success criteria
@@ -31,8 +37,9 @@ Reference workflow being replaced: paper drawing + manual counting.
   boxes, circuits) is possible end to end in the app without paper.
 - G2: The BOM is computed from the drawing, never typed by hand: adding or removing a
   box, device or conduit segment updates the BOM immediately.
-- G3: The project opens on a phone, read-only, with a shopping checklist whose ticks
-  sync across devices.
+- G3: A project is a self-contained `.epd` file: reopened years later on another computer
+  it looks and prices exactly as when it was saved, and no work is lost if the tab closes
+  before saving.
 - G4: The electrician exports a PDF of the project detail and a quote (PDF + CSV).
 
 ## Platform and stack
@@ -42,15 +49,21 @@ Reference workflow being replaced: paper drawing + manual counting.
 | App | Single-page web app, React 18 + TypeScript + Vite |
 | Plan canvas | Konva (`react-konva`), world units in meters |
 | PDF background import | `pdfjs-dist` renders a chosen page to an image |
-| Backend | Supabase: email/password auth, Postgres with RLS, Storage for backgrounds and logos. Development runs on the local Supabase CLI stack (Docker); migrations versioned in the repo; the cloud project is created later, when needed |
+| Backend | None. Static hosting (Netlify, GitHub Pages or Cloudflare Pages); installable PWA that works offline after the first visit |
+| Project files | `.epd` = zip (`fflate`) of a manifest, the project JSON and its assets; File System Access API on Chrome/Edge, download and `<input type=file>` elsewhere |
+| Draft | IndexedDB copy of the open project, written by autosave |
 | PDF export | `jspdf` (+ canvas snapshots of the plan and panel views) |
 | i18n | `i18next` + `react-i18next`; English base, Italian translation |
 | Tests | Vitest (unit, domain logic), Playwright (E2E) |
 
-Editor targets screens ≥ 1024 px wide; 768–1023 px (tablets) get the editor with a
-non-blocking "best on a larger screen" notice. Below 768 px the app shows the mobile light view
-(read-only). Domain logic (geometry, lengths, routing, BOM, checks) lives in a pure
-TypeScript module with no React/Supabase imports so it is unit-testable.
+Desktop only. The editor targets screens ≥ 1024 px wide; narrower screens get the same
+editor with a non-blocking "best on a larger screen" notice. There is no phone view: on a
+phone the user reads the exported PDFs. Chrome and Edge are the recommended browsers (the
+start screen says so); Firefox and Safari save by download. Domain logic (geometry,
+lengths, routing, BOM, checks, project file schema and migrations) lives in a pure
+TypeScript module with no React or browser-storage imports so it is unit-testable. A
+desktop wrapper (Tauri) stays possible later because file access sits behind one
+interface.
 
 ## Domain model
 
@@ -80,7 +93,7 @@ A new project copies these defaults; editing them affects only that project.
 
 `Floor { id, name, order, height (default from settings), background?, walls[] }`.
 Floor elevation = sum of heights of the floors below it.
-`background { storagePath, kind: 'pdf' | 'image', page?, calibration { p1, p2, realDistance }, offset, rotation, opacity }`.
+`background { assetId, kind: 'pdf' | 'image', page?, calibration { p1, p2, realDistance }, offset, rotation, opacity }`.
 Calibration: the user clicks two points on the background and types the real distance;
 this sets meters-per-pixel. `Wall { id, a, b, thickness }` for plans drawn from scratch.
 
@@ -170,12 +183,42 @@ selection that is not one connected set containing the panel node and every targ
 
 ### Catalog
 
-`CatalogItem { id, ownerId | null (built-in), category, name, code?, unitPrice?, unit: 'pcs' | 'm', modules?, attributes }`.
+`CatalogItem { id, category, name, code?, unitPrice?, unit: 'pcs' | 'm', modules?, attributes }`.
 Categories: `device` (socket, Schuko, switch, two-way, intermediate, push button...),
 `blanking_cover`, `plate`, `box`, `junction_box`, `conduit` (outer/inner Ø), `cable`
 (cross-section, outer Ø, color), `panel_device` (type, poles, rating, curve, RCD
-sensitivity/type), `enclosure`. Built-in items are generic and read-only; the user can
-duplicate and edit them or add their own with code and price (account-wide catalog).
+sensitivity/type), `enclosure`.
+
+Catalogs are per project. The built-in catalog (generic, read-only items with stable
+`builtin:<slug>` ids) is always available; on top of it the project holds any number of
+imported catalogs, one per manufacturer or price list:
+
+```ts
+interface ProjectCatalog {
+  id: string;            // generated
+  name: string;          // "Vimar 2026"
+  importedAt: string;
+  source?: string;       // original file name
+  items: CatalogItem[];  // id = `${catalogId}:${code ?? generated}`
+}
+```
+
+Item lookup merges the built-ins with every project catalog. Imported catalogs are
+copied into the project and stay there, so a project reopened later prices as it did.
+
+- Import from `.epc` (the app's JSON catalog format, also exported from a project) or
+  from CSV through a column-mapping dialog (code, name, price, unit, category, modules).
+  A price list has no technical attributes: the dialog sets category and modules per row
+  or for a selection; items without them are "price only", and the checks say so where
+  it matters.
+- Items can be edited one by one; a catalog can be removed or replaced with a newer one.
+- Replace matches items by `code` and shows a diff first: changed prices, new items, and
+  items used in the project but missing from the new list. Matched items keep their id,
+  so the drawing keeps pointing at them; missing items in use keep their old data and
+  raise a check warning; per-item manual edits ask whether to keep or overwrite them.
+- Price overrides for built-in items and cable lines, and box presets, are also stored
+  in the project.
+- The app ships no manufacturer price lists; the user downloads them.
 
 ## BOM rules
 
@@ -185,8 +228,7 @@ duplicate and edit them or add their own with code and price (account-wide catal
 - Boxes, junction boxes, devices, blanking covers, plates: counted from nodes and
   their contents, including provision boxes.
 - Panel: enclosure + every panel device.
-- Each BOM line has a stable key (`itemId` or `cable:<section>:<color>`) used by the
-  purchase checklist.
+- Each BOM line has a stable key (`itemId` or `cable:<section>:<color>`).
 
 ## Basic checks (warnings, never blocking)
 
@@ -199,6 +241,8 @@ duplicate and edit them or add their own with code and price (account-wide catal
 7. Box contents use more modules than the box provides.
 8. Panel devices exceed rails × modulesPerRail, or overlap.
 9. Active terminal box with no plate and no devices (provision boxes exempt).
+10. An item used in the project is missing from the catalog that replaced its catalog,
+    or is "price only" where technical attributes are needed (modules, diameters).
 
 Each warning links to the offending element (selecting it on the plan/panel).
 
@@ -216,13 +260,21 @@ Each warning links to the offending element (selecting it on the plan/panel).
     (`description, hours, hourlyRate`);
   - VAT rate (default 22%, e.g. 10% for residential renovation);
   - totals: materials subtotal, labor subtotal, taxable amount, VAT, grand total.
-  The quote PDF header shows the electrician's business profile: business name,
-  VAT number, address, phone, email, logo.
-- Unit prices come from user catalog items or from the account price list
-  (`profiles.price_overrides`), which also prices built-in items and cable lines.
+  The quote PDF header shows the company data stored in the project: business name,
+  VAT number, address, phone, email, logo. Company data is per project, seeded from
+  defaults or from the template the project was created from.
+- Unit prices come from the project's catalog items or from its price overrides, which
+  also price built-in items and cable lines.
 - "Issue quote" freezes a numbered snapshot (lines, unit prices, settings, totals,
-  number from a per-account counter, date) in `projects.quote.issued[]`; exports of an
-  issued quote render from the snapshot, so later price edits never change it.
+  number, date) in the project's `quote.issued[]`; exports of an issued quote render
+  from the snapshot, so later price edits never change it.
+- Quotes are numbered per project: `max(issued.number) + 1`, printed together with the
+  project name. Each issued quote has a status (`issued | approved | rejected |
+  superseded`), `statusChangedAt` and a `note`. Issuing a new quote marks the previous
+  pending (`issued`) ones superseded; approving one offers to mark the other pending
+  ones rejected; at most one quote per project is approved. An issued quote is
+  immutable except for its status and note. The quote list and the quote PDF show the
+  status.
 
 ```ts
 interface QuoteSettings {
@@ -235,32 +287,56 @@ interface QuoteSettings {
 }
 ```
 
-## Mobile light view (< 768 px)
+## Start screen
 
-Project list; BOM as a checklist storing the purchased quantity per line, synced
-through Supabase. A line bought for less than the current BOM quantity shows
-"bought 40 / need 52 m" and is not done; marks whose line left the BOM are listed
-separately. Read-only floor plan with pan/zoom. No editing.
+New project; new project from template (any `.epd`: copies settings, company data,
+catalogs, price overrides and box presets, not the drawing or the quotes); open file;
+resume draft; recent files (Chromium only, through stored file handles). One project is
+open per tab.
 
 ## Persistence
 
-| Table | Content |
-|---|---|
-| `profiles` | `user_id, business_name, vat_number, address, phone, email, logo_path, price_overrides jsonb, box_presets jsonb, quote_counter int` (account-wide business data, price list, box presets, quote numbering) |
-| `projects` | `id, owner_id, name, client_name, address, settings jsonb, quote jsonb, doc jsonb, version int, updated_at` |
-| `catalog_items` | user items only (`owner_id`); built-ins live in code with stable `builtin:<slug>` ids (see plan) |
-| `purchase_marks` | `project_id, line_key, purchased_qty numeric null, updated_at` (null = not bought; separate so phone ticks never conflict with editor saves) |
+A project is one `.epd` file holding everything it needs; nothing outside the file
+changes how a project looks or prices. The file is a zip:
 
-`doc` holds floors, nodes, segments, panels, circuits, extra runs. `quote` holds the quote settings and `issued[]` snapshots. Editor autosaves
-(debounced ~1 s) with optimistic concurrency on `version`; a conflict shows a reload
-prompt. Backgrounds go to a private Storage bucket keyed by user/project. RLS: a user
-reads and writes only their own rows.
+```
+manifest.json      { format: "epd", schemaVersion, appVersion, savedAt }
+project.json       ProjectFile without assets
+assets/<id>.<ext>  floor-plan PDFs and images, company logo
+```
+
+`ProjectFile` (zod schema in the domain module):
+
+- `meta`: name, client name, address, createdAt
+- `company`: business name, VAT number, address, phone, email, `logoAssetId?`
+- `settings`: `ProjectSettings`
+- `quote`: quote settings and `issued[]` snapshots
+- `catalogs`: `ProjectCatalog[]`
+- `priceOverrides`: prices for built-in items and cable lines
+- `boxPresets`: `BoxPreset[]`
+- `doc`: floors, nodes, segments, panels, circuits, extra runs
+
+Versioning: `schemaVersion` is an integer; one pure migration function per version
+step runs before validation. Old files always open (every migration is tested against a
+frozen fixture of the previous version); a file from a newer app version is refused with
+a clear message.
+
+Saving: Save / Save as through the File System Access API on Chrome and Edge (Ctrl+S
+overwrites the opened file); elsewhere Save downloads the file. Saving is atomic where
+the platform allows it (the writable stream replaces the file only on `close()`); a
+failed save leaves the previous file and the draft intact.
+
+Draft: the editor autosaves (debounced ~1 s) the open project, assets included, to
+IndexedDB, so a closed tab or a crash loses nothing; on start the app offers to resume
+it. The app requests persistent storage (`navigator.storage.persist()`). A second tab
+sees the draft as in use (`BroadcastChannel`) and opens it read-only. The save status
+shows saved / unsaved / draft only, and unsaved changes warn on `beforeunload`.
 
 Editor has undo/redo for every document change.
 
 ## Acceptance Criteria
 
-1. A user signs up, logs in, creates a project, and sees it in the project list on desktop and on a 375 px viewport.
+1. From the start screen a user creates a project, saves it as an `.epd` file, reopens it, and sees the same drawing, settings, company data, catalogs and quotes; with a draft present the start screen offers to resume it.
 2. Importing a PDF (page selectable) or PNG/JPG sets it as a floor background; after calibrating two points 4.20 m apart, a segment drawn between those points measures 4.20 m ± 0.01.
 3. A plan can be drawn with walls only (no background) and segments still measure in meters.
 4. Reference fixture (default settings): panel at 1.50 m, junction box at 0.25 m, socket box at 0.30 m, segment S1 panel→JB 5.00 m plan length, S2 JB→socket 3.00 m, both run at floor, 20 mm conduit; circuit 2.5 mm² L+N+PE auto-routed to the socket. Then: S1 = 6.75 m, S2 = 3.55 m; BOM shows 13 m of 2.5 mm² for each of brown, blue, yellow-green, and 12 m of 20 mm conduit.
@@ -273,12 +349,14 @@ Editor has undo/redo for every document change.
 11. Changing mounting heights in project A does not change project B.
 12. The panel view supports 1 to N DIN rails (default 1); placing devices beyond capacity or overlapping triggers check 8.
 13. Each of checks 1–9 has a fixture that triggers it and one that does not.
-14. Ticking a BOM line on the phone shows it ticked on desktop after reload, and vice versa.
+14. A new project from a template copies settings, company data, catalogs, price overrides and box presets, and nothing of the drawing or the quotes.
 15. Project PDF and quote PDF/CSV export; the CSV opens in Excel with correct columns and totals.
 15b. Quote math fixture: materials 1,000.00, adjustment +10%, labor lump 300.00 + 8 h × 35.00, VAT 22% → materials 1,100.00, labor 580.00, taxable 1,680.00, VAT 369.60, total 2,049.60.
 15c. The quote PDF header shows the business profile fields and logo when set, and omits empty ones.
 16. UI available in English and Italian; switching language changes all visible strings; no hard-coded user-facing strings outside locale files.
-17. A user cannot read another user's projects, backgrounds or catalog items (RLS test).
+17. A file saved by an older schema version opens after migration (frozen fixture per version); a file from a newer version is refused with a message.
+17b. Replacing a catalog keeps item ids matched by code, so BOM lines stay; an item in use that is missing from the new catalog keeps its data and raises check 10.
+17c. Issuing quote 2 marks quote 1 superseded; approving one quote leaves at most one approved per project; issued quote lines never change.
 18. Each test in the Testing Plan states its card: `protects=...; fails_when=...; no_claim=...`.
 
 ## Testing Plan
@@ -286,8 +364,9 @@ Editor has undo/redo for every document change.
 | Layer | What | Count |
 |---|---|---|
 | Unit | segment length (floor/ceiling/direct/riser), calibration scale, shortest path + union, manual chain validation, BOM aggregation and rounding, conduit fill, each check, settings isolation | ~40 |
-| Integration | Supabase RLS policies, save/load with version conflict, purchase marks | ~8 |
-| E2E | signup → project → import + calibrate → draw → circuit → BOM; panel rails; export; mobile checklist | ~6 |
+| Unit | project file schema, migrations with frozen fixtures, `.epd` zip round trip, catalog merge and replace-by-code diff, CSV mapping, quote numbering and status rules | ~25 |
+| Integration | draft repository (IndexedDB), file access fallback | ~5 |
+| E2E | start screen → open `.epd` (fake file access) → import + calibrate → draw → circuit → BOM; panel rails; export; save (bytes read back); app opens offline | ~7 |
 
 ## Milestones (child issues)
 
@@ -300,22 +379,27 @@ Editor has undo/redo for every document change.
 | 5 | Panel designer (DIN rails, devices, hierarchy) + circuits | 2, 4 |
 | 6 | Routing UI: auto/manual, extra conductor runs | 3, 5 |
 | 7 | BOM view, checks panel, PDF/CSV exports | 3–6 |
-| 8 | Mobile light view + purchase checklist sync | 7 |
+| 8 | Mobile light view + purchase checklist sync (removed by 9) | 7 |
+| 9 | Backend-free, file-based app: `.epd` files, draft, start screen, per-project catalogs and company data, quote status, PWA; Supabase, accounts and mobile view removed (docs/plans/local-first.md) | 1–8 |
 
 Domain core comes first because every UI milestone renders its results; getting the
 length and BOM math right in isolation is cheaper than debugging it through the canvas.
 
 ## Rollback Plan
 
-New app, no existing users or data. Schema changes ship as Supabase migrations; each
-milestone is a separate set of commits that can be reverted.
+No existing users or data. Each milestone is a separate set of commits that can be
+reverted. After milestone 9, project file schema changes ship as a version bump plus a
+migration and a frozen fixture, so files saved by any earlier version keep opening.
 
 ## Out of Scope (v1)
 
 - Automatic wall/room recognition from images.
 - Single-line diagram (schema unifilare) drawing.
 - Electrical calculations: voltage drop, ampacity derating, load balancing, protection coordination.
-- Brand catalogs (BTicino, Vimar...) preloaded with codes.
-- Teams, sharing with clients, offline editing, native apps.
+- Brand catalogs (BTicino, Vimar...) shipped with the app; the user imports price lists.
+- XLSX catalog import (CSV and `.epc` only).
+- Accounts, cloud sync, teams, sharing with clients; a phone view (users read the PDFs).
+- Native apps (a Tauri wrapper remains possible later).
+- Comparing the current BOM with the approved quote to price change orders.
 - DWG/DXF import/export.
-- Pack sizes (cable coils, conduit rolls) in the checklist and quote: v1 uses exact meters.
+- Pack sizes (cable coils, conduit rolls) in the BOM and quote: v1 uses exact meters.
