@@ -8,6 +8,7 @@ import { authMiddleware, sessionContext } from '@/app/auth';
 import { AppShell } from '@/app/layouts/AppShell';
 import { MobileShell } from '@/app/layouts/MobileShell';
 import { RequireAuth } from '@/app/layouts/RequireAuth';
+import { RootLayout } from '@/app/layouts/RootLayout';
 import { PlaceholderPage } from '@/app/routes/PlaceholderPage';
 import { RouteError } from '@/components/ui/RouteError';
 import { AuthForm } from '@/features/auth/components/AuthForm';
@@ -78,6 +79,7 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
   return [
     {
       // Root boundary: anything that escapes the boundaries below.
+      Component: RootLayout,
       ErrorBoundary: RouteError,
       HydrateFallback: Loading,
       children: withErrorBoundaries([

@@ -298,6 +298,7 @@ Approved: yes (2026-10-25)
 
 ### Verification
 - qa: pending
+  - Opening a project (route loader) left the list on screen with no loading sign until the record arrived (main showed "Loading" at once) — `fix: show a loading notice while a navigation is pending`
 - review: pending
 
 ### Decisions
