@@ -62,17 +62,17 @@ export function ProjectFrame() {
   }, [store]);
 
   const saver = useSaveProject();
-  const { save, saveAs } = saver;
-  // Ctrl+S saves (Ctrl+Shift+S: Save as), also while typing in a field.
+  const { save } = saver;
+  // Ctrl+S saves (downloads the project), also while typing in a field.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 's') return;
       e.preventDefault();
-      void (e.shiftKey ? saveAs() : save());
+      save();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [save, saveAs]);
+  }, [save]);
 
   const projectPdf = useProjectPdfExport();
   const [exporting, setExporting] = useState(false);
@@ -122,18 +122,10 @@ export function ProjectFrame() {
           variant="secondary"
           disabled={readOnly || saver.saving}
           title={t('editor.saveHint')}
-          onClick={() => void save()}
+          onClick={save}
         >
           <Save size={16} />
           {t('editor.save')}
-        </Button>
-        <Button
-          variant="ghost"
-          className="whitespace-nowrap"
-          disabled={readOnly || saver.saving}
-          onClick={() => void saveAs()}
-        >
-          {t('editor.saveAs')}
         </Button>
         <div className="flex gap-1">
           <Button

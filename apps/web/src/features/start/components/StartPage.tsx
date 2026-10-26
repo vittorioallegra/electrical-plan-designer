@@ -10,7 +10,6 @@ import {
 } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
 import { readEpd, type OpenedProject, type ProjectAssets } from '@/lib/projectFile/epd';
-import type { FileRef } from '@/lib/repositories/types';
 import { useDraftActions } from '@/hooks/useDraftActions';
 import { useEditorServices, useWorkspace } from '@/stores/editor/EditorContext';
 import { saveStatusOf, type EditorInit } from '@/stores/editor/editorStore';
@@ -27,8 +26,7 @@ type Confirm =
   | { kind: 'other_tab'; name: string; unsaved: boolean; run: () => void };
 
 /**
- * `/`: start a project. New, new from a template file, open a file, resume the draft, recent
- * files. Anything that would replace a project with changes not saved to a file, or the
+ * `/`: start a project. New, new from a template file, open a file, resume the draft. Anything that would replace a project with changes not saved to a file, or the
  * project another tab is editing, asks first. The draft another tab holds opens read-only, or
  * is taken over (that tab turns read-only).
  */
@@ -52,11 +50,6 @@ export function StartPage() {
     staleTime: 0,
   });
   const elsewhere = holder.data ?? null;
-  const recent = useQuery({
-    queryKey: queryKeys.recentFiles(),
-    queryFn: () => fileAccess.recent(),
-    staleTime: 0,
-  });
   const [creating, setCreating] = useState<Creating | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
 
@@ -118,26 +111,16 @@ export function StartPage() {
     }
   }
 
-  function openPicked(file: FileRef, bytes: Uint8Array) {
-    const opened = read(bytes);
-    if (opened) openProject({ file, data: opened.project, assets: opened.assets });
-  }
-
   async function openFile() {
     const picked = await fileAccess.open();
-    if (picked) openPicked(picked.file, picked.bytes);
-  }
-
-  async function openRecent(file: FileRef) {
-    const picked = await fileAccess.reopen(file);
-    if (picked) openPicked(picked.file, picked.bytes);
-    else toast(t('start.recentGone', { name: file.name }), 'error');
+    const opened = picked && read(picked.bytes);
+    if (opened) openProject({ data: opened.project, assets: opened.assets });
   }
 
   async function pickTemplate() {
     const picked = await fileAccess.open();
     const template = picked && read(picked.bytes);
-    if (template) setCreating({ template, templateName: picked.file.name });
+    if (template) setCreating({ template, templateName: picked.name });
   }
 
   function create(values: { name: string; clientName: string; address: string }) {
@@ -227,31 +210,6 @@ export function StartPage() {
         <Button onClick={() => guard(pickTemplate)}>{t('start.fromTemplate')}</Button>
         <Button onClick={() => guard(openFile)}>{t('start.open')}</Button>
       </div>
-
-      {recent.data && recent.data.length > 0 ? (
-        <section aria-label={t('start.recent')}>
-          <h2 className="mb-2 font-medium">{t('start.recent')}</h2>
-          <ul className="divide-y divide-border rounded border border-border">
-            {recent.data.map((file, i) => (
-              <li key={`${file.name}-${i}`}>
-                <button
-                  type="button"
-                  className="w-full truncate px-3 py-2 text-left hover:bg-surface-muted"
-                  onClick={() => guard(() => openRecent(file))}
-                >
-                  {file.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {fileAccess.canOverwrite ? null : (
-        <p className="text-text-muted" role="note">
-          {t('start.browserNote')}
-        </p>
-      )}
 
       {creating ? (
         <NewProjectDialog

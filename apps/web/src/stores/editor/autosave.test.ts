@@ -54,15 +54,14 @@ describe('autosave', () => {
     const { store, drafts, save } = await setup();
     await vi.advanceTimersByTimeAsync(0);
     expect(save).toHaveBeenCalledTimes(1);
-    expect(drafts.draft).toMatchObject({ file: null, savedToFile: true });
+    expect(drafts.draft).toMatchObject({ savedToFile: true });
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
     expect(drafts.draft).toMatchObject({ savedToFile: false });
-    const file = { name: 'Demo house.epd', handle: 'Demo house.epd' };
-    store.getState().markSaved(store.getState().revision, file);
+    store.getState().markSaved(store.getState().revision);
     await vi.advanceTimersByTimeAsync(0);
     expect(save).toHaveBeenCalledTimes(3);
-    expect(drafts.draft).toMatchObject({ file, savedToFile: true });
+    expect(drafts.draft).toMatchObject({ savedToFile: true });
     expect(saveStatusOf(store.getState())).toBe('saved');
   });
 

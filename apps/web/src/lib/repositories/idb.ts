@@ -1,19 +1,19 @@
-// The app's IndexedDB database: the draft of the open project and the recent file handles.
+// The app's IndexedDB database: the draft of the open project.
 const DB_NAME = 'epd';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
-export type IdbStore = 'drafts' | 'recentFiles';
+export type IdbStore = 'drafts';
 
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
-      // Version 1 kept per-project copies of unsaved edits; the draft replaces them.
-      if (db.objectStoreNames.contains('unsaved')) db.deleteObjectStore('unsaved');
-      for (const store of ['drafts', 'recentFiles'] satisfies IdbStore[]) {
-        if (!db.objectStoreNames.contains(store)) db.createObjectStore(store);
+      // Earlier versions kept per-project unsaved copies and recent file handles.
+      for (const old of ['unsaved', 'recentFiles']) {
+        if (db.objectStoreNames.contains(old)) db.deleteObjectStore(old);
       }
+      if (!db.objectStoreNames.contains('drafts')) db.createObjectStore('drafts');
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);

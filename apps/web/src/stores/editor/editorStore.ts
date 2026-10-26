@@ -7,7 +7,6 @@ import { addIssuedQuote } from '@epd/domain/issuedQuotes';
 import { docIntegrityIssues } from '@epd/domain/schema';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
 import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
-import type { FileRef } from '@/lib/repositories/types';
 
 enablePatches();
 
@@ -15,7 +14,7 @@ enablePatches();
 export type EditorData = ProjectFile;
 
 /**
- * Where the latest changes are: in the opened file (`saved`), only in the draft on this
+ * Where the latest changes are: in a file (opened or saved, `saved`), only in the draft on this
  * device (`draft`), or not stored anywhere yet (`unsaved`).
  */
 export type SaveStatus = 'saved' | 'draft' | 'unsaved';
@@ -59,8 +58,6 @@ export interface EditorUi {
 export type DrawerTab = 'circuits' | 'bom' | 'warnings';
 
 export interface EditorState {
-  /** File the project was opened from or last saved to; null for a new project. */
-  file: FileRef | null;
   data: EditorData;
   /** Asset bytes by id. Kept outside undo/redo; unreferenced ones are left out of saves. */
   assets: ProjectAssets;
@@ -69,7 +66,7 @@ export interface EditorState {
   revision: number;
   /** Revision last written to the draft. */
   draftRevision: number;
-  /** Revision the opened file matches; null when there is no file or it is already behind. */
+  /** Revision the last opened or saved file matches; null when there is none or it is behind. */
   fileRevision: number | null;
   /** The last draft write failed: the changes since draftRevision exist only in this tab. */
   draftFailed: boolean;
@@ -87,8 +84,8 @@ export interface EditorState {
   setUi(patch: Partial<EditorUi>): void;
   /** Adds an asset (a new background, a logo); a command then references it. */
   addAsset(id: string, asset: ProjectAsset): void;
-  /** The data at `revision` was written to `file`. */
-  markSaved(revision: number, file: FileRef): void;
+  /** The data at `revision` was saved to a file (downloaded). */
+  markSaved(revision: number): void;
 }
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
@@ -100,11 +97,10 @@ export class CommandError extends Error {
 const HISTORY_LIMIT = 200;
 
 export interface EditorInit {
-  file?: FileRef | null;
   data: EditorData;
   assets?: ProjectAssets;
   readOnly?: boolean;
-  /** Where the opened data already is (default `saved`: it matches the opened file). */
+  /** Where the opened data already is (default `saved`: it is the content of a file). */
   status?: SaveStatus;
 }
 
@@ -131,7 +127,6 @@ export function createEditorStore(init: EditorInit): EditorStore {
     };
 
     return {
-      file: init.file ?? null,
       data: init.data,
       assets: init.assets ?? new Map(),
       readOnly: init.readOnly ?? false,
@@ -209,8 +204,8 @@ export function createEditorStore(init: EditorInit): EditorStore {
         set({ assets: new Map(get().assets).set(id, asset) });
       },
 
-      markSaved(revision, file) {
-        set({ fileRevision: revision, file });
+      markSaved(revision) {
+        set({ fileRevision: revision });
       },
     };
   });

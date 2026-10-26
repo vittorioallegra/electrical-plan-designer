@@ -14,51 +14,38 @@ async function openDemo() {
 }
 
 describe('save', () => {
-  // protects=AC 1 save and reopen; fails_when=Save writes a file that does not read back as the open project, or the status does not become saved; no_claim=the File System Access API itself
-  it('asks where to save a project without a file, then overwrites it on Ctrl+S', async () => {
+  // protects=AC 1 save; fails_when=Save (button or Ctrl+S) does not download <project>.epd holding the open project, or the status does not become saved; no_claim=where the browser puts downloads
+  it('downloads the project as <name>.epd on Save and on Ctrl+S', async () => {
     const { fileAccess } = await openDemo();
-    const saveAs = vi.spyOn(fileAccess, 'saveAs');
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'));
-    expect(saveAs).toHaveBeenCalledWith(expect.any(Uint8Array), 'Demo-house.epd');
+    expect(fileAccess.downloads).toEqual(['Demo-house.epd']);
     expect(readEpd(fileAccess.files.get('Demo-house.epd')!).project).toEqual(
       editorStore().getState().data,
     );
-    expect(await screen.findByText('Saved to Demo-house.epd')).toBeInTheDocument();
+    expect(await screen.findByText('Saved: Demo-house.epd downloaded')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
     expect(screen.getByTestId('save-status')).not.toHaveTextContent('Saved');
-    const save = vi.spyOn(fileAccess, 'save');
     fireEvent.keyDown(window, { key: 's', ctrlKey: true });
     await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'));
-    expect(save).toHaveBeenCalledWith(
-      { name: 'Demo-house.epd', handle: 'Demo-house.epd' },
-      expect.any(Uint8Array),
-    );
-    expect(saveAs).toHaveBeenCalledTimes(1);
+    expect(fileAccess.downloads).toEqual(['Demo-house.epd', 'Demo-house.epd']);
     expect(readEpd(fileAccess.files.get('Demo-house.epd')!).project.doc.floors).toHaveLength(5);
   });
 
-  // protects=failed or cancelled saves; fails_when=a failed write marks the project saved or shows nothing, or a cancelled Save as changes the file; no_claim=atomic replace on disk
-  it('keeps the unsaved state when saving fails or is cancelled', async () => {
+  // protects=failed saves; fails_when=a project that cannot be written is marked saved or fails silently; no_claim=—
+  it('keeps the unsaved state when the file cannot be built', async () => {
     const { fileAccess } = await openDemo();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(fileAccess, 'download').mockImplementationOnce(() => {
+      throw new Error('blocked');
+    });
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
-    fileAccess.nextSaveAs = null;
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-    expect(fileAccess.files.size).toBe(0);
-    expect(editorStore().getState().file).toBeNull();
-
-    fileAccess.failNextSave = true;
-    await userEvent.click(screen.getByRole('button', { name: 'Save as…' }));
     expect(
-      await screen.findByText(
-        'Could not save the file. The file and the draft on this device are unchanged.',
-      ),
+      await screen.findByText('Could not save the project. The draft on this device is unchanged.'),
     ).toBeInTheDocument();
     expect(screen.getByTestId('save-status')).not.toHaveTextContent('Saved');
-    // Still the revision the project was opened at, not the edited one.
-    expect(editorStore().getState().fileRevision).toBe(0);
   });
 });

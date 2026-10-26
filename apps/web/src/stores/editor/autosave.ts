@@ -35,8 +35,8 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight = false;
   let stopped = false;
-  // The draft must also follow the opened file and its saved state, not only the data: true
-  // at start (the draft becomes this project) and after every save to a file.
+  // The draft must also follow whether the data is in a file, not only the data: true at
+  // start (the draft becomes this project) and after every save to a file.
   let filePending = true;
 
   const schedule = (delay = debounceMs) => {
@@ -55,7 +55,6 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
       await options.drafts.save({
         project: s.data,
         assets: usedAssets(s),
-        file: s.file,
         savedToFile: s.fileRevision === revision,
         savedAt: now().toISOString(),
       });
@@ -77,7 +76,7 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
 
   const unsubscribe = store.subscribe((state, prev) => {
     if (state.readOnly) return;
-    if (state.file !== prev.file || state.fileRevision !== prev.fileRevision) {
+    if (state.fileRevision !== prev.fileRevision) {
       filePending = true;
       if (!inFlight) schedule(0);
     } else if (state.revision !== prev.revision && !inFlight) {

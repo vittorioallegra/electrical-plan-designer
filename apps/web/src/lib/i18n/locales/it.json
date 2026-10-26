@@ -81,10 +81,9 @@
     "exportPdf": "PDF del progetto",
     "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova.",
     "save": "Salva",
-    "saveAs": "Salva con nome…",
-    "saveHint": "Salva il file del progetto (Ctrl+S)",
-    "savedTo": "Salvato in {{name}}",
-    "saveFailed": "Impossibile salvare il file. Il file e la bozza su questo dispositivo non sono cambiati.",
+    "saveHint": "Scarica il file del progetto (Ctrl+S)",
+    "savedTo": "Salvato: {{name}} scaricato",
+    "saveFailed": "Impossibile salvare il progetto. La bozza su questo dispositivo non è cambiata.",
     "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
     "dismissNotice": "Chiudi",
     "readOnlyInUse": "Sola lettura: questo progetto è in modifica in un'altra scheda.",
@@ -754,9 +753,6 @@
       "openReadOnly": "Apri in sola lettura",
       "editHere": "Modifica qui"
     },
-    "recent": "File recenti",
-    "recentGone": "Impossibile aprire {{name}}: potrebbe essere stato spostato, oppure l'accesso è stato negato.",
-    "browserNote": "Consigliati Chrome o Edge: in questo browser Salva scarica il file del progetto invece di sovrascriverlo.",
     "failed": "Qualcosa è andato storto. Riprova.",
     "openErrors": {
       "not_a_project": "Questo non è un file di progetto.",

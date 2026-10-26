@@ -24,7 +24,8 @@ test('open the demo file, edit, save it and reopen it', async ({ page }) => {
   await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
   await page.keyboard.press('Control+s');
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
-  const bytes = (await savedBytes(page, 'demo-project.epd'))!;
+  // Save downloads <project name>.epd; the opened file is never written.
+  const bytes = (await savedBytes(page, 'Demo-house.epd'))!;
   const saved = projectOf(bytes);
   const open = await editorState(page, (s) => s.data);
   expect(saved).toEqual(open);
@@ -45,7 +46,7 @@ test('open the demo file, edit, save it and reopen it', async ({ page }) => {
   expect(await editorState(page, (s) => s.data)).toEqual(open);
 });
 
-// protects=Save as for a new project; fails_when=a project without a file is not written as <name>.epd, or the file does not hold the project; no_claim=the browser save dialog
+// protects=saving a new project; fails_when=a new project is not downloaded as <name>.epd, or the file does not hold the project; no_claim=where the browser puts downloads
 test('save a new project as a file', async ({ page }) => {
   await start(page);
   const name = `Saved ${Date.now()}`;
@@ -54,19 +55,15 @@ test('save a new project as a file', async ({ page }) => {
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
   const file = `${name.replace(/ /g, '-')}.epd`;
   expect(projectOf((await savedBytes(page, file))!).meta.name).toBe(name);
-  await expect(page.getByText(`Saved to ${file}`).first()).toBeVisible();
+  await expect(page.getByText(`Saved: ${file} downloaded`).first()).toBeVisible();
 });
 
-// protects=browsers without the File System Access API; fails_when=a project cannot be opened through the file input or Save does not download it; no_claim=Firefox and Safari themselves (Chromium with the API removed)
+// protects=real file access; fails_when=a project cannot be opened through the file input or Save does not download it; no_claim=Firefox and Safari themselves (same code path, run in Chromium)
 test('open with the file input and save by download', async ({ page }) => {
   await page.addInitScript(() => {
     window.__epdRealFiles = true;
-    const w = window as unknown as Record<string, unknown>;
-    delete w.showOpenFilePicker;
-    delete w.showSaveFilePicker;
   });
   await start(page);
-  await expect(page.getByRole('note')).toContainText('Chrome or Edge are recommended');
 
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Open file…' }).click();
@@ -77,7 +74,7 @@ test('open with the file input and save by download', async ({ page }) => {
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe('demo-project.epd');
+  expect(file.suggestedFilename()).toBe('Demo-house.epd');
   const project = projectOf(new Uint8Array(await readFile(await file.path())));
   expect(project.doc.floors).toHaveLength(await editorState(page, (s) => s.data.doc.floors.length));
   await expect(page.getByTestId('save-status')).toHaveText('Saved');

@@ -51,7 +51,7 @@ Reference workflow being replaced: paper drawing + manual counting.
 | Plan canvas | Konva (`react-konva`), world units in meters |
 | PDF background import | `pdfjs-dist` renders a chosen page to an image |
 | Backend | None. Static hosting (Netlify, GitHub Pages or Cloudflare Pages); installable PWA that works offline after the first visit |
-| Project files | `.epd` = zip (`fflate`) of a manifest, the project JSON and its assets; File System Access API on Chrome/Edge, download and `<input type=file>` elsewhere |
+| Project files | `.epd` = zip (`fflate`) of a manifest, the project JSON and its assets; opened with `<input type=file>`, saved by download, the same on every browser |
 | Draft | IndexedDB copy of the open project, written by autosave |
 | PDF export | `jspdf` (+ canvas snapshots of the plan and panel views) |
 | i18n | `i18next` + `react-i18next`; English base, Italian translation |
@@ -59,8 +59,8 @@ Reference workflow being replaced: paper drawing + manual counting.
 
 Desktop only. The editor targets screens ≥ 1024 px wide; narrower screens get the same
 editor with a non-blocking "best on a larger screen" notice. There is no phone view: on a
-phone the user reads the exported PDFs. Chrome and Edge are the recommended browsers (the
-start screen says so); Firefox and Safari save by download. Domain logic (geometry,
+phone the user reads the exported PDFs. Opening and saving work the same on every browser.
+Domain logic (geometry,
 lengths, routing, BOM, checks, project file schema and migrations) lives in a pure
 TypeScript module with no React or browser-storage imports so it is unit-testable. A
 desktop wrapper (Tauri) stays possible later because file access sits behind one
@@ -292,8 +292,7 @@ interface QuoteSettings {
 
 New project; new project from template (any `.epd`: copies settings, company data,
 catalogs, price overrides and box presets, not the drawing or the quotes); open file;
-resume draft; recent files (Chromium only, through stored file handles). One project is
-open per tab.
+resume draft. One project is open per tab.
 
 ## Persistence
 
@@ -322,10 +321,11 @@ step runs before validation. Old files always open (every migration is tested ag
 frozen fixture of the previous version); a file from a newer app version is refused with
 a clear message.
 
-Saving: Save / Save as through the File System Access API on Chrome and Edge (Ctrl+S
-overwrites the opened file); elsewhere Save downloads the file. Saving is atomic where
-the platform allows it (the writable stream replaces the file only on `close()`); a
-failed save leaves the previous file and the draft intact.
+Saving: Save (and Ctrl+S) downloads the project as `<project name>.epd`, on every browser.
+The app never writes over a file on disk, so two browsers or two people saving the same
+project never overwrite each other: each save is a new file (the browser renames it on a
+name clash), and the user keeps or moves the one they want. A failed save leaves the draft
+intact.
 
 Draft: the editor autosaves (debounced ~1 s) the open project, assets included, to
 IndexedDB, so a closed tab or a crash loses nothing; on start the app offers to resume

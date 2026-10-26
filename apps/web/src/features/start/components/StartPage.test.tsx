@@ -56,19 +56,16 @@ describe('start screen', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Open file…' }));
     expect(await screen.findByTestId('project-name')).toHaveTextContent('Demo house');
     expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
-    expect(editorStore().getState().file).toEqual({ name: 'demo.epd', handle: 'demo.epd' });
   });
 
-  // protects=resume draft; fails_when=the draft is not offered on start or resumes without its file and unsaved state; no_claim=IndexedDB (drafts.test)
-  it('resumes the draft with its file', async () => {
+  // protects=resume draft; fails_when=the draft is not offered on start or resumes without its unsaved state; no_claim=IndexedDB (drafts.test)
+  it('resumes the draft', async () => {
     const { drafts, router } = await renderApp('/elsewhere', { exposeTestHandle: true });
     const project = demoProjectFile();
     project.meta.name = 'Draft house';
-    const file = { name: 'draft.epd', handle: 'draft.epd' };
     await drafts.save({
       project,
       assets: new Map(),
-      file,
       savedToFile: false,
       savedAt: '2026-10-25T10:00:00Z',
     });
@@ -79,7 +76,6 @@ describe('start screen', () => {
     await userEvent.click(within(card).getByRole('button', { name: 'Resume' }));
     expect(await screen.findByTestId('project-name')).toHaveTextContent('Draft house');
     expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
-    expect(editorStore().getState().file).toEqual(file);
   });
 
   // protects=no silent loss; fails_when=starting another project drops changes that are not in a file without asking, or Cancel still replaces them; no_claim=server projects (editor.test)
@@ -119,25 +115,11 @@ describe('start screen', () => {
     await userEvent.type(screen.getByLabelText('Project name'), 'From template');
     await userEvent.click(screen.getByRole('button', { name: 'Create' }));
     await screen.findByTestId('project-name');
-    const { data, file } = editorStore().getState();
-    expect(file).toBeNull();
+    const { data } = editorStore().getState();
     expect(data.meta.name).toBe('From template');
     expect(data.catalogs).toHaveLength(1);
     expect(data.doc.nodes).toEqual([]);
     expect(data.quote.issued).toEqual([]);
-  });
-
-  // protects=recent files; fails_when=a file opened before is not listed or cannot be reopened from the list; no_claim=stored handles across reloads (Chromium)
-  it('lists recent files and reopens one', async () => {
-    const { fileAccess, router } = await start();
-    fileAccess.files.set('demo.epd', epd());
-    fileAccess.nextOpen = 'demo.epd';
-    await userEvent.click(screen.getByRole('button', { name: 'Open file…' }));
-    await screen.findByTestId('project-name');
-    await act(() => router.navigate('/'));
-    const recent = await screen.findByRole('region', { name: 'Recent files' });
-    await userEvent.click(within(recent).getByRole('button', { name: 'demo.epd' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/project/plan'));
   });
 
   // protects=project routes need an open project; fails_when=/project/... without an open project shows a broken editor; no_claim=—
@@ -160,7 +142,6 @@ describe('start screen', () => {
     await drafts.save({
       project: demoProjectFile(),
       assets: new Map(),
-      file: null,
       savedToFile: true,
       savedAt: '2026-10-26T10:00:00Z',
     });

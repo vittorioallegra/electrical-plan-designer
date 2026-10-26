@@ -39,8 +39,8 @@ with icons and the static-host `_headers`/`_redirects`).
   exports, settings; sub-folders `components/ hooks/ utils/` as needed
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared;
   `useCatalog` reads catalogs, prices, presets, company of the open project), `src/config/`
-- `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` File
-  System Access, download fallback, in-memory fake; `draftPresence.ts` which tab may write the
+- `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` file
+  input to open, download to save, in-memory fake; `draftPresence.ts` which tab may write the
   draft, over BroadcastChannel; `idb.ts`), `i18n/` (`locales/en.json` base,
   `it.json`), `projectFile/` (`.epd` zip read/write with `fflate`), formatting helpers
 - `src/stores/editor/` — `workspace.ts` (the tab's one open project), editor store
@@ -59,7 +59,7 @@ with icons and the static-host `_headers`/`_redirects`).
 - Data: the open project lives in the workspace's editor store; every change goes through
   `applyCommand` (undoable; issuing a quote is the one exception) and autosave writes the draft.
   Services (`drafts`, `fileAccess`, `workspace`) come from `useEditorServices()`. TanStack Query
-  only for local async reads (draft, recent files, images), never `useEffect` fetches.
+  only for local async reads (draft, its holder tab, images), never `useEffect` fetches.
 - Routes: `/` start screen; `/project/<view>` shows the open project (none → `/`); every route
   has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo
   project for `/project/...` paths (`project: null` to skip) and waits for the first navigation.

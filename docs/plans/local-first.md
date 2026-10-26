@@ -19,10 +19,9 @@ commands, folders, key dependencies or conventions. The spec
   project looks or prices.
 - **Start screen:** new project, new project from template (any `.epd`: copies settings,
   company data, catalogs and box presets, not the drawing or the quotes), open file, resume
-  draft, recent files (Chromium only).
-- **Saving:** Save / Save as through the File System Access API on Chrome and Edge (Ctrl+S
-  overwrites the opened file); elsewhere Save downloads the file. Chrome and Edge are the
-  recommended browsers.
+  draft.
+- **Saving:** Save (Ctrl+S) downloads `<project name>.epd`, the same on every browser; the app
+  never writes over a file on disk (changed after step 11, see Progress notes).
 - **Draft:** the editor keeps writing the open project to IndexedDB (what autosave does today
   against Supabase), so a closed tab or a crash loses nothing. On start the app offers to
   resume it. Unsaved changes warn on `beforeunload` and show in the save status.
@@ -62,8 +61,7 @@ holds one pure function per version step, and `loadProjectFile` runs them before
 A file from a newer app version is refused with a clear message. Old files must always open:
 every migration gets a test with a frozen fixture of the previous version.
 
-Saving is atomic where the platform allows it (the File System Access writable stream only
-replaces the file on `close()`); a failed save leaves the previous file and the draft intact.
+A failed save leaves the draft intact; saving never touches an existing file.
 
 ## Catalogs
 
@@ -108,9 +106,8 @@ price change orders.
   in-memory one for tests. Replaces `ProjectRepository.save` in autosave; no versions or
   conflicts (one tab, one draft; a second tab opening the app sees "draft in use" via
   `BroadcastChannel`, read-only).
-- `FileAccess`: `open()`, `save(bytes)`, `saveAs(bytes, suggestedName)`, `recent()`, with a
-  File System Access implementation, a download/`<input type=file>` fallback, and a fake
-  for tests and E2E (`window.__epd`).
+- `FileAccess`: `open()` (`<input type=file>`) and `download(bytes, name)`, plus a fake for
+  tests and E2E (`window.__epd.files`).
 
 Removed: `AuthRepository`, `ProjectRepository` (list/get/create/delete), `ProfileRepository`,
 `CatalogRepository`, `PurchaseRepository`, `FileRepository`, `Session`, `SaveError` codes
@@ -164,8 +161,8 @@ decoding), the per-user query keys go.
 - **Data loss** is the main risk without a server: draft in IndexedDB,
   `navigator.storage.persist()`, `beforeunload` warning and a visible unsaved state are all
   part of the first usable version, not polish.
-- **Firefox and Safari** get the download-based save; acceptable since Chrome/Edge are
-  recommended, but the start screen says so.
+- **Copies pile up**: every save is a new download; the user picks the latest and moves it.
+  Accepted for one behavior on every browser and no silent overwrites.
 - **File size:** floor-plan PDFs and full manufacturer catalogs make files of a few MB;
   fine for zip and IndexedDB. If it grows, keep only used plus manually added items.
 - **Existing cloud data:** no users yet, so no export from Supabase is planned. If that
@@ -187,6 +184,13 @@ the way and what is still open.
 
 ### Decisions by step
 
+- **Save always downloads** (after step 11): opening the same file in two browsers and saving
+  from both made the last save overwrite the other on Chrome/Edge, while Safari and Firefox
+  could only download. The user chose one behavior everywhere: the File System Access
+  implementation, permission prompts, stored handles, recent files, Save as and the draft's
+  `file` are gone; `FileAccess` is `open()` + `download()`; IndexedDB `epd` v4 drops the
+  `recentFiles` store. `fileRevision` now means "the last opened or downloaded file has these
+  changes". Notes for steps 5 and 9 below describe the earlier design.
 - **Second tab** (after step 11): `lib/repositories/draftPresence.ts`. The tab with an
   editable project holds the draft and answers `query` messages on the `epd-draft`
   BroadcastChannel (a closed or crashed tab just stops answering: nothing stale to clean up).

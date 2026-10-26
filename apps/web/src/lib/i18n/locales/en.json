@@ -81,10 +81,9 @@
     "exportPdf": "Project PDF",
     "exportPdfFailed": "Could not create the project PDF. Try again.",
     "save": "Save",
-    "saveAs": "Save as…",
-    "saveHint": "Save the project file (Ctrl+S)",
-    "savedTo": "Saved to {{name}}",
-    "saveFailed": "Could not save the file. The file and the draft on this device are unchanged.",
+    "saveHint": "Download the project file (Ctrl+S)",
+    "savedTo": "Saved: {{name}} downloaded",
+    "saveFailed": "Could not save the project. The draft on this device is unchanged.",
     "narrowNotice": "The editor works best on screens at least 1024 px wide.",
     "dismissNotice": "Dismiss",
     "readOnlyInUse": "Read-only: this project is being edited in another tab.",
@@ -754,9 +753,6 @@
       "openReadOnly": "Open read-only",
       "editHere": "Edit here"
     },
-    "recent": "Recent files",
-    "recentGone": "Could not open {{name}}: it may have been moved, or access was denied.",
-    "browserNote": "Chrome or Edge are recommended: in this browser Save downloads the project file instead of overwriting it.",
     "failed": "Something went wrong. Try again.",
     "openErrors": {
       "not_a_project": "This is not a project file.",

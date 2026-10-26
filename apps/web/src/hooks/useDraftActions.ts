@@ -14,9 +14,9 @@ export function useDraftActions() {
   const queryClient = useQueryClient();
   const { drafts, presence, workspace } = useEditorServices();
 
-  /** Drops what the start screen knows about the draft, its holder and the recent files. */
+  /** Drops what the start screen knows about the draft and its holder. */
   function refresh() {
-    for (const queryKey of [queryKeys.draft(), queryKeys.draftHolder(), queryKeys.recentFiles()])
+    for (const queryKey of [queryKeys.draft(), queryKeys.draftHolder()])
       void queryClient.invalidateQueries({ queryKey });
   }
 
@@ -29,7 +29,6 @@ export function useDraftActions() {
     }
     workspace.getState().open(
       {
-        file: draft.file,
         data: draft.project,
         assets: draft.assets,
         status: draft.savedToFile ? 'saved' : 'draft',
