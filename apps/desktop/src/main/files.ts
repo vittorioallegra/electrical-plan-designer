@@ -30,6 +30,8 @@ export const PROJECT_FILTER: ExportFilter = {
 
 export interface FileService<Owner> {
   open(owner: Owner): Promise<OpenedFile | null>;
+  /** Opens a path from the recent list or the OS; null when the file is gone. */
+  openPath(path: string): Promise<OpenedFile | null>;
   save(path: string, bytes: Uint8Array, expected: FileStat | null): Promise<SaveResult>;
   saveAs(owner: Owner, suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
   exportFile(
@@ -56,10 +58,16 @@ export function createFileService<Owner>({
   dialogs,
   fs = nodeFs,
   platform = process.platform,
+  canOpen = async () => false,
+  onUsed = () => undefined,
 }: {
   dialogs: FileDialogs<Owner>;
   fs?: FsOps;
   platform?: NodeJS.Platform;
+  /** Whether `openPath` may read a path nobody handed out yet (the recent list). */
+  canOpen?(path: string): Promise<boolean>;
+  /** A project file was opened or saved: it goes to the top of the recent list. */
+  onUsed?(path: string): void;
 }): FileService<Owner> {
   const allowed = new Set<string>();
   const queues = new Map<string, Promise<unknown>>();
@@ -98,17 +106,31 @@ export function createFileService<Owner>({
     }
   }
 
+  async function read(path: string): Promise<OpenedFile> {
+    const bytes = await fs.readFile(path);
+    const stat = await statOf(path);
+    allowed.add(keyOf(path));
+    onUsed(path);
+    return { path, name: basename(path), bytes: new Uint8Array(bytes), stat };
+  }
+
   return {
     allow: (path) => void allowed.add(keyOf(path)),
     isAllowed: (path) => allowed.has(keyOf(path)),
 
     async open(owner) {
       const path = await dialogs.chooseFileToOpen(owner);
-      if (path === null) return null;
-      const bytes = await fs.readFile(path);
-      const stat = await statOf(path);
-      allowed.add(keyOf(path));
-      return { path, name: basename(path), bytes: new Uint8Array(bytes), stat };
+      return path === null ? null : read(path);
+    },
+
+    async openPath(path) {
+      if (!allowed.has(keyOf(path)) && !(await canOpen(path))) throw new Error('path not allowed');
+      try {
+        return await read(path);
+      } catch (error) {
+        if (errorCode(error) === 'ENOENT') return null;
+        throw error;
+      }
     },
 
     async save(path, bytes, expected) {
@@ -125,6 +147,7 @@ export function createFileService<Owner>({
               return { status: 'changed_on_disk' };
           }
           const stat = await atomicWrite(path, bytes);
+          onUsed(path);
           return { status: 'saved', path, name: basename(path), stat };
         } catch (error) {
           return { status: 'failed', code: errorCode(error) };
@@ -140,7 +163,9 @@ export function createFileService<Owner>({
       if (chosen === null) return { status: 'cancelled' };
       const path = withExtension(chosen, 'epd');
       allowed.add(keyOf(path));
-      return write(path, bytes);
+      const result = await write(path, bytes);
+      if (result.status === 'saved') onUsed(path);
+      return result;
     },
 
     async exportFile(owner, name, bytes, filters) {

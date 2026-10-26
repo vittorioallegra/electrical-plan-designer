@@ -1,27 +1,19 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-import {
-  newProjectFile,
-  projectFileFromTemplate,
-  ProjectFileError,
-  type ProjectFile,
-} from '@epd/domain/projectFile';
+import { useLocation, useNavigate } from 'react-router';
+import { newProjectFile, projectFileFromTemplate, type ProjectFile } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
-import { readEpd, type OpenedProject, type ProjectAssets } from '@/lib/projectFile/epd';
-import { useEditorServices, useWorkspace } from '@/stores/editor/EditorContext';
-import { saveStatusOf, type EditorInit } from '@/stores/editor/editorStore';
+import type { OpenedProject, ProjectAssets } from '@/lib/projectFile/epd';
+import { useEditorServices } from '@/stores/editor/EditorContext';
+import { useProjectOpener } from '@/features/start/hooks/useProjectOpener';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 
 type Creating = { template: OpenedProject | null; templateName?: string };
-
-/** What a start action would replace: changes that are not in a file, or the recovery copy. */
-type Confirm =
-  { kind: 'unsaved'; name: string; run: () => void } | { kind: 'discard_recovery'; name: string };
 
 /**
  * `/`: start a project. New, new from a template file, open a file, restore the recovery copy a
@@ -31,41 +23,35 @@ type Confirm =
 export function StartPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
-  const { recovery, fileAccess, workspace } = useEditorServices();
+  const { recovery, recent, fileAccess, workspace } = useEditorServices();
   const queryClient = useQueryClient();
-  const current = useWorkspace((s) => s.current);
-  const recovered = useQuery({
-    queryKey: queryKeys.recovery(),
-    queryFn: () => recovery.get(),
+  const opener = useProjectOpener();
+  const { current, recovered, guard, refreshRecovery, openProject, read } = opener;
+  const recentFiles = useQuery({
+    queryKey: queryKeys.recent(),
+    queryFn: () => recent.list(),
     staleTime: 0,
   });
   const [creating, setCreating] = useState<Creating | null>(null);
-  const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [discarding, setDiscarding] = useState<string | null>(null);
 
   const dateFormat = new Intl.DateTimeFormat(i18n.language === 'it' ? 'it-IT' : 'en-GB', {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
 
-  /** Runs `action` now, or after confirming when it would drop changes that are not in a file. */
-  function guard(action: () => void | Promise<void>) {
-    const run = () => void Promise.resolve(action()).catch(() => toast(t('start.failed'), 'error'));
-    // A read-only project (a newer file) loses nothing.
-    const open = current?.store.getState();
-    const editable = open && !open.readOnly ? open : undefined;
-    const atRisk = editable
-      ? saveStatusOf(editable) !== 'saved'
-      : !current && recovered.data
-        ? !recovered.data.savedToFile
-        : false;
-    const name = editable?.data.meta.name ?? recovered.data?.project.meta.name ?? '';
-    if (atRisk) setConfirm({ kind: 'unsaved', name, run });
-    else run();
-  }
-
-  const refreshRecovery = () =>
-    void queryClient.invalidateQueries({ queryKey: queryKeys.recovery() });
+  // File > New in the native menu comes here: the same question, then the new-project form.
+  const requestedNew = (location.state as { command?: string } | null)?.command === 'new';
+  useEffect(() => {
+    if (!requestedNew) return;
+    guard(() => setCreating({ template: null }));
+    // Forget the request, so a reload or a back navigation does not open the form again.
+    void navigate('.', { replace: true, state: null });
+    // Only a new navigation (its key) is a request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   /** Opens the recovery copy bound to its original path, still unsaved. */
   async function restore() {
@@ -94,29 +80,9 @@ export function StartPage() {
     refreshRecovery();
   }
 
-  function openProject(init: EditorInit) {
-    workspace.getState().open(init);
-    refreshRecovery();
-    navigate('/project/plan');
-  }
-
-  /** Reads a picked file; a broken or unsupported file shows why and returns null. */
-  function read(bytes: Uint8Array): OpenedProject | null {
-    try {
-      return readEpd(bytes);
-    } catch (e) {
-      toast(t(`start.openErrors.${e instanceof ProjectFileError ? e.code : 'invalid'}`), 'error');
-      return null;
-    }
-  }
-
-  async function openFile() {
-    const picked = await fileAccess.open();
-    const opened = picked && read(picked.bytes);
-    if (picked && opened) {
-      const { path, name, stat } = picked;
-      openProject({ data: opened.project, assets: opened.assets, file: { path, name, stat } });
-    }
+  async function forget(path: string) {
+    await recent.remove(path);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
   }
 
   async function pickTemplate() {
@@ -186,9 +152,7 @@ export function StartPage() {
               {shown.savedToFile ? null : ` · ${t('start.recovery.notInFile')}`}
             </p>
           </div>
-          <Button
-            onClick={() => setConfirm({ kind: 'discard_recovery', name: shown.project.meta.name })}
-          >
+          <Button onClick={() => setDiscarding(shown.project.meta.name)}>
             {t('start.recovery.discard')}
           </Button>
           <Button variant="primary" onClick={() => void restore()}>
@@ -202,8 +166,41 @@ export function StartPage() {
           {t('start.new')}
         </Button>
         <Button onClick={() => guard(pickTemplate)}>{t('start.fromTemplate')}</Button>
-        <Button onClick={() => guard(openFile)}>{t('start.open')}</Button>
+        <Button onClick={() => opener.openFile()}>{t('start.open')}</Button>
       </div>
+
+      {recentFiles.data && recentFiles.data.length > 0 ? (
+        <section aria-label={t('start.recent.title')} className="flex flex-col gap-1">
+          <h2 className="text-text-muted">{t('start.recent.title')}</h2>
+          <ul className="flex flex-col divide-y divide-border rounded border border-border">
+            {recentFiles.data.map((file) => (
+              <li key={file.path} className="flex items-center gap-3 px-3 py-1.5">
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 text-left hover:underline"
+                  onClick={() => opener.openPath(file.path)}
+                >
+                  <span className={file.missing ? 'font-medium line-through' : 'font-medium'}>
+                    {file.name}
+                  </span>
+                  {file.missing ? (
+                    <span className="ml-2 text-warning">{t('start.recent.missing')}</span>
+                  ) : null}
+                  <span className="block truncate text-text-muted">{file.path}</span>
+                </button>
+                <Button
+                  variant="ghost"
+                  aria-label={`${t('start.recent.remove')}: ${file.name}`}
+                  title={t('start.recent.remove')}
+                  onClick={() => void forget(file.path)}
+                >
+                  <X size={16} />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {creating ? (
         <NewProjectDialog
@@ -217,37 +214,24 @@ export function StartPage() {
         />
       ) : null}
 
+      {opener.dialog}
+
       <Dialog
-        open={confirm !== null}
-        onOpenChange={(open) => !open && setConfirm(null)}
-        title={t(
-          confirm?.kind === 'discard_recovery'
-            ? 'start.recovery.discardTitle'
-            : 'start.replaceDraft.title',
-        )}
-        description={t(
-          confirm?.kind === 'discard_recovery'
-            ? 'start.recovery.discardBody'
-            : 'start.replaceDraft.body',
-          { name: confirm?.name ?? '' },
-        )}
+        open={discarding !== null}
+        onOpenChange={(open) => !open && setDiscarding(null)}
+        title={t('start.recovery.discardTitle')}
+        description={t('start.recovery.discardBody', { name: discarding ?? '' })}
         footer={
           <>
-            <Button onClick={() => setConfirm(null)}>{t('common.cancel')}</Button>
+            <Button onClick={() => setDiscarding(null)}>{t('common.cancel')}</Button>
             <Button
               variant="danger"
               onClick={() => {
-                const choice = confirm;
-                setConfirm(null);
-                if (choice?.kind === 'unsaved') choice.run();
-                else void discardRecovery();
+                setDiscarding(null);
+                void discardRecovery();
               }}
             >
-              {t(
-                confirm?.kind === 'discard_recovery'
-                  ? 'start.recovery.discard'
-                  : 'start.replaceDraft.confirm',
-              )}
+              {t('start.recovery.discard')}
             </Button>
           </>
         }

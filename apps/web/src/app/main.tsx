@@ -7,7 +7,11 @@ import { AppProviders } from './provider';
 import { getConfig } from '@/config/env';
 import { createQueryClient } from '@/lib/query-client';
 import { createI18n } from '@/lib/i18n';
-import { createDesktopFileAccess, createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import {
+  createDesktopFileAccess,
+  createDesktopRecentRepository,
+  createMemoryFileAccess,
+} from '@/lib/repositories/fileAccess';
 import {
   createDesktopRecoveryRepository,
   createMemoryRecoveryRepository,
@@ -35,7 +39,10 @@ const recovery = bridge
 const services = {
   recovery,
   fileAccess: bridge ? createDesktopFileAccess(bridge.files) : fakeFiles!,
-  windowHost: bridge ? createDesktopWindowHost(bridge.window) : createMemoryWindowHost(),
+  recent: bridge ? createDesktopRecentRepository(bridge.recent) : fakeFiles!.recent,
+  windowHost: bridge
+    ? createDesktopWindowHost(bridge.window, bridge.menu, bridge.files)
+    : createMemoryWindowHost(),
   workspace: createWorkspace({ recovery, exposeTestHandle: config.testHandle }),
 };
 

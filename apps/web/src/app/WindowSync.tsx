@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { menuLabelKeys } from '@epd/bridge/bridge';
+import type { MenuLabels } from '@/lib/repositories/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { useSaveProject } from '@/features/editor/hooks/useSaveProject';
@@ -11,10 +13,11 @@ const hasUnsavedChanges = (s: EditorState) => !s.readOnly && saveStatusOf(s) !==
 /**
  * Keeps the window in step with the open project: its name and unsaved state for the title and
  * the document-edited dot, and the Save / Don't save / Cancel question when the window closes or
- * the app quits with changes that are not in the file (Don't save deletes the recovery copy).
+ * the app quits with changes that are not in the file (Don't save deletes the recovery copy). Also
+ * gives the native menu its texts and runs its Save, Save As, Undo and Redo.
  */
 export function WindowSync() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { windowHost } = useEditorServices();
   const current = useWorkspace((s) => s.current);
   const store = current?.store ?? null;
@@ -37,6 +40,30 @@ export function WindowSync() {
     push(store?.getState() ?? null);
     return store?.subscribe(push);
   }, [store, windowHost]);
+
+  // The native menu speaks the app's language: its texts are sent at startup and on a change.
+  useEffect(() => {
+    windowHost.setMenuLabels(
+      Object.fromEntries(menuLabelKeys.map((key) => [key, t(`menu.${key}`)])) as MenuLabels,
+    );
+  }, [windowHost, t, i18n.language]);
+
+  // Menu items that act on the open project reuse the in-app actions (Save, Save As, Undo, Redo).
+  useEffect(
+    () =>
+      windowHost.onMenuCommand(({ command }) => {
+        if (command === 'save') void save();
+        else if (command === 'saveAs') void save('saveAs');
+        else if (command === 'undo' || command === 'redo') {
+          // In a text field the menu's Undo/Redo belong to the field, as the shortcut does.
+          const el = document.activeElement as HTMLElement | null;
+          if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA'].includes(el.tagName)))
+            document.execCommand(command);
+          else if (store && !store.getState().readOnly) store.getState()[command]();
+        }
+      }),
+    [windowHost, store, save],
+  );
 
   useEffect(
     () =>

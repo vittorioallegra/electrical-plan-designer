@@ -167,6 +167,52 @@ describe('start screen', () => {
     expect(await screen.findByTestId('project-name')).toHaveTextContent('Demo house');
   });
 
+  // protects=AC 7 recent files on the start screen; fails_when=an opened file is not listed, a click does not open it, a deleted file is not flagged, opening it does not explain, or Remove keeps it; no_claim=the menu's Open Recent (MenuCommands.test)
+  it('lists recent files, opens one, and flags and removes a missing one', async () => {
+    const { fileAccess, router } = await start();
+    expect(screen.queryByRole('region', { name: 'Recent files' })).toBeNull();
+    fileAccess.files.set('demo.epd', epd());
+    fileAccess.files.set('other.epd', epd());
+    for (const name of ['demo.epd', 'other.epd']) {
+      fileAccess.nextOpen = name;
+      await userEvent.click(screen.getByRole('button', { name: 'Open file…' }));
+      await screen.findByTestId('project-name');
+      await act(() => router.navigate('/'));
+    }
+    const recent = await screen.findByRole('region', { name: 'Recent files' });
+    expect(
+      within(recent)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['other.epdother.epd', 'demo.epddemo.epd']);
+
+    fileAccess.files.delete('demo.epd');
+    await act(() => router.navigate('/elsewhere'));
+    await act(() => router.navigate('/'));
+    const gone = within(await screen.findByRole('region', { name: 'Recent files' }));
+    expect(await gone.findByText('missing')).toBeInTheDocument();
+    await userEvent.click(gone.getByRole('button', { name: /^demo\.epd/ }));
+    expect(await screen.findByText(/“demo.epd” was moved or deleted/)).toBeInTheDocument();
+    await waitFor(() => expect(gone.queryByText('demo.epd')).toBeNull());
+
+    await userEvent.click(gone.getByRole('button', { name: /^other\.epd/ }));
+    expect(await screen.findByTestId('project-name')).toHaveTextContent('Demo house');
+  });
+
+  // protects=AC 7 removing a recent entry; fails_when=the remove button keeps the entry in the list; no_claim=a missing file (above)
+  it('removes a recent file from the list', async () => {
+    const { fileAccess, router } = await start();
+    fileAccess.files.set('demo.epd', epd());
+    await fileAccess.openPath('demo.epd');
+    await act(() => router.navigate('/elsewhere'));
+    await act(() => router.navigate('/'));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Remove from the list: demo.epd' }),
+    );
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Recent files' })).toBeNull());
+    expect(await fileAccess.recent.list()).toEqual([]);
+  });
+
   // protects=new from template; fails_when=a template's catalogs and settings are not copied, or its drawing and quotes are; no_claim=logo asset (no logo in the demo file)
   it('creates a project from a template file', async () => {
     const { fileAccess } = await start();

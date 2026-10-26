@@ -7,7 +7,10 @@ export type {
   ExportFilter,
   ExportResult,
   FileStat,
+  MenuCommand,
+  MenuLabels,
   OpenedFile,
+  RecentFile,
   SaveAsResult,
   SaveResult,
   SavedFile,
@@ -18,7 +21,10 @@ import type {
   ExportFilter,
   ExportResult,
   FileStat,
+  MenuCommand,
+  MenuLabels,
   OpenedFile,
+  RecentFile,
   SaveAsResult,
   SaveResult,
   SavedFile,
@@ -32,6 +38,8 @@ export type FileBinding = SavedFile;
 export interface FileAccess {
   /** Asks the user for a project file; null when cancelled. Rejects when it cannot be read. */
   open(): Promise<OpenedFile | null>;
+  /** Opens a path from the recent list or the OS; null when the file is gone. */
+  openPath(path: string): Promise<OpenedFile | null>;
   /**
    * Writes the project over `path`. `expected` is the stat from the last open or save; the write
    * is refused with `changed_on_disk` when the file differs. Null overwrites regardless.
@@ -43,6 +51,13 @@ export interface FileAccess {
   exportFile(name: string, blob: Blob, filters: ExportFilter[]): Promise<ExportResult>;
 }
 
+/** The recent project files (the desktop app adds a file as it is opened or saved). */
+export interface RecentRepository {
+  /** Newest first; `missing` for a file that is no longer on disk. */
+  list(): Promise<RecentFile[]>;
+  remove(path: string): Promise<void>;
+}
+
 /** The app window: its title and the question asked when it closes with unsaved changes. */
 export interface WindowHost {
   /** The open project's name and whether it has changes that are not in its file. */
@@ -51,6 +66,12 @@ export interface WindowHost {
   onCloseRequested(listener: () => void): () => void;
   /** The answer to a close request. */
   answerClose(choice: CloseChoice): void;
+  /** Gives the native menu its texts in the app's language. */
+  setMenuLabels(labels: MenuLabels): void;
+  /** The user chose a native menu item. */
+  onMenuCommand(listener: (command: MenuCommand) => void): () => void;
+  /** The OS asks to open a project file (double-click, a second launch). */
+  onOpenRequest(listener: (path: string) => void): () => void;
 }
 
 /** The open project as autosave keeps it in the recovery copy. */

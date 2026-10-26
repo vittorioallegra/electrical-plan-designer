@@ -9,13 +9,18 @@ import {
   type IpcMainEvent,
   type IpcMainInvokeEvent,
 } from 'electron';
-import { channels } from '@epd/bridge/bridge';
+import { channels, type MenuCommand } from '@epd/bridge/bridge';
+import { createAppMenu, type AppMenu } from './appMenu';
+import { createOpenRequests, type OpenRequests } from './openRequests';
+import { createRecentService, type RecentService } from './recent';
 import { createRecoveryService, type RecoveryService } from './recovery';
 import { createFileService, type FileDialogs, type FileService } from './files';
 import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseMenuLabels,
+  parsePathArg,
   parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
@@ -76,8 +81,47 @@ export let files: FileService<BrowserWindow>;
 /** The recovery copy of the open project, in the app data folder. */
 export let recovery: RecoveryService;
 
+/** The recent project files and the application menu built from them. */
+export let recent: RecentService;
+export let appMenu: AppMenu;
+
+/** Files the OS asked to open; they wait for the page when it is not ready yet. */
+export let openRequests: OpenRequests;
+const early: string[] = [];
+
+/** The app's window (there is one), or undefined. */
+function mainWindow(): BrowserWindow | undefined {
+  return BrowserWindow.getAllWindows()[0];
+}
+
+/**
+ * A project file the OS asks to open (double-click, a second launch, argv). Safe to call before
+ * the app is ready: the request is kept until the handlers exist.
+ */
+export function openFileFromOs(path: string): void {
+  if (openRequests) openRequests.push(path);
+  else early.push(path);
+}
+
 export function registerIpc(): void {
-  files = createFileService<BrowserWindow>({ dialogs });
+  recent = createRecentService({ file: join(app.getPath('userData'), 'recent.json') });
+  files = createFileService<BrowserWindow>({
+    dialogs,
+    canOpen: (path) => recent.has(path),
+    onUsed: (path) => void recent.add(path),
+  });
+  const send = (channel: string, ...args: unknown[]) =>
+    mainWindow()?.webContents.send(channel, ...args);
+  appMenu = createAppMenu({
+    recent,
+    send: (command: MenuCommand) => send(channels.menuCommand, command),
+  });
+  recent.onChange(() => void appMenu.refresh());
+  openRequests = createOpenRequests({
+    send: (path) => send(channels.openRequest, path),
+    allow: (path) => files.allow(path),
+  });
+  early.splice(0).forEach((path) => openRequests.push(path));
   recovery = createRecoveryService({
     dir: join(app.getPath('userData'), 'recovery'),
     isAllowedPath: (path) => files.isAllowed(path),
@@ -85,6 +129,11 @@ export function registerIpc(): void {
   });
 
   invoke(channels.filesOpen, (win) => files.open(win));
+  invoke(channels.filesOpenPath, (_win, args) => files.openPath(parsePathArg(args)));
+  invoke(channels.recentList, () => recent.list());
+  invoke(channels.recentRemove, (_win, args) => recent.remove(parsePathArg(args)));
+  on(channels.openRequestReady, () => openRequests.ready());
+  on(channels.menuLabels, (_win, [labels]) => appMenu.setLabels(parseMenuLabels(labels)));
   invoke(channels.filesSave, (_win, args) => {
     const { path, bytes, expected } = parseSaveArgs(args);
     return files.save(path, bytes, expected);
@@ -105,6 +154,7 @@ export function registerIpc(): void {
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);
     windowContexts.get(win)?.guard.setUnsaved(state.unsaved);
+    appMenu.setHasProject(state.name !== null);
     win.setTitle(windowTitle(state.name, state.unsaved, process.platform));
     if (process.platform === 'darwin') win.setDocumentEdited(state.unsaved);
   });

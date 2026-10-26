@@ -87,11 +87,64 @@ export interface RecoverySnapshot {
   assets: { id: string; bytes: Uint8Array }[];
 }
 
+/** A project file in the recent list; `missing` when it is no longer on disk. */
+export interface RecentFile {
+  path: string;
+  name: string;
+  missing: boolean;
+}
+
+/** The menu texts main cannot know: the renderer sends them in the app's language. */
+export const menuLabelKeys = [
+  'file',
+  'new',
+  'open',
+  'openRecent',
+  'noRecent',
+  'missing',
+  'save',
+  'saveAs',
+  'close',
+  'edit',
+  'undo',
+  'redo',
+  'cut',
+  'copy',
+  'paste',
+  'selectAll',
+  'view',
+  'zoomIn',
+  'zoomOut',
+  'resetZoom',
+  'fullScreen',
+  'help',
+  'about',
+  'version',
+] as const;
+
+export type MenuLabelKey = (typeof menuLabelKeys)[number];
+export type MenuLabels = Record<MenuLabelKey, string>;
+
+/** A menu item the user chose; the renderer runs the matching in-app action. */
+export type MenuCommand =
+  | { command: 'new' | 'open' | 'save' | 'saveAs' | 'close' | 'undo' | 'redo' }
+  | { command: 'openRecent'; path: string };
+
 /** The API the preload script exposes to the renderer as `window.epd`. Grows with each step. */
 export interface EpdBridge {
   files: {
     /** Native open dialog; null when cancelled. Rejects when the file cannot be read. */
     open(): Promise<OpenedFile | null>;
+    /**
+     * Opens a path from the recent list or one the OS asked to open; null when the file is gone.
+     * Main refuses any other path. Rejects when the file cannot be read.
+     */
+    openPath(path: string): Promise<OpenedFile | null>;
+    /**
+     * The OS asked to open a project file (double-click, a second launch). Subscribing also tells
+     * main the page is ready: requests that came earlier (at launch) are delivered then.
+     */
+    onOpenRequest(listener: (path: string) => void): Unsubscribe;
     /**
      * Writes over `path` (a path main handed out) atomically. `expected` is the stat from the
      * last open or save; null overwrites whatever is on disk.
@@ -101,6 +154,16 @@ export interface EpdBridge {
     saveAs(suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
     /** Native save dialog and an atomic write of a file that is not the project (PDF, CSV...). */
     exportFile(name: string, bytes: Uint8Array, filters: ExportFilter[]): Promise<ExportResult>;
+  };
+  recent: {
+    /** The last opened or saved project files, newest first (main adds them as they are used). */
+    list(): Promise<RecentFile[]>;
+    remove(path: string): Promise<void>;
+  };
+  menu: {
+    /** Sets the native menu's texts (at startup and when the language changes). */
+    setLabels(labels: MenuLabels): void;
+    onCommand(listener: (command: MenuCommand) => void): Unsubscribe;
   };
   recovery: {
     /** Replaces the recovery copy (atomic: a crash mid-write leaves the previous copy readable). */
@@ -128,6 +191,13 @@ export const channels = {
   filesSave: 'files:save',
   filesSaveAs: 'files:save-as',
   filesExport: 'files:export',
+  filesOpenPath: 'files:open-path',
+  openRequest: 'files:open-request',
+  openRequestReady: 'files:open-request-ready',
+  recentList: 'recent:list',
+  recentRemove: 'recent:remove',
+  menuLabels: 'menu:labels',
+  menuCommand: 'menu:command',
   recoverySave: 'recovery:save',
   recoveryLoad: 'recovery:load',
   recoveryClear: 'recovery:clear',

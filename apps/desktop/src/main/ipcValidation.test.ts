@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { menuLabelKeys } from '@epd/bridge/bridge';
 import {
   InvalidArgument,
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseMenuLabels,
+  parsePathArg,
   parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
@@ -84,5 +87,21 @@ describe('recovery copy arguments', () => {
       newAssets: [],
     });
     bad({ project: 5, meta, newAssets: [] });
+  });
+});
+
+describe('menu and path arguments', () => {
+  // protects=main never builds its menu from malformed text or opens a relative path; fails_when=missing, empty or non-string labels, or a relative path, are accepted; no_claim=that the path was handed out (the file service checks)
+  it('validates menu labels and paths', () => {
+    const labels = Object.fromEntries(menuLabelKeys.map((k) => [k, k]));
+    expect(parseMenuLabels(labels).save).toBe('save');
+    expect(() => parseMenuLabels({ ...labels, save: '' })).toThrow(InvalidArgument);
+    expect(() => parseMenuLabels({ ...labels, save: 3 })).toThrow(InvalidArgument);
+    expect(() => parseMenuLabels(null)).toThrow(InvalidArgument);
+    const { save: _save, ...partial } = labels;
+    expect(() => parseMenuLabels(partial)).toThrow(InvalidArgument);
+    expect(parsePathArg(['/tmp/a.epd'])).toBe('/tmp/a.epd');
+    expect(() => parsePathArg(['a.epd'])).toThrow(InvalidArgument);
+    expect(() => parsePathArg([])).toThrow(InvalidArgument);
   });
 });

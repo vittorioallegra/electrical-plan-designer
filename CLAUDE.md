@@ -38,7 +38,7 @@ with icons and the static-host `_headers`/`_redirects`).
 
 - `apps/desktop/` — `@epd/desktop`: Electron shell. `src/main` (window, `app://` scheme serving
   the built renderer, CSP, `files.ts` dialogs + atomic writes, `atomicWrite.ts` shared by Save and
-  the recovery copy, `recovery.ts` the `userData/recovery/` copy), `src/preload` (exposes `window.epd`), `e2e/`; electron-vite builds
+  the recovery copy, `recovery.ts` the `userData/recovery/` copy, `menu.ts`/`appMenu.ts` the native menu with labels sent by the renderer, `recent.ts` `userData/recent.json`, `openRequests.ts` files the OS asks to open), `src/preload` (exposes `window.epd`), `e2e/`; electron-vite builds
   main, preload and the renderer (apps/web source, no PWA, base `/`); electron-builder packs
 - `packages/bridge/` — `@epd/bridge`: IPC contract (`EpdBridge`, channel names), types only;
   imported by desktop main/preload and the web app, imports nothing from the apps

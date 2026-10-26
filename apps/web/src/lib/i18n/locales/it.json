@@ -780,6 +780,12 @@
       "title": "Scartare le modifiche non salvate?",
       "body": "“{{name}}” ha modifiche non salvate in un file. Aprendo un altro progetto vanno perse.",
       "confirm": "Scarta e continua"
+    },
+    "recent": {
+      "title": "File recenti",
+      "missing": "mancante",
+      "remove": "Rimuovi dall’elenco",
+      "gone": "“{{name}}” è stato spostato o eliminato. È stato rimosso dai file recenti."
     }
   },
   "company": {
@@ -805,5 +811,31 @@
     "floors_other": "{{count}} piani",
     "warnings_one": "{{count}} avviso aperto",
     "warnings_other": "{{count}} avvisi aperti"
+  },
+  "menu": {
+    "file": "File",
+    "new": "Nuovo progetto",
+    "open": "Apri…",
+    "openRecent": "Apri recenti",
+    "noRecent": "Nessun file recente",
+    "missing": "mancante",
+    "save": "Salva",
+    "saveAs": "Salva con nome…",
+    "close": "Chiudi progetto",
+    "edit": "Modifica",
+    "undo": "Annulla",
+    "redo": "Ripeti",
+    "cut": "Taglia",
+    "copy": "Copia",
+    "paste": "Incolla",
+    "selectAll": "Seleziona tutto",
+    "view": "Vista",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "resetZoom": "Dimensione reale",
+    "fullScreen": "Schermo intero",
+    "help": "Aiuto",
+    "about": "Informazioni su",
+    "version": "Versione"
   }
 }

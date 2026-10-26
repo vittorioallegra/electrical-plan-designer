@@ -1,9 +1,11 @@
 // Validation of everything the renderer sends to main. Pure functions, tested in plain Node.
 import { isAbsolute } from 'node:path';
+import { menuLabelKeys } from '@epd/bridge/bridge';
 import type {
   CloseChoice,
   ExportFilter,
   FileStat,
+  MenuLabels,
   RecoveryMeta,
   RecoverySaveArgs,
   WindowState,
@@ -184,4 +186,19 @@ export function parseRecoverySaveArgs(args: unknown[]): RecoverySaveArgs {
       return { id, bytes: bytesOf(asset.bytes) };
     }),
   };
+}
+
+/** A path the renderer asks main to open or forget (main still checks it was handed out). */
+export function parsePathArg(args: unknown[]): string {
+  const path = text(args[0], 'path', 4096);
+  if (!isAbsolute(path)) fail('path');
+  return path;
+}
+
+export function parseMenuLabels(value: unknown): MenuLabels {
+  const labels = value as Record<string, unknown> | null;
+  if (typeof labels !== 'object' || labels === null) fail('menu labels');
+  const result = {} as Record<string, string>;
+  for (const key of menuLabelKeys) result[key] = text(labels[key], `menu label ${key}`, 128);
+  return result as MenuLabels;
 }

@@ -222,7 +222,7 @@ Approved: yes (2026-10-26)
 - [x] 1. Desktop shell — `feat: add the Electron desktop shell`
 - [x] 2. Files in place — `feat: open and save project files in place`
 - [x] 3. Recovery copy — `feat: keep a recovery copy of the open project in the app data folder`
-- [ ] 4. OS integration
+- [x] 4. OS integration — `feat: add the native menu, recent files and opening files from the OS`
 - [ ] 5. Library storage and pages
 - [ ] 6. Projects use the library
 - [ ] 7. Update catalog from library
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 4 (OS integration) on `feat/desktop-app`.
+Step 5 (Library storage and pages) on `feat/desktop-app`.

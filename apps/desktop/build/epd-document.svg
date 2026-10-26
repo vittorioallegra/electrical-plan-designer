@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Document icon of .epd project files: a page with a folded corner and the app icon's glyph. -->
+  <path d="M192 64h456l216 216v624a56 56 0 0 1-56 56H192a56 56 0 0 1-56-56V120a56 56 0 0 1 56-56z" fill="#ffffff" stroke="#94a3b8" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M648 64v160a56 56 0 0 0 56 56h160z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="24" stroke-linejoin="round"/>
+  <g transform="translate(290 330) scale(0.85)">
+    <rect width="512" height="512" rx="96" fill="#1d4ed8"/>
+    <path d="M96 400V176l160-96 160 96v224" fill="none" stroke="#fff" stroke-width="28" stroke-linejoin="round"/>
+    <path d="M276 180l-72 112h56l-24 108 88-136h-60z" fill="#facc15"/>
+  </g>
+  <text x="512" y="900" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="120" fill="#1d4ed8">EPD</text>
+</svg>

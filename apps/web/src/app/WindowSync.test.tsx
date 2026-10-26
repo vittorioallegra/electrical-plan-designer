@@ -97,4 +97,30 @@ describe('window sync', () => {
     expect(windowHost.answers).toEqual(['close']);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  // protects=AC 6 Save, Save As, Undo and Redo from the native menu; fails_when=a menu command does not run the in-app action (Save writes elsewhere, Save As does not ask for a path, Undo/Redo do not move through history); no_claim=text fields' own undo (the browser)
+  it('runs Save, Save As, Undo and Redo from the menu', async () => {
+    const { windowHost, fileAccess, workspace } = await openDemo();
+    const floors = () => workspace.getState().current!.store.getState().data.doc.floors.length;
+    const before = floors();
+    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+    act(() => windowHost.menuCommand({ command: 'undo' }));
+    expect(floors()).toBe(before);
+    act(() => windowHost.menuCommand({ command: 'redo' }));
+    expect(floors()).toBe(before + 1);
+
+    act(() => windowHost.menuCommand({ command: 'save' }));
+    await waitFor(() => expect(fileAccess.writes).toEqual(['Demo-house.epd']));
+    fileAccess.nextSaveAs = 'copy.epd';
+    act(() => windowHost.menuCommand({ command: 'saveAs' }));
+    await waitFor(() => expect(fileAccess.writes).toEqual(['Demo-house.epd', 'copy.epd']));
+  });
+
+  // protects=AC 6 menu labels in the app's language; fails_when=the native menu gets no labels, labels in the wrong language, or is not updated when the language changes; no_claim=how main builds the menu (menu.test)
+  it('gives the menu its labels and updates them with the language', async () => {
+    const { windowHost } = await openDemo();
+    expect(windowHost.menuLabels).toMatchObject({ file: 'File', saveAs: 'Save As…' });
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'it');
+    await waitFor(() => expect(windowHost.menuLabels).toMatchObject({ saveAs: 'Salva con nome…' }));
+  });
 });

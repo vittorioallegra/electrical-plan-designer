@@ -150,3 +150,30 @@ describe('file service', () => {
     expect(readdirSync(dir)).toEqual(['house.epd']);
   });
 });
+
+describe('opening a known path', () => {
+  // protects=AC 7 recent and OS open; fails_when=a path nobody handed out can be read or written, a recent path cannot be opened and then saved, or a deleted file throws instead of reporting it missing; no_claim=which paths are in the recent list (recent tests)
+  it('opens only paths from the recent list or the OS and allows them for Save', async () => {
+    const path = join(dir, 'house.epd');
+    const other = join(dir, 'other.epd');
+    writeFileSync(path, bytes(1, 2));
+    writeFileSync(other, bytes(3));
+    const used: string[] = [];
+    const files = createFileService<null>({
+      dialogs: dialogsReturning(null, null),
+      canOpen: async (p) => p === path,
+      onUsed: (p) => used.push(p),
+    });
+    await expect(files.openPath(other)).rejects.toThrow('path not allowed');
+    expect((await files.save(path, bytes(1), null)).status).toBe('failed');
+
+    const opened = (await files.openPath(path))!;
+    expect([...opened.bytes]).toEqual([1, 2]);
+    expect((await files.save(path, bytes(7), opened.stat)).status).toBe('saved');
+    expect(used).toEqual([path, path]);
+
+    files.allow(other);
+    rmSync(other);
+    expect(await files.openPath(other)).toBeNull();
+  });
+});

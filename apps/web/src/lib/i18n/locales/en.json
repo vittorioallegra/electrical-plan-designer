@@ -780,6 +780,12 @@
       "title": "Discard unsaved changes?",
       "body": "“{{name}}” has changes that are not saved to a file. Opening another project discards them.",
       "confirm": "Discard and continue"
+    },
+    "recent": {
+      "title": "Recent files",
+      "missing": "missing",
+      "remove": "Remove from the list",
+      "gone": "“{{name}}” was moved or deleted. It was removed from the recent files."
     }
   },
   "company": {
@@ -805,5 +811,31 @@
     "floors_other": "{{count}} floors",
     "warnings_one": "{{count}} open warning",
     "warnings_other": "{{count}} open warnings"
+  },
+  "menu": {
+    "file": "File",
+    "new": "New project",
+    "open": "Open…",
+    "openRecent": "Open Recent",
+    "noRecent": "No recent files",
+    "missing": "missing",
+    "save": "Save",
+    "saveAs": "Save As…",
+    "close": "Close project",
+    "edit": "Edit",
+    "undo": "Undo",
+    "redo": "Redo",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "selectAll": "Select All",
+    "view": "View",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetZoom": "Actual Size",
+    "fullScreen": "Toggle Full Screen",
+    "help": "Help",
+    "about": "About",
+    "version": "Version"
   }
 }

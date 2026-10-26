@@ -37,7 +37,7 @@ export async function renderApp(
     <AppProviders
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ recovery, fileAccess, windowHost, workspace }}
+      services={{ recovery, fileAccess, recent: fileAccess.recent, windowHost, workspace }}
     >
       <RouterProvider router={router} />
     </AppProviders>,

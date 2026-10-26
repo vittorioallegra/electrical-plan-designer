@@ -8,6 +8,14 @@ files:
   - package.json
   - out/**
 npmRebuild: false
+# Double-clicking a .epd opens it in the app. The document icon (build/epd-document.svg is its
+# source; the .icns and .ico are rendered from it) is a page carrying the app icon's glyph.
+fileAssociations:
+  - ext: epd
+    name: Electrical Plan Designer project
+    description: Electrical Plan Designer project
+    role: Editor
+    icon: epd-document
 mac:
   # Unsigned for now; signing is added later as a build step only.
   identity: null

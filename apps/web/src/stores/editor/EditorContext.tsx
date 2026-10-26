@@ -1,6 +1,11 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
-import type { FileAccess, RecoveryRepository, WindowHost } from '@/lib/repositories/types';
+import type {
+  FileAccess,
+  RecentRepository,
+  RecoveryRepository,
+  WindowHost,
+} from '@/lib/repositories/types';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
 import type { Workspace, WorkspaceState } from './workspace';
@@ -9,6 +14,7 @@ import type { Workspace, WorkspaceState } from './workspace';
 export interface EditorServices {
   recovery: RecoveryRepository;
   fileAccess: FileAccess;
+  recent: RecentRepository;
   windowHost: WindowHost;
   workspace: Workspace;
 }

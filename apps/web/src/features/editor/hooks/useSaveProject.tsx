@@ -15,7 +15,7 @@ type Choice = 'overwrite' | 'saveAs' | 'cancel';
  * When the file changed on disk it asks: overwrite, Save As or cancel; when the file cannot be
  * written it shows the OS error and offers Save As. `save()` resolves true once the project is
  * in a file, false when the user cancelled or nothing was saved. Render `dialog` in the page.
- * Changes made after the file was built stay unsaved.
+ * `save('saveAs')` always asks for a new path. Changes made after the file was built stay unsaved.
  */
 export function useSaveProject(store: EditorStore | null) {
   const { t } = useTranslation();
@@ -41,36 +41,39 @@ export function useSaveProject(store: EditorStore | null) {
     [],
   );
 
-  const save = useCallback(async (): Promise<boolean> => {
-    if (!store || store.getState().readOnly || inFlight.current) return false;
-    inFlight.current = true;
-    setSaving(true);
-    try {
-      let mode: SaveMode = 'auto';
-      for (;;) {
-        const outcome = await saveProject(store, fileAccess, mode);
-        if (outcome.kind === 'saved') {
-          toast(t('editor.savedTo', { name: outcome.file.name }), 'success');
-          return true;
+  const save = useCallback(
+    async (first: SaveMode = 'auto'): Promise<boolean> => {
+      if (!store || store.getState().readOnly || inFlight.current) return false;
+      inFlight.current = true;
+      setSaving(true);
+      try {
+        let mode: SaveMode = first;
+        for (;;) {
+          const outcome = await saveProject(store, fileAccess, mode);
+          if (outcome.kind === 'saved') {
+            toast(t('editor.savedTo', { name: outcome.file.name }), 'success');
+            return true;
+          }
+          if (outcome.kind === 'cancelled') return false;
+          const choice = await ask(
+            outcome.kind === 'conflict'
+              ? { kind: 'conflict' }
+              : { kind: 'failed', code: outcome.code },
+          );
+          if (choice === 'cancel') return false;
+          mode = choice;
         }
-        if (outcome.kind === 'cancelled') return false;
-        const choice = await ask(
-          outcome.kind === 'conflict'
-            ? { kind: 'conflict' }
-            : { kind: 'failed', code: outcome.code },
-        );
-        if (choice === 'cancel') return false;
-        mode = choice;
+      } catch (e) {
+        console.error(e);
+        toast(t('editor.saveFailed'), 'error');
+        return false;
+      } finally {
+        inFlight.current = false;
+        setSaving(false);
       }
-    } catch (e) {
-      console.error(e);
-      toast(t('editor.saveFailed'), 'error');
-      return false;
-    } finally {
-      inFlight.current = false;
-      setSaving(false);
-    }
-  }, [store, fileAccess, toast, t, ask]);
+    },
+    [store, fileAccess, toast, t, ask],
+  );
 
   const problem = asking?.problem;
   const dialog: ReactNode = (
