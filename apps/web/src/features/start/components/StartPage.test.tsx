@@ -57,6 +57,17 @@ describe('start screen', () => {
     expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
   });
 
+  // protects=AC 7 recent files only hold project files; fails_when=a file that is not a project (read before it was validated) stays in the recent list after the error; no_claim=the desktop IPC (main lists a file when it reads it)
+  it('does not keep a broken file in the recent list', async () => {
+    const { fileAccess } = await start();
+    fileAccess.files.set('broken.epd', new Uint8Array([1, 2, 3]));
+    fileAccess.nextOpen = 'broken.epd';
+    await userEvent.click(screen.getByRole('button', { name: 'Open file…' }));
+    expect(await screen.findByText('This is not a project file.')).toBeInTheDocument();
+    await waitFor(async () => expect(await fileAccess.recent.list()).toEqual([]));
+    expect(screen.queryByRole('region', { name: 'Recent files' })).not.toBeInTheDocument();
+  });
+
   // protects=AC 9 restore; fails_when=the recovery copy is not offered on start, restores without its unsaved state or its original path, or Save then writes elsewhere; no_claim=the desktop IPC (Electron E2E)
   it('restores the recovery copy bound to its original path, still unsaved', async () => {
     const { recovery, router, fileAccess } = await renderApp('/elsewhere', {

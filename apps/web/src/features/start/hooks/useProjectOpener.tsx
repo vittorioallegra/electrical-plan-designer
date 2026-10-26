@@ -57,12 +57,16 @@ export function useProjectOpener() {
     navigate('/project/plan');
   }
 
-  /** Reads a picked file; a broken or unsupported file shows why and returns null. */
-  function read(bytes: Uint8Array): OpenedProject | null {
+  /**
+   * Reads a picked file; a broken or unsupported file shows why and returns null. Main lists a
+   * file as recent when it reads it, before knowing it is a project, so a failure drops it.
+   */
+  function read(bytes: Uint8Array, path?: string): OpenedProject | null {
     try {
       return readEpd(bytes);
     } catch (e) {
       toast(t(`start.openErrors.${e instanceof ProjectFileError ? e.code : 'invalid'}`), 'error');
+      if (path !== undefined) void recent.remove(path).then(refreshRecent);
       return null;
     }
   }
@@ -71,7 +75,7 @@ export function useProjectOpener() {
   function openFile() {
     guard(async () => {
       const picked = await fileAccess.open();
-      const opened = picked && read(picked.bytes);
+      const opened = picked && read(picked.bytes, picked.path);
       if (picked && opened) {
         const { path, name, stat } = picked;
         openProject({ data: opened.project, assets: opened.assets, file: { path, name, stat } });
@@ -89,7 +93,7 @@ export function useProjectOpener() {
         refreshRecent();
         return;
       }
-      const opened = read(picked.bytes);
+      const opened = read(picked.bytes, path);
       if (opened) {
         const { name, stat } = picked;
         openProject({ data: opened.project, assets: opened.assets, file: { path, name, stat } });

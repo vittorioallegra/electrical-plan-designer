@@ -229,7 +229,8 @@ Approved: yes (2026-10-26)
 - [x] 8. Remove the web build, package, CI, docs — `chore: remove the web build and add the desktop installers, CI and release docs`
 
 ### Verification
-- qa: pending
+- qa: in progress
+  - a file that is not a project stayed in the recent list after the open error — `fix: drop a file that fails to open from the recent list`
 - review: pending
 
 ### Decisions
