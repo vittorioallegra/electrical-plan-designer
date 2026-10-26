@@ -1,8 +1,7 @@
 // Project files on disk: native dialogs (injected), atomic writes, the stat check of Save and the
 // list of paths the renderer may write. No Electron imports, so it is tested in plain Node.
-import { randomBytes } from 'node:crypto';
 import * as nodeFs from 'node:fs/promises';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { basename, extname, resolve } from 'node:path';
 import type {
   ExportFilter,
   ExportResult,
@@ -11,8 +10,9 @@ import type {
   SaveAsResult,
   SaveResult,
 } from '@epd/bridge/bridge';
+import { atomicWrite as atomicWriteFile, type FsOps } from './atomicWrite';
 
-export type FsOps = Pick<typeof nodeFs, 'open' | 'readFile' | 'rename' | 'stat' | 'unlink'>;
+export type { FsOps };
 
 /** The native dialogs. `Owner` is whatever the dialogs need to attach to (a window). */
 export interface FileDialogs<Owner> {
@@ -84,22 +84,8 @@ export function createFileService<Owner>({
     return { mtimeMs: s.mtimeMs, size: s.size };
   }
 
-  /** Temp file next to the target, fsync, rename; the temp file is removed on any failure. */
   async function atomicWrite(path: string, bytes: Uint8Array): Promise<FileStat> {
-    const temp = join(dirname(path), `.${basename(path)}.${randomBytes(6).toString('hex')}.tmp`);
-    let handle: Awaited<ReturnType<FsOps['open']>> | undefined;
-    try {
-      handle = await fs.open(temp, 'wx');
-      await handle.writeFile(bytes);
-      await handle.sync();
-      await handle.close();
-      handle = undefined;
-      await fs.rename(temp, path);
-    } catch (error) {
-      await handle?.close().catch(() => undefined);
-      await fs.unlink(temp).catch(() => undefined);
-      throw error;
-    }
+    await atomicWriteFile(path, bytes, fs);
     return statOf(path);
   }
 

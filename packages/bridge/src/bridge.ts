@@ -55,6 +55,38 @@ export type CloseChoice = 'close' | 'cancel';
 
 export type Unsubscribe = () => void;
 
+/** An asset (background image or PDF) of the open project; `id` is its id in the project. */
+export interface RecoveryAsset {
+  id: string;
+  mimeType: string;
+}
+
+/** What autosave keeps of the open project in the recovery copy (besides the asset bytes). */
+export interface RecoveryMeta {
+  /** The file the project is bound to, so a restored project saves back to the same path. */
+  file: SavedFile | null;
+  /** The file already has every change in the copy. */
+  savedToFile: boolean;
+  savedAt: string;
+  /** Every asset the project references; main prunes the others. */
+  assets: RecoveryAsset[];
+}
+
+export interface RecoverySaveArgs {
+  /** The project as JSON text; main stores it without reading it. */
+  project: string;
+  meta: RecoveryMeta;
+  /** Bytes of the assets main does not have yet (each id is written once). */
+  newAssets: { id: string; bytes: Uint8Array }[];
+}
+
+export interface RecoverySnapshot {
+  project: string;
+  meta: RecoveryMeta;
+  /** Bytes of the assets main still has; the others are missing. */
+  assets: { id: string; bytes: Uint8Array }[];
+}
+
 /** The API the preload script exposes to the renderer as `window.epd`. Grows with each step. */
 export interface EpdBridge {
   files: {
@@ -69,6 +101,14 @@ export interface EpdBridge {
     saveAs(suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
     /** Native save dialog and an atomic write of a file that is not the project (PDF, CSV...). */
     exportFile(name: string, bytes: Uint8Array, filters: ExportFilter[]): Promise<ExportResult>;
+  };
+  recovery: {
+    /** Replaces the recovery copy (atomic: a crash mid-write leaves the previous copy readable). */
+    save(args: RecoverySaveArgs): Promise<void>;
+    /** The copy left by a previous run, or null. Its file's path may be written by Save again. */
+    load(): Promise<RecoverySnapshot | null>;
+    /** Deletes the recovery copy. */
+    clear(): Promise<void>;
   };
   window: {
     /** Tells main the open project's name and whether it has unsaved changes. */
@@ -88,6 +128,9 @@ export const channels = {
   filesSave: 'files:save',
   filesSaveAs: 'files:save-as',
   filesExport: 'files:export',
+  recoverySave: 'recovery:save',
+  recoveryLoad: 'recovery:load',
+  recoveryClear: 'recovery:clear',
   windowState: 'window:state',
   closeRequested: 'window:close-requested',
   closeAck: 'window:close-ack',

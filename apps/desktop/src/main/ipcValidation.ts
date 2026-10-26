@@ -1,6 +1,13 @@
 // Validation of everything the renderer sends to main. Pure functions, tested in plain Node.
 import { isAbsolute } from 'node:path';
-import type { CloseChoice, ExportFilter, FileStat, WindowState } from '@epd/bridge/bridge';
+import type {
+  CloseChoice,
+  ExportFilter,
+  FileStat,
+  RecoveryMeta,
+  RecoverySaveArgs,
+  WindowState,
+} from '@epd/bridge/bridge';
 
 export class InvalidArgument extends Error {
   override name = 'InvalidArgument';
@@ -117,4 +124,64 @@ export function parseWindowState(value: unknown): WindowState {
 export function parseCloseChoice(value: unknown): CloseChoice {
   if (value !== 'close' && value !== 'cancel') fail('close choice');
   return value;
+}
+
+const ASSET_ID = /^[A-Za-z0-9_-]{1,128}$/;
+const MIME_TYPE = /^[a-z]+\/[a-z0-9.+-]{1,64}$/;
+
+function assetId(value: unknown): string {
+  if (typeof value !== 'string' || !ASSET_ID.test(value)) fail('asset id');
+  return value;
+}
+
+function recoveryMeta(value: unknown): RecoveryMeta {
+  const meta = value as Partial<RecoveryMeta> | null;
+  if (
+    typeof meta !== 'object' ||
+    meta === null ||
+    typeof meta.savedToFile !== 'boolean' ||
+    !Array.isArray(meta.assets) ||
+    meta.assets.length > 10_000
+  )
+    fail('recovery meta');
+  let file: RecoveryMeta['file'] = null;
+  if (meta.file !== null && meta.file !== undefined) {
+    const f = meta.file as Partial<NonNullable<RecoveryMeta['file']>>;
+    const path = text(f.path, 'path', 4096);
+    if (!isAbsolute(path)) fail('path');
+    file = { path, name: text(f.name, 'file name', 255), stat: statOf(f.stat) };
+  }
+  return {
+    file,
+    savedToFile: meta.savedToFile,
+    savedAt: text(meta.savedAt, 'saved at', 64),
+    assets: (meta.assets as unknown[]).map((a) => {
+      const asset = a as { id?: unknown; mimeType?: unknown } | null;
+      if (typeof asset !== 'object' || asset === null) fail('asset');
+      const mimeType = text(asset.mimeType, 'mime type', 128);
+      if (!MIME_TYPE.test(mimeType)) fail('mime type');
+      return { id: assetId(asset.id), mimeType };
+    }),
+  };
+}
+
+export function parseRecoverySaveArgs(args: unknown[]): RecoverySaveArgs {
+  const value = args[0] as Partial<RecoverySaveArgs> | null;
+  if (typeof value !== 'object' || value === null || !Array.isArray(value.newAssets))
+    fail('recovery copy');
+  if (typeof value.project !== 'string' || value.project.length > MAX_BYTES) fail('project');
+  const meta = recoveryMeta(value.meta);
+  const known = new Set(meta.assets.map((a) => a.id));
+  return {
+    project: value.project,
+    meta,
+    newAssets: (value.newAssets as unknown[]).map((a) => {
+      const asset = a as { id?: unknown; bytes?: unknown } | null;
+      if (typeof asset !== 'object' || asset === null) fail('asset');
+      const id = assetId(asset.id);
+      // Bytes for an asset the copy does not list would only be pruned again.
+      if (!known.has(id)) fail('asset id');
+      return { id, bytes: bytesOf(asset.bytes) };
+    }),
+  };
 }

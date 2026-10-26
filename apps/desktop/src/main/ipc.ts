@@ -1,6 +1,8 @@
 // IPC handlers. Every one checks the sender (the app's own window, its main frame, the app's
 // origin) and validates every argument before touching the disk or a window.
+import { join } from 'node:path';
 import {
+  app,
   BrowserWindow,
   dialog,
   ipcMain,
@@ -8,11 +10,13 @@ import {
   type IpcMainInvokeEvent,
 } from 'electron';
 import { channels } from '@epd/bridge/bridge';
+import { createRecoveryService, type RecoveryService } from './recovery';
 import { createFileService, type FileDialogs, type FileService } from './files';
 import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
   parseWindowState,
@@ -69,8 +73,16 @@ function on(channel: string, handler: (win: BrowserWindow, args: unknown[]) => v
 /** The file service the handlers use; exported so later steps allow paths (recent, OS open). */
 export let files: FileService<BrowserWindow>;
 
+/** The recovery copy of the open project, in the app data folder. */
+export let recovery: RecoveryService;
+
 export function registerIpc(): void {
   files = createFileService<BrowserWindow>({ dialogs });
+  recovery = createRecoveryService({
+    dir: join(app.getPath('userData'), 'recovery'),
+    isAllowedPath: (path) => files.isAllowed(path),
+    allowPath: (path) => files.allow(path),
+  });
 
   invoke(channels.filesOpen, (win) => files.open(win));
   invoke(channels.filesSave, (_win, args) => {
@@ -85,6 +97,10 @@ export function registerIpc(): void {
     const { name, bytes, filters } = parseExportArgs(args);
     return files.exportFile(win, name, bytes, filters);
   });
+
+  invoke(channels.recoverySave, (_win, args) => recovery.save(parseRecoverySaveArgs(args)));
+  invoke(channels.recoveryLoad, () => recovery.load());
+  invoke(channels.recoveryClear, () => recovery.clear());
 
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);

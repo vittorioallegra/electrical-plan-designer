@@ -4,6 +4,7 @@ import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
   parseWindowState,
@@ -52,5 +53,36 @@ describe('ipc validation', () => {
     expect(isAllowedUrl('app://epd/project/plan', 'app://epd')).toBe(true);
     expect(isAllowedUrl('https://example.com/', 'app://epd')).toBe(false);
     expect(isAllowedUrl('not a url', 'app://epd')).toBe(false);
+  });
+});
+
+describe('recovery copy arguments', () => {
+  const meta = {
+    file: null,
+    savedToFile: false,
+    savedAt: '2026-10-26T10:00:00Z',
+    assets: [{ id: 'bg_1', mimeType: 'image/png' }],
+  };
+
+  // protects=recovery IPC validation; fails_when=an asset id that escapes the assets folder, bytes for an unlisted asset or a relative bound path is accepted; no_claim=the stored format
+  it('accepts a well-formed copy and refuses path tricks', () => {
+    const ok = parseRecoverySaveArgs([
+      { project: '{}', meta, newAssets: [{ id: 'bg_1', bytes: new Uint8Array(2) }] },
+    ]);
+    expect(ok.newAssets).toHaveLength(1);
+    const bad = (value: unknown) =>
+      expect(() => parseRecoverySaveArgs([value])).toThrow(InvalidArgument);
+    bad({
+      project: '{}',
+      meta: { ...meta, assets: [{ id: '../x', mimeType: 'image/png' }] },
+      newAssets: [],
+    });
+    bad({ project: '{}', meta, newAssets: [{ id: 'other', bytes: new Uint8Array(1) }] });
+    bad({
+      project: '{}',
+      meta: { ...meta, file: { path: 'rel.epd', name: 'a', stat: { mtimeMs: 1, size: 1 } } },
+      newAssets: [],
+    });
+    bad({ project: 5, meta, newAssets: [] });
   });
 });

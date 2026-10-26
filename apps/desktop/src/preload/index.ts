@@ -12,6 +12,11 @@ const bridge: EpdBridge = {
     exportFile: (name, bytes, filters) =>
       ipcRenderer.invoke(channels.filesExport, name, bytes, filters),
   },
+  recovery: {
+    save: (args) => ipcRenderer.invoke(channels.recoverySave, args),
+    load: () => ipcRenderer.invoke(channels.recoveryLoad),
+    clear: () => ipcRenderer.invoke(channels.recoveryClear),
+  },
   window: {
     setState: (state) => ipcRenderer.send(channels.windowState, state),
     onCloseRequested: (listener) => {
