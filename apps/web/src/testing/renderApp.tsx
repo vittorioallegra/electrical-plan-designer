@@ -8,9 +8,12 @@ import { createQueryClient } from '@/lib/query-client';
 import { AppProviders } from '@/app/provider';
 import { createI18n, type Language } from '@/lib/i18n';
 import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import { createMemoryLibraryRepository } from '@/lib/repositories/library';
 import { createMemoryRecoveryRepository } from '@/lib/repositories/recovery';
 import { createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
+import { createLibraryStore } from '@/stores/library/libraryStore';
+import type { LibraryData } from '@/lib/repositories/types';
 import { demoProjectFile } from './editor';
 
 export async function renderApp(
@@ -19,16 +22,21 @@ export async function renderApp(
     lng = 'en',
     exposeTestHandle = false,
     project = path.startsWith('/project') ? demoProjectFile() : null,
+    library: librarySeed = {},
   }: {
     lng?: Language;
     exposeTestHandle?: boolean;
     /** Opened before the first render; by default the demo project for `/project/...` paths. */
     project?: ProjectFile | null;
+    /** Seeds the library (empty by default); `invalid` lists files set aside at start. */
+    library?: Partial<LibraryData> & { invalid?: string[] };
   } = {},
 ) {
   const recovery = createMemoryRecoveryRepository();
   const fileAccess = createMemoryFileAccess();
   const windowHost = createMemoryWindowHost();
+  const libraryRepository = createMemoryLibraryRepository(librarySeed);
+  const library = await createLibraryStore(libraryRepository);
   const workspace = createWorkspace({ recovery, exposeTestHandle });
   if (project) workspace.getState().open({ data: project });
   const queryClient = createQueryClient();
@@ -37,7 +45,7 @@ export async function renderApp(
     <AppProviders
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ recovery, fileAccess, recent: fileAccess.recent, windowHost, workspace }}
+      services={{ recovery, fileAccess, recent: fileAccess.recent, windowHost, workspace, library }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
@@ -56,5 +64,15 @@ export async function renderApp(
         });
       }),
   );
-  return { ...result, router, recovery, fileAccess, windowHost, workspace, queryClient };
+  return {
+    ...result,
+    router,
+    recovery,
+    fileAccess,
+    windowHost,
+    workspace,
+    queryClient,
+    library,
+    libraryRepository,
+  };
 }

@@ -1,6 +1,8 @@
 // The project open in the window: at most one, with its editor store and autosave.
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { MemoryFileAccess } from '@/lib/repositories/fileAccess';
+import type { MemoryLibraryRepository } from '@/lib/repositories/library';
+import type { LibraryStore } from '@/stores/library/libraryStore';
 import type { RecoveryRepository } from '@/lib/repositories/types';
 import { startAutosave, type Autosave } from './autosave';
 import { createEditorStore, type EditorInit, type EditorStore } from './editorStore';
@@ -23,8 +25,15 @@ export type Workspace = StoreApi<WorkspaceState>;
 
 declare global {
   interface Window {
-    /** Test handle (dev and E2E builds): the open project's store, the fake files (E2E). */
-    __epd?: { store?: EditorStore; files?: MemoryFileAccess };
+    /**
+     * Test handle (dev and E2E builds): the open project's store, the fake files and the library
+     * (E2E: seed `library.repository.data`, then `library.store.getState().reload()`).
+     */
+    __epd?: {
+      store?: EditorStore;
+      files?: MemoryFileAccess;
+      library?: { repository: MemoryLibraryRepository; store: LibraryStore };
+    };
   }
 }
 

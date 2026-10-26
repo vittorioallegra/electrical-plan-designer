@@ -1,4 +1,6 @@
 // Persistence interfaces: the recovery copy of the open project, project files and the window.
+import type { ProjectCatalog } from '@epd/domain/catalog/types';
+import type { Library, LibraryCore } from '@epd/domain/library';
 import type { ProjectFile } from '@epd/domain/projectFile';
 import type { ProjectAssets } from '@/lib/projectFile/epd';
 
@@ -7,6 +9,7 @@ export type {
   ExportFilter,
   ExportResult,
   FileStat,
+  LibraryLogo,
   MenuCommand,
   MenuLabels,
   OpenedFile,
@@ -21,6 +24,7 @@ import type {
   ExportFilter,
   ExportResult,
   FileStat,
+  LibraryLogo,
   MenuCommand,
   MenuLabels,
   OpenedFile,
@@ -92,4 +96,26 @@ export interface RecoveryRepository {
   get(): Promise<RecoveryCopy | null>;
   save(copy: RecoveryCopy): Promise<void>;
   clear(): Promise<void>;
+}
+
+/** The library and its logo: everything the library stores. */
+export interface LibraryData {
+  library: Library;
+  logo: LibraryLogo | null;
+}
+
+/** The library files of the app, one write per changed part (the desktop app: files in userData). */
+export interface LibraryRepository {
+  /**
+   * The stored library. A part that failed validation was set aside and comes back as defaults;
+   * `invalid` names the files that were set aside.
+   */
+  load(): Promise<LibraryData & { invalid: string[] }>;
+  /** Everything but the catalogs. */
+  saveCore(core: LibraryCore): Promise<void>;
+  saveCatalog(catalog: ProjectCatalog): Promise<void>;
+  removeCatalog(id: string): Promise<void>;
+  setLogo(logo: LibraryLogo | null): Promise<void>;
+  /** Replaces the whole library; the old one is kept as a backup. */
+  replace(data: LibraryData): Promise<void>;
 }

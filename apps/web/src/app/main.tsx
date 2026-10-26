@@ -16,8 +16,14 @@ import {
   createDesktopRecoveryRepository,
   createMemoryRecoveryRepository,
 } from '@/lib/repositories/recovery';
+import {
+  createDesktopLibraryRepository,
+  createMemoryLibraryRepository,
+  type MemoryLibraryRepository,
+} from '@/lib/repositories/library';
 import { createDesktopWindowHost, createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
+import { createLibraryStore } from '@/stores/library/libraryStore';
 import './styles.css';
 
 const config = getConfig();
@@ -46,13 +52,27 @@ const services = {
   workspace: createWorkspace({ recovery, exposeTestHandle: config.testHandle }),
 };
 
-const queryClient = createQueryClient();
-const router = createBrowserRouter(createRoutes());
+async function start() {
+  // The library is read before the first route renders, so no page ever shows it half loaded.
+  const libraryRepository = bridge
+    ? createDesktopLibraryRepository(bridge.library)
+    : createMemoryLibraryRepository();
+  const library = await createLibraryStore(libraryRepository);
+  if (!bridge && config.testHandle)
+    window.__epd = {
+      ...window.__epd,
+      library: { repository: libraryRepository as MemoryLibraryRepository, store: library },
+    };
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AppProviders queryClient={queryClient} i18n={i18n} services={services}>
-      <RouterProvider router={router} />
-    </AppProviders>
-  </StrictMode>,
-);
+  const queryClient = createQueryClient();
+  const router = createBrowserRouter(createRoutes());
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <AppProviders queryClient={queryClient} i18n={i18n} services={{ ...services, library }}>
+        <RouterProvider router={router} />
+      </AppProviders>
+    </StrictMode>,
+  );
+}
+
+void start();

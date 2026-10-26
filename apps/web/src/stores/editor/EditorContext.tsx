@@ -6,6 +6,7 @@ import type {
   RecoveryRepository,
   WindowHost,
 } from '@/lib/repositories/types';
+import type { LibraryStore } from '@/stores/library/libraryStore';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
 import type { Workspace, WorkspaceState } from './workspace';
@@ -17,6 +18,8 @@ export interface EditorServices {
   recent: RecentRepository;
   windowHost: WindowHost;
   workspace: Workspace;
+  /** The app library, loaded before the first render. */
+  library: LibraryStore;
 }
 
 const ServicesContext = createContext<EditorServices | null>(null);
