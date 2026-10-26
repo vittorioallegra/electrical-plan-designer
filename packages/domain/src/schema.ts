@@ -1,7 +1,7 @@
 // Zod schema of the project document (projects.doc) and the per-project settings.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 1;
 
 const id = z.string().min(1);
 const finite = z.number().finite();
@@ -307,11 +307,10 @@ export const issuedQuoteSchema = z.object({
   lines: z.array(quoteLineSchema),
   settings: quoteSettingsSchema,
   totals: quoteTotalsSchema,
-  /** Defaults cover snapshots stored before quotes had a status. */
-  status: quoteStatusSchema.default('issued'),
+  status: quoteStatusSchema,
   /** Absent until the status first changes. */
   statusChangedAt: z.string().optional(),
-  note: z.string().default(''),
+  note: z.string(),
 });
 
 /** The quote of a project: the editable settings plus issued snapshots (immutable but status and note). */

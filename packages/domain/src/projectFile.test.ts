@@ -100,18 +100,6 @@ describe('project file', () => {
     }
   });
 
-  // protects=quotes stored before statuses existed; fails_when=a snapshot without status or note fails to load; no_claim=Supabase rows
-  it('defaults a missing quote status and note', () => {
-    const { manifest, project } = fixture();
-    const issued = (project.quote as { issued: Record<string, unknown>[] }).issued[0]!;
-    delete issued.status;
-    delete issued.note;
-    delete issued.statusChangedAt;
-    expect(loadProjectFile(manifest, project).quote.issued[0]).toMatchObject({
-      status: 'issued',
-      note: '',
-    });
-  });
 });
 
 describe('assets', () => {

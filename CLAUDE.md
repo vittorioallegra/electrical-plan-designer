@@ -73,9 +73,9 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   canvas and PDF code are lazy. `renderApp()` (real routes, in-memory repos, fresh query client)
   waits for the first navigation; `prepare` installs spies before loaders run.
 - Tests next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
-- Project file (`packages/domain/src/projectFile.ts`): every schema change bumps
-  `PROJECT_FILE_SCHEMA_VERSION`, adds a migration in `projectFile/migrations.ts` and freezes
-  a fixture of the previous version in `projectFile/fixtures/`; old files must always open.
+- Project file schema: no migrations before the first release (versions stay 1; update
+  `projectFile/fixtures/v1.json` and run `pnpm demo:epd`). After it, each change bumps the
+  version, adds a migration (`projectFile/migrations.ts`) and freezes a previous-version fixture.
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents.
 - PDFs (jsPDF Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
 - Mobile view (< 768 px) is chosen once per tab session (`sessionStorage` `epd.viewMode`).
