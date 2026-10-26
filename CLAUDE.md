@@ -1,10 +1,9 @@
 # Electrical Plan Designer
 
-Web app for electricians, backend-free: draw a residential electrical system on a floor plan,
-design the panel, route circuits through conduits, and get a computed BOM, checks, PDF/CSV
-exports and a quote. A project is one `.epd` file; the open project is kept as a draft in
-IndexedDB. Installable PWA, offline after the first visit. Spec: docs/specs/electrical-plan-designer.md;
-plan and decisions: docs/plans/local-first.md; deploy: docs/deploy.md.
+Backend-free web app (installable PWA) for electricians: floor plan, panel, circuits through
+conduits, BOM, checks, PDF/CSV exports and quotes. A project is one `.epd` file; the open
+project is kept as a draft in IndexedDB. Spec: docs/specs/electrical-plan-designer.md; plan
+and decisions: docs/plans/local-first.md; deploy: docs/deploy.md.
 
 ## Commands
 
@@ -41,7 +40,8 @@ with icons and the static-host `_headers`/`_redirects`).
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared;
   `useCatalog` reads catalogs, prices, presets, company of the open project), `src/config/`
 - `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` File
-  System Access, download fallback, in-memory fake; `idb.ts`), `i18n/` (`locales/en.json` base,
+  System Access, download fallback, in-memory fake; `draftPresence.ts` which tab may write the
+  draft, over BroadcastChannel; `idb.ts`), `i18n/` (`locales/en.json` base,
   `it.json`), `projectFile/` (`.epd` zip read/write with `fflate`), formatting helpers
 - `src/stores/editor/` — `workspace.ts` (the tab's one open project), editor store
   (`ProjectFile` and assets, zustand + immer patches), undo/redo, autosave to the draft

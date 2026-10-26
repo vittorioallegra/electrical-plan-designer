@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
-import type { DraftRepository, FileAccess } from '@/lib/repositories/types';
+import type { DraftPresence, DraftRepository, FileAccess } from '@/lib/repositories/types';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
 import type { Workspace, WorkspaceState } from './workspace';
@@ -8,6 +8,7 @@ import type { Workspace, WorkspaceState } from './workspace';
 /** App-wide services of the open project, injectable for tests. */
 export interface EditorServices {
   drafts: DraftRepository;
+  presence: DraftPresence;
   fileAccess: FileAccess;
   workspace: Workspace;
 }

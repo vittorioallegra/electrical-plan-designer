@@ -14,6 +14,8 @@ export interface AutosaveOptions {
 export interface Autosave {
   /** Writes the draft now (skips the debounce), e.g. on an explicit retry click. */
   flush(): void;
+  /** Writes pending changes now and resolves when they are in the draft (or the write failed). */
+  writeNow(): Promise<void>;
   stop(): void;
 }
 
@@ -96,6 +98,11 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
   return {
     flush() {
       schedule(0);
+    },
+    async writeNow() {
+      clearTimeout(timer);
+      while (inFlight) await new Promise((resolve) => setTimeout(resolve, 10));
+      await run();
     },
     /** Stops watching; changes still waiting for the debounce are written right away. */
     stop() {

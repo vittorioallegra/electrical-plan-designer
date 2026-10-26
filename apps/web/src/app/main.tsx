@@ -8,6 +8,7 @@ import { getConfig } from '@/config/env';
 import { createQueryClient } from '@/lib/query-client';
 import { createI18n } from '@/lib/i18n';
 import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
+import { createDraftPresence } from '@/lib/repositories/draftPresence';
 import { createBrowserFileAccess, createMemoryFileAccess } from '@/lib/repositories/fileAccess';
 import { createWorkspace } from '@/stores/editor/workspace';
 import './styles.css';
@@ -25,10 +26,12 @@ const fakeFiles = config.fakeFiles && !window.__epdRealFiles ? createMemoryFileA
 if (fakeFiles) window.__epd = { ...window.__epd, files: fakeFiles };
 
 const drafts = createIndexedDbDraftRepository();
+const presence = createDraftPresence();
 const services = {
   drafts,
+  presence,
   fileAccess: fakeFiles ?? createBrowserFileAccess(),
-  workspace: createWorkspace({ drafts, exposeTestHandle: config.testHandle }),
+  workspace: createWorkspace({ drafts, presence, exposeTestHandle: config.testHandle }),
 };
 
 const queryClient = createQueryClient();

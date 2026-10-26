@@ -50,3 +50,23 @@ export interface DraftRepository {
   save(draft: Draft): Promise<void>;
   clear(): Promise<void>;
 }
+
+/** The tab that holds the draft, as other tabs see it. */
+export interface DraftHolder {
+  /** Name of the project open there. */
+  name: string;
+  /** It has changes that are not in a file (they would be lost if another tab took over). */
+  unsaved: boolean;
+}
+
+/** Coordinates the tabs of one browser around the single draft. */
+export interface DraftPresence {
+  /** The other tab that holds the draft, or null when none answers. */
+  holder(): Promise<DraftHolder | null>;
+  /** Takes the draft over: the holding tab turns read-only before this resolves. */
+  claim(): Promise<void>;
+  /** While set, this tab holds the draft and answers other tabs with `info()`. */
+  hold(info: (() => DraftHolder) | null): void;
+  /** Called when another tab takes the draft over; the claim waits for it to settle. */
+  onTakenOver(listener: () => void | Promise<void>): () => void;
+}

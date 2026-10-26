@@ -86,7 +86,9 @@
     "savedTo": "Salvato in {{name}}",
     "saveFailed": "Impossibile salvare il file. Il file e la bozza su questo dispositivo non sono cambiati.",
     "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
-    "dismissNotice": "Chiudi"
+    "dismissNotice": "Chiudi",
+    "readOnlyInUse": "Sola lettura: questo progetto è in modifica in un'altra scheda.",
+    "takenOver": "Questo progetto ora è in modifica in un'altra scheda, quindi qui è in sola lettura. Le modifiche fatte fin qui sono conservate."
   },
   "catalog": {
     "builtin": {
@@ -739,14 +741,18 @@
     "firstFloorName": "Piano 1",
     "continue": {
       "title": "Progetto aperto",
-      "action": "Continua"
+      "action": "Continua",
+      "readOnly": "sola lettura"
     },
     "draft": {
       "title": "Bozza su questo dispositivo",
       "lastChange": "Ultima modifica {{date}}",
       "notInFile": "modifiche non salvate in un file",
       "resume": "Riprendi",
-      "invalid": "Impossibile aprire la bozza."
+      "invalid": "Impossibile aprire la bozza.",
+      "inUse": "In modifica in un'altra scheda.",
+      "openReadOnly": "Apri in sola lettura",
+      "editHere": "Modifica qui"
     },
     "recent": "File recenti",
     "recentGone": "Impossibile aprire {{name}}: potrebbe essere stato spostato, oppure l'accesso è stato negato.",
@@ -762,6 +768,12 @@
       "title": "Scartare le modifiche non salvate?",
       "body": "“{{name}}” ha modifiche non salvate in un file. Aprendo un altro progetto vanno perse.",
       "confirm": "Scarta e continua"
+    },
+    "otherTab": {
+      "title": "Progetto aperto in un'altra scheda",
+      "body": "“{{name}}” è in modifica in un'altra scheda. Continuando qui, quella scheda passa in sola lettura.",
+      "bodyUnsaved": "“{{name}}” è in modifica in un'altra scheda e ha modifiche non salvate in un file. Continuando qui, quella scheda passa in sola lettura e quelle modifiche vanno perse.",
+      "confirm": "Continua qui"
     }
   },
   "company": {

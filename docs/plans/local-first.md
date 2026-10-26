@@ -179,8 +179,6 @@ the way and what is still open.
 
 ### Still open
 
-- **Second tab**: the spec's "draft in use" (`BroadcastChannel`, the second tab opens the
-  draft read-only) is not built: two tabs on the same browser write the same draft.
 - **CSV import**: category and modules come from a column or one default for all rows; the
   spec's per-row or per-selection editing in the dialog is not built.
 - **Installed app**: no `file_handlers` (open `.epd` from the OS), no "update available" prompt.
@@ -189,6 +187,14 @@ the way and what is still open.
 
 ### Decisions by step
 
+- **Second tab** (after step 11): `lib/repositories/draftPresence.ts`. The tab with an
+  editable project holds the draft and answers `query` messages on the `epd-draft`
+  BroadcastChannel (a closed or crashed tab just stops answering: nothing stale to clean up).
+  Another tab sees the draft "being edited in another tab" and can open it read-only
+  (`workspace.open(..., { inUse: true })`) or take it over: `claim` makes the holder write its
+  pending changes (`autosave.writeNow`), turn read-only (`tabLock: 'taken_over'`) and answer
+  `released`; only then the new tab reads the draft. Starting another project while a tab
+  holds the draft asks first, saying when that tab has changes not saved to a file.
 - **No migrations before the first release** (no users yet): the doc and project file schemas
   stay at version 1 and change in place; update `projectFile/fixtures/v1.json` and run
   `pnpm demo:epd`. The migrations scaffolding stays for later (see `CLAUDE.md`).
