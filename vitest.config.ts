@@ -8,6 +8,13 @@ export default defineConfig({
       'packages/domain/vitest.config.ts',
       {
         test: {
+          name: 'desktop',
+          environment: 'node',
+          include: ['apps/desktop/src/**/*.test.ts'],
+        },
+      },
+      {
+        test: {
           name: 'repo',
           environment: 'node',
           include: ['scripts/**/*.test.ts', 'tests/**/*.test.ts'],
