@@ -229,7 +229,7 @@ Approved: yes (2026-10-26)
 - [x] 8. Remove the web build, package, CI, docs — `chore: remove the web build and add the desktop installers, CI and release docs`
 
 ### Verification
-- qa: in progress
+- qa: done
   - a file that is not a project stayed in the recent list after the open error — `fix: drop a file that fails to open from the recent list`
   - a plan image dropped from the recovery copy while unreferenced (then restored by undo) was never sent again, so a recovered project lost it — `fix: resend a recovery asset that main dropped and the project uses again`
 - review: pending
