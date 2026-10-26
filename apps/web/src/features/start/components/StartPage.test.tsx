@@ -60,7 +60,7 @@ describe('start screen', () => {
 
   // protects=resume draft; fails_when=the draft is not offered on start or resumes without its file and unsaved state; no_claim=IndexedDB (drafts.test)
   it('resumes the draft with its file', async () => {
-    const { drafts, router } = await renderApp('/projects', { exposeTestHandle: true });
+    const { drafts, router } = await renderApp('/elsewhere', { exposeTestHandle: true });
     const project = demoProjectFile();
     project.meta.name = 'Draft house';
     const file = { name: 'draft.epd', handle: 'draft.epd' };
@@ -141,7 +141,7 @@ describe('start screen', () => {
 
   // protects=project routes need an open project; fails_when=/project/... without an open project shows a broken editor; no_claim=—
   it('sends project routes to the start screen when nothing is open', async () => {
-    const { router } = await renderApp('/project/quote');
+    const { router } = await renderApp('/project/quote', { project: null });
     await screen.findByRole('heading', { name: 'Start' });
     expect(router.state.location.pathname).toBe('/');
   });

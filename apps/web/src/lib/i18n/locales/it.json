@@ -8,7 +8,6 @@
     "it": "Italiano"
   },
   "nav": {
-    "projects": "Progetti",
     "catalog": "Catalogo",
     "plan": "Pianta",
     "panel": "Quadro",
@@ -18,21 +17,15 @@
     "company": "Azienda"
   },
   "pages": {
-    "login": "Accedi",
-    "signup": "Registrati",
-    "projects": "Progetti",
     "plan": "Pianta",
     "panel": "Progetto quadro",
     "quote": "Preventivo",
     "settings": "Impostazioni progetto",
     "catalog": "Catalogo",
-    "mobileProjects": "Progetti",
-    "mobileProject": "Progetto",
     "notFound": "Pagina non trovata",
     "company": "Azienda"
   },
   "editor": {
-    "untitledProject": "Progetto senza nome",
     "saveStatus": {
       "saved": "Salvato",
       "draft": "Bozza",
@@ -54,7 +47,6 @@
       "warnings": "Avvisi"
     },
     "empty": {
-      "circuits": "Nessun circuito.",
       "bom": "La distinta materiali compare mentre disegni.",
       "warnings": "Nessun avviso.",
       "selection": "Nessuna selezione."
@@ -62,14 +54,7 @@
     "tools": "Strumenti",
     "floors": "Piani",
     "inspector": "Proprietà",
-    "notFound": "Progetto non trovato.",
-    "loadFailed": "Impossibile caricare il progetto. Controlla la connessione e riprova.",
     "readOnly": "Questo progetto è stato salvato da una versione più recente dell'app. Si apre in sola lettura; aggiorna l'app per modificarlo.",
-    "recovery": {
-      "title": "Questo progetto non si può aprire",
-      "body": "Il documento salvato non ha superato la validazione. Scarica i dati grezzi per conservarli; nulla viene sovrascritto.",
-      "download": "Scarica JSON grezzo"
-    },
     "exportJson": "Scarica JSON del progetto",
     "importJson": "Importa JSON del progetto",
     "importDone": "Progetto importato. Annulla ripristina la versione precedente.",
@@ -99,7 +84,9 @@
     "saveAs": "Salva con nome…",
     "saveHint": "Salva il file del progetto (Ctrl+S)",
     "savedTo": "Salvato in {{name}}",
-    "saveFailed": "Impossibile salvare il file. Il file e la bozza su questo dispositivo non sono cambiati."
+    "saveFailed": "Impossibile salvare il file. Il file e la bozza su questo dispositivo non sono cambiati.",
+    "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
+    "dismissNotice": "Chiudi"
   },
   "catalog": {
     "builtin": {
@@ -197,7 +184,6 @@
     "showArchived": "Mostra archiviati",
     "builtinBadge": "integrato",
     "archivedBadge": "archiviato",
-    "saveFailed": "Impossibile salvare l'articolo.",
     "attr": {
       "deviceType": "Tipo di frutto",
       "outerDiameter": "Ø esterno",
@@ -315,41 +301,6 @@
     "cancel": "Annulla",
     "save": "Salva",
     "retry": "Riprova"
-  },
-  "auth": {
-    "email": "Email",
-    "password": "Password",
-    "logIn": "Accedi",
-    "signUp": "Crea account",
-    "logOut": "Esci",
-    "noAccount": "Non hai un account? Registrati",
-    "haveAccount": "Hai già un account? Accedi",
-    "errors": {
-      "invalid_credentials": "Email o password errate.",
-      "email_taken": "Esiste già un account con questa email.",
-      "weak_password": "Password troppo debole: usa almeno 6 caratteri.",
-      "network": "Server non raggiungibile. Controlla la connessione e riprova.",
-      "unknown": "Qualcosa è andato storto. Riprova."
-    }
-  },
-  "projects": {
-    "new": "Nuovo progetto",
-    "newTitle": "Nuovo progetto",
-    "renameTitle": "Rinomina progetto",
-    "create": "Crea",
-    "rename": "Rinomina",
-    "delete": "Elimina",
-    "actions": "Azioni per {{name}}",
-    "empty": "Nessun progetto. Crea il primo per iniziare a disegnare.",
-    "name": "Nome progetto",
-    "client": "Cliente",
-    "address": "Indirizzo",
-    "firstFloorName": "Piano 1",
-    "deleteTitle": "Eliminare \"{{name}}\"?",
-    "deleteBody": "Il progetto, le piante di sfondo e la lista acquisti vengono eliminati. L'operazione non si può annullare.",
-    "loadFailed": "Impossibile caricare i progetti.",
-    "saveFailed": "Impossibile salvare il progetto.",
-    "deleteFailed": "Impossibile eliminare il progetto."
   },
   "settings": {
     "hint": "Questi valori valgono solo per questo progetto.",
@@ -771,42 +722,6 @@
     "emptyFloor": "Niente disegnato su questo piano.",
     "status": "Stato: {{status}}"
   },
-  "purchases": {
-    "saveFailed": "Impossibile salvare l’acquisto. Controlla la connessione e riprova.",
-    "loadFailed": "Impossibile caricare la lista acquisti. Controlla la connessione e riprova.",
-    "progress": "{{done}} di {{total}} acquistati",
-    "remainingOnly": "Mostra solo da comprare",
-    "partial": "Comprati {{bought}} / servono {{need}}",
-    "bought": "Comprati",
-    "boughtOf": "Comprato: {{name}}",
-    "orphans": "Non più in distinta",
-    "orphansHint": "Comprati prima, ma il disegno non li richiede più.",
-    "clear": "Rimuovi"
-  },
-  "mobile": {
-    "desktopView": "Passa all’editor desktop",
-    "mobileView": "Vista mobile",
-    "checklist": "Lista acquisti",
-    "plan": "Pianta",
-    "floors": "Piani",
-    "zoomIn": "Ingrandisci",
-    "zoomOut": "Riduci",
-    "fit": "Adatta allo schermo",
-    "tabletNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
-    "dismiss": "Chiudi"
-  },
-  "counts": {
-    "elements_one": "{{count}} elemento",
-    "elements_other": "{{count}} elementi",
-    "segments_one": "{{count}} tratto di tubo",
-    "segments_other": "{{count}} tratti di tubo",
-    "circuits_one": "{{count}} circuito",
-    "circuits_other": "{{count}} circuiti",
-    "floors_one": "{{count}} piano",
-    "floors_other": "{{count}} piani",
-    "warnings_one": "{{count}} avviso aperto",
-    "warnings_other": "{{count}} avvisi aperti"
-  },
   "errors": {
     "unexpected": "Si è verificato un errore. Riprova o torna ai progetti."
   },
@@ -860,5 +775,17 @@
     "removeLogo": "Rimuovi logo",
     "logoType": "Il logo deve essere un'immagine PNG o JPG.",
     "logoTooLarge": "Il logo può pesare al massimo 2 MB."
+  },
+  "counts": {
+    "elements_one": "{{count}} elemento",
+    "elements_other": "{{count}} elementi",
+    "segments_one": "{{count}} tratto di tubo",
+    "segments_other": "{{count}} tratti di tubo",
+    "circuits_one": "{{count}} circuito",
+    "circuits_other": "{{count}} circuiti",
+    "floors_one": "{{count}} piano",
+    "floors_other": "{{count}} piani",
+    "warnings_one": "{{count}} avviso aperto",
+    "warnings_other": "{{count}} avvisi aperti"
   }
 }

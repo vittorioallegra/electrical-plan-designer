@@ -2,9 +2,9 @@ import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
-const planPath = `/projects/${DEMO_PROJECT_ID}/plan`;
+const planPath = '/project/plan';
 const store = () => (window as unknown as { __epd?: { store: EditorStore } }).__epd;
 
 async function openBox(nodeId: string) {

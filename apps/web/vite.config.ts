@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 
-// `.env*` files live at the repo root, shared with scripts/ (env-local, check-env).
+// `.env*` files live at the repo root.
 export const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig({

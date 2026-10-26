@@ -1,10 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
-import { clickWorld, fixture, logIn, newProject } from './helpers';
+import { clickWorld, fixture, newProject, start } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  await logIn(page);
+  await start(page);
 });
 
 // protects=AC 15 project PDF with a private background (blob URL, no tainted canvas); fails_when=the export fails or downloads no PDF; no_claim=PDF content (projectPdf tests)

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { isRouteErrorResponse, Link, useRevalidator, useRouteError } from 'react-router';
+import { isRouteErrorResponse, Link, useLocation, useNavigate, useRouteError } from 'react-router';
 import { Button } from './Button';
 
 /** Error screen with a Retry and a link back; `messageKey` is an i18n key. */
@@ -23,7 +23,7 @@ export function ErrorState({
           </Button>
         ) : null}
         <Link to={backTo} className="text-accent underline">
-          {t('nav.projects')}
+          {t('nav.start')}
         </Link>
       </div>
     </div>
@@ -31,8 +31,8 @@ export function ErrorState({
 }
 
 /**
- * Route `ErrorBoundary`: a failed loader or a component that threw. Retry revalidates the
- * route, which runs its loader again and re-renders it.
+ * Route `ErrorBoundary`: a component (or a lazy module) that threw. Retry navigates to the
+ * same location again, which clears the error and renders the route anew.
  */
 export function RouteError({
   messageKey = 'errors.unexpected',
@@ -42,7 +42,8 @@ export function RouteError({
   backTo?: string;
 }) {
   const error = useRouteError();
-  const revalidator = useRevalidator();
+  const navigate = useNavigate();
+  const location = useLocation();
   if (isRouteErrorResponse(error) && error.status === 404) {
     return <ErrorState messageKey="pages.notFound" backTo={backTo} />;
   }
@@ -50,7 +51,7 @@ export function RouteError({
   return (
     <ErrorState
       messageKey={messageKey}
-      onRetry={() => void revalidator.revalidate()}
+      onRetry={() => void navigate(location, { replace: true })}
       backTo={backTo}
     />
   );

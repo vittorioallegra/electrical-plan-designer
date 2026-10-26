@@ -15,14 +15,7 @@ const features = readdirSync(new URL(`${web}/features`, import.meta.url), { with
 
 export default defineConfig(
   {
-    ignores: [
-      '.gstack',
-      '**/dist',
-      '**/node_modules',
-      '**/playwright-report',
-      '**/test-results',
-      'apps/web/src/lib/repositories/database.types.ts',
-    ],
+    ignores: ['.gstack', '**/dist', '**/node_modules', '**/playwright-report', '**/test-results'],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
@@ -44,7 +37,7 @@ export default defineConfig(
     languageOptions: { globals: globals.node },
   },
   {
-    // The domain is pure: no React, no Supabase, no app layers.
+    // The domain is pure: no React, no app layers.
     files: ['packages/domain/**/*.ts'],
     rules: {
       'no-restricted-imports': [
@@ -55,7 +48,6 @@ export default defineConfig(
               group: ['react', 'react-*', 'react/*'],
               message: '@epd/domain must not import React.',
             },
-            { group: ['@supabase/*'], message: '@epd/domain must not import Supabase.' },
             {
               group: ['@/*', '@epd/web', '@epd/web/*', '**/apps/**'],
               message: '@epd/domain must not import app layers.',

@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clickWorld, editorState, logIn, newProject } from './helpers';
+import { clickWorld, editorState, newProject, start } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  await logIn(page);
+  await start(page);
 });
 
 const strip = (page: Page) => page.getByRole('navigation', { name: 'Progress' });

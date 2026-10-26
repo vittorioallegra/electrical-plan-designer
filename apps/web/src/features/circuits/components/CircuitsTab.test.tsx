@@ -2,14 +2,14 @@ import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 import { toggleRouteSegment, toggleTarget } from '@/features/circuits/utils/commands';
 
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 const doc = () => store().getState().data.doc;
 
 async function openCircuits() {
-  await renderApp(`/projects/${DEMO_PROJECT_ID}/plan`, { exposeTestHandle: true });
+  await renderApp('/project/plan', { exposeTestHandle: true });
   await userEvent.click(await screen.findByRole('tab', { name: 'Circuits' }));
   return screen.findByTestId('circuits-tab');
 }
@@ -46,7 +46,7 @@ describe('circuits tab', () => {
 
   // protects=picking from another page; fails_when=starting to pick targets on the panel page leaves the plan hidden; no_claim=canvas hit testing (E2E)
   it('opens the plan when target picking starts on another page', async () => {
-    const { router } = await renderApp(`/projects/${DEMO_PROJECT_ID}/panel`, {
+    const { router } = await renderApp('/project/panel', {
       exposeTestHandle: true,
     });
     await userEvent.click(await screen.findByRole('tab', { name: 'Circuits' }));

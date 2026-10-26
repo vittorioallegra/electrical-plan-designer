@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type * as ImportFile from '../src/features/editor/background/importFile';
-import { clickWorld, editorState, fixture, logIn, newProject } from './helpers';
+import { clickWorld, editorState, fixture, newProject, start } from './helpers';
 
 type ImportFileModule = typeof ImportFile;
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  await logIn(page);
+  await start(page);
 });
 
 // protects=AC 2 import + calibration, dialog overlay above the drawer tab bar; fails_when=a calibrated 4.20 m distance measures off by > 1 cm or the tab bar shows over the overlay; no_claim=PDF import

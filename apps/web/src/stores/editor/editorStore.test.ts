@@ -6,7 +6,7 @@ import { demoStore } from '@/testing/editor';
 describe('editor store', () => {
   // protects=undo/redo of every document change; fails_when=undo does not restore the exact previous doc; no_claim=keyboard shortcuts
   it('undoes and redoes commands', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const before = store.getState().data;
     store.getState().applyCommand('rename', (d) => {
       d.doc.nodes[0]!.label = 'Main panel';
@@ -26,7 +26,7 @@ describe('editor store', () => {
 
   // protects=command guards; fails_when=a command breaking doc integrity is applied; no_claim=UI message
   it('rejects commands that break the document', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const result = store.getState().applyCommand('self loop', (d) => {
       d.doc.segments[0]!.toNodeId = d.doc.segments[0]!.fromNodeId;
     });
@@ -41,19 +41,19 @@ describe('editor store', () => {
 
   // protects=save status; fails_when=an edit leaves the status "saved", or the status ignores where the data was opened from or what the draft has; no_claim=autosave timing
   it('derives saved, draft and unsaved from the revisions', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     expect(saveStatusOf(store.getState())).toBe('saved');
     store.getState().applyCommand('a', (d) => void (d.doc.nodes[0]!.label = 'A'));
     expect(saveStatusOf(store.getState())).toBe('unsaved');
     store.setState({ draftRevision: 1 });
     expect(saveStatusOf(store.getState())).toBe('draft');
-    expect(saveStatusOf((await demoStore({ status: 'draft' })).store.getState())).toBe('draft');
-    expect(saveStatusOf((await demoStore({ status: 'unsaved' })).store.getState())).toBe('unsaved');
+    expect(saveStatusOf(demoStore({ status: 'draft' }).store.getState())).toBe('draft');
+    expect(saveStatusOf(demoStore({ status: 'unsaved' }).store.getState())).toBe('unsaved');
   });
 
   // protects=assets outside undo; fails_when=adding an asset counts as a change or undo drops the asset a redo needs; no_claim=pruning unused assets (autosave)
   it('keeps added assets out of the history', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const asset = { mimeType: 'image/png' as const, bytes: new Uint8Array([1]) };
     store.getState().addAsset('plan_1', asset);
     expect(store.getState().revision).toBe(0);
@@ -76,7 +76,7 @@ describe('editor store', () => {
 
   // protects=dirty tracking; fails_when=an edit leaves the status "saved"; no_claim=—
   it('marks the store dirty and clears redo on a new command', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     store.getState().applyCommand('a', (d) => void (d.doc.nodes[0]!.label = 'A'));
     store.getState().undo();
     store.getState().applyCommand('b', (d) => void (d.doc.nodes[0]!.label = 'B'));
@@ -87,7 +87,7 @@ describe('editor store', () => {
 
   // protects=read-only newer docs; fails_when=a read-only doc accepts edits; no_claim=—
   it('refuses commands when read-only', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     store.setState({ readOnly: true });
     expect(store.getState().applyCommand('x', (d) => void (d.doc.nodes[0]!.label = 'X')).ok).toBe(
       false,
@@ -96,7 +96,7 @@ describe('editor store', () => {
 
   // protects=selection hygiene; fails_when=undo leaves a deleted element selected; no_claim=—
   it('drops deleted elements from the selection', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     store.getState().setUi({ selection: ['n_s3'] });
     store.getState().applyCommand('delete', (d) => {
       d.doc.segments = d.doc.segments.filter((s) => s.id !== 's10');
@@ -107,7 +107,7 @@ describe('editor store', () => {
 
   // protects=issued quotes outside undo; fails_when=undo removes an issued quote or issuing is not saved; no_claim=numbering and superseding (domain issuedQuotes.test)
   it('keeps issued quotes when undoing quote setting edits', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     store.getState().applyCommand('vat', (d) => {
       d.quote.settings.vatPercent = 10;
     });

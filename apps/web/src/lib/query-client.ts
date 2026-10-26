@@ -1,7 +1,7 @@
 import { notifyManager, QueryClient } from '@tanstack/react-query';
 
 // Notify components in a microtask instead of the default `setTimeout(0)`: an optimistic
-// cache update made in a click handler (purchase ticks) then renders before the next task,
+// cache update made in a click handler then renders before the next task,
 // like a React state update, so a controlled checkbox never shows its old value.
 notifyManager.setScheduler(queueMicrotask);
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
 import { startAutosave, type Autosave } from './autosave';
 import { saveStatusOf, type EditorInit, type EditorStore } from './editorStore';
-import { DEMO_ID, demoStore } from '@/testing/editor';
+import { demoStore } from '@/testing/editor';
 
 const edit = (store: EditorStore, label: string) =>
   store.getState().applyCommand(label, (d) => {
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 async function setup(init: Partial<EditorInit> = {}) {
-  const { store } = await demoStore(init);
+  const { store } = demoStore(init);
   const drafts = createMemoryDraftRepository();
   const save = vi.spyOn(drafts, 'save');
   const target = new EventTarget();
@@ -45,7 +45,6 @@ describe('autosave', () => {
     expect(drafts.draft).toMatchObject({
       savedToFile: false,
       savedAt: '2026-10-26T10:00:00.000Z',
-      recordId: DEMO_ID,
     });
     expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('b');
   });

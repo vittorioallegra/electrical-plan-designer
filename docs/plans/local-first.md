@@ -175,7 +175,7 @@ decoding), the per-user query keys go.
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
 compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
-(company and catalogs inside the project); step 7 (quotes). Decisions and deferrals the remaining steps
+(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -234,9 +234,14 @@ must pick up:
   The year-counter format is gone: lists show "No. 3", the PDF title is "Quote 3 – <project>"
   with a status line, files are `<project>-quote-3`. `ProfileRepository.nextQuoteNumber` is
   unused until step 8.
+- **Backend removed** (step 8): Supabase, accounts, the server project list, the
+  `/projects/:id` bridge (`OpenRecord`, `openRecord`, draft `recordId`), the mobile view and
+  purchase marks (domain `reconcilePurchases` too) are gone; `createRoutes()` takes no deps.
+  E2E start from `/` and create a new project there (no shared database, no login). Not done
+  here, left to step 9: opening `demo-project.epd` through a fake `FileAccess` in E2E, the file
+  input fallback, checking saved bytes. The navigation "Loading" notice lost its test (it was
+  driven by the project loader). docs/deploy.md is a placeholder until step 10.
 - **Templates**: `projectFileFromTemplate` copies VAT and material adjustment but not labor
   lines; the logo asset must be copied along by the caller.
 - **Catalog item fields**: `CatalogItem` gained `editedAt` (set on manual edits, step 6) and
   `missing`; `ownerId` is gone and `isBuiltin()` checks the `builtin:` id prefix.
-- **Local database**: rows written before `c99e610` (backgrounds with `storagePath`, quotes
-  without `status`) no longer load; run `pnpm db:reset` before using the Supabase app.

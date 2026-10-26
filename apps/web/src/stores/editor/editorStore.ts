@@ -59,8 +59,6 @@ export interface EditorUi {
 export type DrawerTab = 'circuits' | 'bom' | 'warnings';
 
 export interface EditorState {
-  /** Server record the project was opened from (purchase marks); null for files. */
-  recordId: string | null;
   /** File the project was opened from or last saved to; null for a new project. */
   file: FileRef | null;
   data: EditorData;
@@ -102,7 +100,6 @@ export class CommandError extends Error {
 const HISTORY_LIMIT = 200;
 
 export interface EditorInit {
-  recordId?: string | null;
   file?: FileRef | null;
   data: EditorData;
   assets?: ProjectAssets;
@@ -134,7 +131,6 @@ export function createEditorStore(init: EditorInit): EditorStore {
     };
 
     return {
-      recordId: init.recordId ?? null,
       file: init.file ?? null,
       data: init.data,
       assets: init.assets ?? new Map(),

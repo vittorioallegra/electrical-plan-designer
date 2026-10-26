@@ -8,7 +8,7 @@ import type { CableColor, ProjectDoc, ProjectSettings } from './types';
 export type BomCategory = CatalogCategory | 'missing';
 
 export interface BomLine {
-  /** Stable key: the itemId, or `cable:<section>:<color>`. Used by purchase marks. */
+  /** Stable key: the itemId, or `cable:<section>:<color>`. Used by price overrides. */
   key: string;
   category: BomCategory;
   itemId?: string;
@@ -118,51 +118,4 @@ export function computeBom(
       (a.cable && b.cable ? a.cable.crossSection - b.cable.crossSection : 0) ||
       a.key.localeCompare(b.key),
   );
-}
-
-export type PurchaseStatus = 'not_bought' | 'partial' | 'done';
-
-export interface PurchaseLineStatus {
-  key: string;
-  required: number;
-  purchased: number | null;
-  status: PurchaseStatus;
-  /** required − purchased when partially bought. */
-  shortfall: number;
-}
-
-export function purchaseStatus(
-  required: number,
-  purchased: number | null,
-): PurchaseLineStatus['status'] {
-  if (purchased === null) return 'not_bought';
-  return purchased >= required ? 'done' : 'partial';
-}
-
-/**
- * Joins the BOM with the stored purchase marks (`purchased_qty`, null = not bought).
- * Marks whose line left the BOM come back as orphans ("no longer in BOM").
- */
-export function reconcilePurchases(
-  lines: BomLine[],
-  marks: ReadonlyMap<string, number | null>,
-): { lines: PurchaseLineStatus[]; orphanKeys: string[] } {
-  const keys = new Set(lines.map((l) => l.key));
-  return {
-    lines: lines.map((l) => {
-      const purchased = marks.get(l.key) ?? null;
-      const status = purchaseStatus(l.quantity, purchased);
-      return {
-        key: l.key,
-        required: l.quantity,
-        purchased,
-        status,
-        shortfall: status === 'partial' ? l.quantity - purchased! : 0,
-      };
-    }),
-    orphanKeys: [...marks]
-      .filter(([key, qty]) => !keys.has(key) && qty !== null)
-      .map(([key]) => key)
-      .sort(),
-  };
 }

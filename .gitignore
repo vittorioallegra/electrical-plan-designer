@@ -5,7 +5,5 @@ dist/
 .env.local
 playwright-report/
 test-results/
-supabase/.temp/
-supabase/.branches/
 *.tsbuildinfo
 .claude/launch.json

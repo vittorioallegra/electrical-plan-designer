@@ -33,7 +33,7 @@ describe('import boundaries', () => {
   it('rejects shared code importing a feature or the app', async () => {
     const fromFeature = await rulesFor(
       'apps/web/src/hooks/probe.ts',
-      "import { usePurchases } from '@/features/bom/hooks/usePurchases';\nexport const x = usePurchases;\n",
+      "import { BomTab } from '@/features/bom/components/BomTab';\nexport const x = BomTab;\n",
     );
     const fromApp = await rulesFor(
       'apps/web/src/lib/probe.ts',

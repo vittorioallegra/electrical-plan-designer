@@ -10,7 +10,6 @@ import {
   type ProjectFile,
 } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
-import { useSession } from '@/lib/auth/AuthProvider';
 import { readEpd, type OpenedProject, type ProjectAssets } from '@/lib/projectFile/epd';
 import type { Draft, FileRef } from '@/lib/repositories/types';
 import { useEditorServices, useWorkspace } from '@/stores/editor/EditorContext';
@@ -31,16 +30,15 @@ export function StartPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { userId } = useSession();
   const { drafts, fileAccess, workspace } = useEditorServices();
   const current = useWorkspace((s) => s.current);
   const draft = useQuery({
-    queryKey: queryKeys.draft(userId),
+    queryKey: queryKeys.draft(),
     queryFn: () => drafts.get(),
     staleTime: 0,
   });
   const recent = useQuery({
-    queryKey: queryKeys.recentFiles(userId),
+    queryKey: queryKeys.recentFiles(),
     queryFn: () => fileAccess.recent(),
     staleTime: 0,
   });
@@ -68,8 +66,8 @@ export function StartPage() {
 
   function openProject(init: EditorInit) {
     workspace.getState().open(init);
-    void queryClient.invalidateQueries({ queryKey: queryKeys.draft(userId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.recentFiles(userId) });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.draft() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.recentFiles() });
     navigate('/project/plan');
   }
 
@@ -111,7 +109,6 @@ export function StartPage() {
       return;
     }
     openProject({
-      recordId: d.recordId ?? null,
       file: d.file,
       data: d.project,
       assets: d.assets,

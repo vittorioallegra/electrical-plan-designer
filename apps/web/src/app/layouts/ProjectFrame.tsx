@@ -206,9 +206,9 @@ export function ProjectFrame() {
 
       {narrow ? (
         <div className="flex items-center gap-3 bg-surface-muted px-3 py-1.5" role="status">
-          <span>{t('mobile.tabletNotice')}</span>
+          <span>{t('editor.narrowNotice')}</span>
           <Button variant="ghost" onClick={() => setNarrow(false)}>
-            {t('mobile.dismiss')}
+            {t('editor.dismissNotice')}
           </Button>
         </div>
       ) : null}

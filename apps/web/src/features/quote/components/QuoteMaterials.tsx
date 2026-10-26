@@ -9,8 +9,8 @@ import { cn } from '@/lib/cn';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
 
 /**
- * Material lines of the live quote. Unpriced lines, and lines priced by an account override,
- * take a price inline; it is saved as an account price override.
+ * Material lines of the live quote. Unpriced lines, and lines priced by a project override,
+ * take a price inline; it is saved as a project price override.
  */
 export function QuoteMaterials({
   quote,

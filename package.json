@@ -8,9 +8,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "setup": "pnpm install && pnpm db:start && pnpm env:local && pnpm db:reset && pnpm --filter @epd/web exec playwright install chromium",
-    "dev": "node scripts/check-env.mjs && pnpm --filter @epd/web dev",
-    "dev:mem": "pnpm --filter @epd/web dev:mem",
+    "setup": "pnpm install && pnpm --filter @epd/web exec playwright install chromium",
+    "dev": "pnpm --filter @epd/web dev",
     "build": "pnpm typecheck && pnpm --filter @epd/web build",
     "preview": "pnpm --filter @epd/web preview",
     "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p . && node node_modules/typescript7/bin/tsc --noEmit -p apps/web && node node_modules/typescript7/bin/tsc --noEmit -p packages/domain",
@@ -18,16 +17,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "node scripts/check-env.mjs && pnpm --filter @epd/web test:db",
-    "test:e2e": "node scripts/check-env.mjs && pnpm --filter @epd/web test:e2e",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:db && pnpm test:e2e",
-    "env:local": "node scripts/env-local.mjs",
-    "db:seed": "node scripts/build-seed.mjs",
-    "demo:epd": "node scripts/build-demo-epd.mjs",
-    "db:start": "supabase start -x edge-runtime,logflare,vector,imgproxy,supavisor",
-    "db:stop": "supabase stop",
-    "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > apps/web/src/lib/repositories/database.types.ts && prettier --write apps/web/src/lib/repositories/database.types.ts"
+    "test:e2e": "pnpm --filter @epd/web test:e2e",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e",
+    "demo:epd": "node scripts/build-demo-epd.mjs"
   },
   "devDependencies": {
     "@epd/domain": "workspace:*",
@@ -41,7 +33,6 @@
     "fflate": "^0.8.3",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
-    "supabase": "^2.122.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0",
     "typescript7": "npm:typescript@^7.0.2",

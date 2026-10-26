@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { clickWorld, editorState, logIn, newProject } from './helpers';
+import { clickWorld, editorState, newProject, start } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  await logIn(page);
+  await start(page);
 });
 
 // protects=drawing nodes and conduits (AC 4 lengths through the UI); fails_when=placed boxes or the conduit length differ from the spec rule; no_claim=routing

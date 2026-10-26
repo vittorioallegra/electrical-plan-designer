@@ -7,15 +7,10 @@ export function fixture(name: string): string {
   return fileURLToPath(new URL(`../../../tests/fixtures/${name}`, import.meta.url));
 }
 
-export const DEV_LOGIN = { email: 'dev@example.test', password: 'devpassword' };
-
-/** Logs in with the seed user; `landing` is the heading shown afterwards (phones: the list). */
-export async function logIn(page: Page, landing = 'Start') {
-  await page.goto('/login');
-  await page.getByLabel('Email').fill(DEV_LOGIN.email);
-  await page.getByLabel('Password').fill(DEV_LOGIN.password);
-  await page.getByRole('button', { name: 'Log in' }).click();
-  await expect(page.getByRole('heading', { name: landing })).toBeVisible();
+/** Opens the start screen. */
+export async function start(page: Page) {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Start' })).toBeVisible();
 }
 
 /** Creates a new project from the start screen (a file project, kept as a draft). */

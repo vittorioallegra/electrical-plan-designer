@@ -1,53 +1,38 @@
-// Test helper: renders the real routes with in-memory repositories.
+// Test helper: renders the real routes with in-memory drafts and files.
 import { act, render } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
+import type { ProjectFile } from '@epd/domain/projectFile';
 import { createRoutes } from '@/app/router';
 import { createQueryClient } from '@/lib/query-client';
 import { AppProviders } from '@/app/provider';
-import { createMemoryRepositories } from '@/lib/repositories/memory';
-import { DEV_LOGIN, seedMemory } from '@/lib/repositories/memorySeed';
 import { createI18n, type Language } from '@/lib/i18n';
 import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
 import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
 import { createWorkspace } from '@/stores/editor/workspace';
-
-export const DEMO_PROJECT_ID = '00000000-0000-4000-8000-0000000000aa';
+import { demoProjectFile } from './editor';
 
 export async function renderApp(
   path: string,
   {
     lng = 'en',
-    signedIn = true,
-    seed = true,
     exposeTestHandle = false,
-    prepare,
+    project = path.startsWith('/project') ? demoProjectFile() : null,
   }: {
     lng?: Language;
-    signedIn?: boolean;
-    seed?: boolean;
     exposeTestHandle?: boolean;
-    /** Runs before the router starts (and its loaders run), e.g. to install spies. */
-    prepare?: (memory: ReturnType<typeof createMemoryRepositories>) => void;
+    /** Opened before the first render; by default the demo project for `/project/...` paths. */
+    project?: ProjectFile | null;
   } = {},
 ) {
-  const memory = createMemoryRepositories();
-  if (seed) seedMemory(memory.control);
-  if (signedIn) {
-    if (!seed) await memory.repos.auth.signUp(DEV_LOGIN.email, DEV_LOGIN.password);
-    else await memory.repos.auth.signIn(DEV_LOGIN.email, DEV_LOGIN.password);
-  }
-  prepare?.(memory);
   const drafts = createMemoryDraftRepository();
   const fileAccess = createMemoryFileAccess();
   const workspace = createWorkspace({ drafts, exposeTestHandle });
+  if (project) workspace.getState().open({ data: project });
   const queryClient = createQueryClient();
-  const router = createMemoryRouter(createRoutes({ repos: memory.repos, queryClient }), {
-    initialEntries: [path],
-  });
+  const router = createMemoryRouter(createRoutes(), { initialEntries: [path] });
   const result = render(
     <AppProviders
-      repos={memory.repos}
       queryClient={queryClient}
       i18n={createI18n(lng)}
       services={{ drafts, fileAccess, workspace }}
@@ -55,8 +40,8 @@ export async function renderApp(
       <RouterProvider router={router} />
     </AppProviders>,
   );
-  // Loaders and lazy route modules make the first render async: wait for it, so tests can
-  // query the page right after `await renderApp()`.
+  // Lazy route modules make the first render async: wait for it, so tests can query the page
+  // right after `await renderApp()`.
   await act(
     () =>
       new Promise<void>((resolve) => {
@@ -69,5 +54,5 @@ export async function renderApp(
         });
       }),
   );
-  return { ...result, ...memory, router, drafts, fileAccess, workspace, queryClient };
+  return { ...result, router, drafts, fileAccess, workspace, queryClient };
 }

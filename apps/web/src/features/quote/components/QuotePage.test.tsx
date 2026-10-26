@@ -2,9 +2,9 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
-const quotePath = `/projects/${DEMO_PROJECT_ID}/quote`;
+const quotePath = '/project/quote';
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 async function typeNumber(input: HTMLElement, value: string) {

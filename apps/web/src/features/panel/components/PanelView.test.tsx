@@ -2,9 +2,9 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
-const panelPath = `/projects/${DEMO_PROJECT_ID}/panel`;
+const panelPath = '/project/panel';
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 const devices = () => store().getState().data.doc.panels[0]!.devices;
 

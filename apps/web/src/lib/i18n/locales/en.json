@@ -8,7 +8,6 @@
     "it": "Italiano"
   },
   "nav": {
-    "projects": "Projects",
     "catalog": "Catalog",
     "plan": "Plan",
     "panel": "Panel",
@@ -18,21 +17,15 @@
     "company": "Company"
   },
   "pages": {
-    "login": "Log in",
-    "signup": "Sign up",
-    "projects": "Projects",
     "plan": "Plan",
     "panel": "Panel designer",
     "quote": "Quote",
     "settings": "Project settings",
     "catalog": "Catalog",
-    "mobileProjects": "Projects",
-    "mobileProject": "Project",
     "notFound": "Page not found",
     "company": "Company"
   },
   "editor": {
-    "untitledProject": "Untitled project",
     "saveStatus": {
       "saved": "Saved",
       "draft": "Draft",
@@ -54,7 +47,6 @@
       "warnings": "Warnings"
     },
     "empty": {
-      "circuits": "No circuits yet.",
       "bom": "The bill of materials appears as you draw.",
       "warnings": "No warnings.",
       "selection": "Nothing selected."
@@ -62,14 +54,7 @@
     "tools": "Tools",
     "floors": "Floors",
     "inspector": "Inspector",
-    "notFound": "Project not found.",
-    "loadFailed": "Could not load the project. Check the connection and retry.",
     "readOnly": "This project was saved by a newer version of the app. It opens read-only; update the app to edit it.",
-    "recovery": {
-      "title": "This project cannot be opened",
-      "body": "The stored document failed validation. Download the raw data to keep it safe; nothing is overwritten.",
-      "download": "Download raw JSON"
-    },
     "exportJson": "Download project JSON",
     "importJson": "Import project JSON",
     "importDone": "Project imported. Undo restores the previous version.",
@@ -99,7 +84,9 @@
     "saveAs": "Save as…",
     "saveHint": "Save the project file (Ctrl+S)",
     "savedTo": "Saved to {{name}}",
-    "saveFailed": "Could not save the file. The file and the draft on this device are unchanged."
+    "saveFailed": "Could not save the file. The file and the draft on this device are unchanged.",
+    "narrowNotice": "The editor works best on screens at least 1024 px wide.",
+    "dismissNotice": "Dismiss"
   },
   "catalog": {
     "builtin": {
@@ -197,7 +184,6 @@
     "showArchived": "Show archived",
     "builtinBadge": "built-in",
     "archivedBadge": "archived",
-    "saveFailed": "Could not save the item.",
     "attr": {
       "deviceType": "Device type",
       "outerDiameter": "Outer Ø",
@@ -315,41 +301,6 @@
     "cancel": "Cancel",
     "save": "Save",
     "retry": "Retry"
-  },
-  "auth": {
-    "email": "Email",
-    "password": "Password",
-    "logIn": "Log in",
-    "signUp": "Create account",
-    "logOut": "Log out",
-    "noAccount": "No account yet? Sign up",
-    "haveAccount": "Already have an account? Log in",
-    "errors": {
-      "invalid_credentials": "Wrong email or password.",
-      "email_taken": "An account with this email already exists.",
-      "weak_password": "Password too weak: use at least 6 characters.",
-      "network": "Cannot reach the server. Check the connection and retry.",
-      "unknown": "Something went wrong. Retry."
-    }
-  },
-  "projects": {
-    "new": "New project",
-    "newTitle": "New project",
-    "renameTitle": "Rename project",
-    "create": "Create",
-    "rename": "Rename",
-    "delete": "Delete",
-    "actions": "Actions for {{name}}",
-    "empty": "No projects yet. Create the first one to start drawing.",
-    "name": "Project name",
-    "client": "Client",
-    "address": "Address",
-    "firstFloorName": "Floor 1",
-    "deleteTitle": "Delete \"{{name}}\"?",
-    "deleteBody": "The project, its background plans and its purchase checklist are deleted. This cannot be undone.",
-    "loadFailed": "Could not load projects.",
-    "saveFailed": "Could not save the project.",
-    "deleteFailed": "Could not delete the project."
   },
   "settings": {
     "hint": "These values apply to this project only.",
@@ -771,42 +722,6 @@
     "emptyFloor": "Nothing drawn on this floor yet.",
     "status": "Status: {{status}}"
   },
-  "purchases": {
-    "saveFailed": "Could not save the purchase. Check the connection and try again.",
-    "loadFailed": "Could not load the purchase checklist. Check the connection and try again.",
-    "progress": "{{done}} of {{total}} bought",
-    "remainingOnly": "Show remaining only",
-    "partial": "Bought {{bought}} / need {{need}}",
-    "bought": "Bought",
-    "boughtOf": "Bought: {{name}}",
-    "orphans": "No longer in the BOM",
-    "orphansHint": "Bought earlier, but the drawing no longer needs them.",
-    "clear": "Clear"
-  },
-  "mobile": {
-    "desktopView": "Switch to the desktop editor",
-    "mobileView": "Mobile view",
-    "checklist": "Checklist",
-    "plan": "Plan",
-    "floors": "Floors",
-    "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out",
-    "fit": "Fit to screen",
-    "tabletNotice": "The editor works best on screens at least 1024 px wide.",
-    "dismiss": "Dismiss"
-  },
-  "counts": {
-    "elements_one": "{{count}} element",
-    "elements_other": "{{count}} elements",
-    "segments_one": "{{count}} conduit segment",
-    "segments_other": "{{count}} conduit segments",
-    "circuits_one": "{{count}} circuit",
-    "circuits_other": "{{count}} circuits",
-    "floors_one": "{{count}} floor",
-    "floors_other": "{{count}} floors",
-    "warnings_one": "{{count}} open warning",
-    "warnings_other": "{{count}} open warnings"
-  },
   "errors": {
     "unexpected": "Something went wrong. Retry, or go back to the projects."
   },
@@ -860,5 +775,17 @@
     "removeLogo": "Remove logo",
     "logoType": "The logo must be a PNG or JPG image.",
     "logoTooLarge": "The logo must be at most 2 MB."
+  },
+  "counts": {
+    "elements_one": "{{count}} element",
+    "elements_other": "{{count}} elements",
+    "segments_one": "{{count}} conduit segment",
+    "segments_other": "{{count}} conduit segments",
+    "circuits_one": "{{count}} circuit",
+    "circuits_other": "{{count}} circuits",
+    "floors_one": "{{count}} floor",
+    "floors_other": "{{count}} floors",
+    "warnings_one": "{{count}} open warning",
+    "warnings_other": "{{count}} open warnings"
   }
 }

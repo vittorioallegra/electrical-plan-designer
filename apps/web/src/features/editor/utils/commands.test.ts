@@ -13,7 +13,7 @@ import {
 describe('plan commands', () => {
   // protects=one panel per project in v1; fails_when=a second panel can be placed or the first lacks a Panel entry; no_claim=sub-panels
   it('placing a panel creates its Panel entry, only once', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     store.getState().applyCommand('clear', (d) => {
       d.doc.panels = [];
     });
@@ -26,7 +26,7 @@ describe('plan commands', () => {
 
   // protects=split on placement; fails_when=a junction box dropped on a segment does not split it; no_claim=—
   it('a junction box dropped on a segment splits it', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const id = placeNode(store, 'junction_box', { x: 2.5, y: 0.01 }, 's01')!;
     const doc = store.getState().data.doc;
     expect(doc.nodes.find((n) => n.id === id)!.position).toEqual({ x: 2.5, y: 0 });
@@ -36,7 +36,7 @@ describe('plan commands', () => {
 
   // protects=conduit tool results; fails_when=ending on empty space does not create a junction box; no_claim=pointer handling
   it('draws conduits between nodes and to a new junction box', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const segId = addConduit(store, 'n_s1', 'n_sw1', [{ x: 1, y: 3 }])!;
     expect(store.getState().data.doc.segments.find((s) => s.id === segId)).toMatchObject({
       runElevation: 'floor',
@@ -56,7 +56,7 @@ describe('plan commands', () => {
 
   // protects=undoable bulk edits; fails_when=move, duplicate, paste or delete take more than one undo; no_claim=—
   it('moves, duplicates, pastes and deletes in single undo steps', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const before = store.getState().data.doc;
     moveSelection(store, ['n_s1'], { x: 1, y: 0 }, false);
     moveSelection(store, ['n_s1'], { x: 0, y: 1 }, true);
@@ -74,7 +74,7 @@ describe('plan commands', () => {
 describe('box presets on placement', () => {
   // protects=presets applied on placement; fails_when=a placed box ignores the active preset; no_claim=preset storage
   it('places a terminal box with the preset box, mounting and contents', async () => {
-    const { store } = await demoStore();
+    const { store } = demoStore();
     const id = placeNode(store, 'terminal_box', { x: 30, y: 30 }, undefined, {
       id: 'p1',
       name: 'Switch 503',

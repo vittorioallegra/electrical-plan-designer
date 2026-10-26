@@ -1,5 +1,5 @@
 // Generic built-in catalog. Read-only; names are i18n keys. Ids are stable forever:
-// they are stored in documents, BOM line keys and purchase marks.
+// they are stored in documents, BOM line keys and price overrides.
 import {
   BUILTIN_PREFIX,
   type CatalogAttributes,

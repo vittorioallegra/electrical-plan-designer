@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import demo from '../../../tests/fixtures/demo-project.json';
-import { computeBom, reconcilePurchases, type BomLine } from './bom';
+import { computeBom, type BomLine } from './bom';
 import { createCatalogLookup } from './catalog/lookup';
 import { defaultProjectSettings } from './defaults';
 import { ac4Doc, node, seg } from './testing/builders';
@@ -95,33 +95,5 @@ describe('BOM', () => {
     const lines = bom(demo as ProjectDoc);
     expect(qty(lines, 'builtin:conduit_25')).toBe(3); // riser 2.70 m × 1.1 = 2.97 → 3
     expect(qty(lines, 'cable:1.5:black')).toBeGreaterThan(0);
-  });
-});
-
-describe('purchases', () => {
-  // protects=shortfall after BOM growth; fails_when=a line bought short counts as done; no_claim=mobile UI
-  it('shows a shortfall when the BOM grows after a tick', () => {
-    const lines = bom(ac4Doc());
-    const marks = new Map([['cable:2.5:brown', 13]]);
-    expect(
-      reconcilePurchases(lines, marks).lines.find((l) => l.key === 'cable:2.5:brown')?.status,
-    ).toBe('done');
-
-    const grown = ac4Doc();
-    grown.segments[1]!.vertices = [{ x: 15, y: 0 }];
-    const after = reconcilePurchases(bom(grown), marks).lines.find(
-      (l) => l.key === 'cable:2.5:brown',
-    )!;
-    expect(after.status).toBe('partial');
-    expect(after.shortfall).toBe(after.required - 13);
-  });
-
-  // protects=orphan marks; fails_when=a mark for a removed line vanishes; no_claim=—
-  it('lists marks whose line left the BOM', () => {
-    const marks = new Map<string, number | null>([
-      ['builtin:box_504', 2],
-      ['builtin:box_506', null],
-    ]);
-    expect(reconcilePurchases(bom(ac4Doc()), marks).orphanKeys).toEqual(['builtin:box_504']);
   });
 });

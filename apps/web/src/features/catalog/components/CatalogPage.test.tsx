@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 import type { Draft } from 'immer';
 import type { ProjectFile } from '@epd/domain/projectFile';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
 /** The demo's first wall box. */
 const box = (d: Draft<ProjectFile>) => d.doc.nodes.find((n) => n.id === 'n_s1')!;
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 async function openCatalog() {
-  const app = await renderApp(`/projects/${DEMO_PROJECT_ID}/catalog`, { exposeTestHandle: true });
+  const app = await renderApp('/project/catalog', { exposeTestHandle: true });
   await screen.findByRole('heading', { name: 'Catalog' });
   return app;
 }

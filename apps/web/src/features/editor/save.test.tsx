@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { readEpd } from '@/lib/projectFile/epd';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 async function openDemo() {
-  const app = await renderApp(`/projects/${DEMO_PROJECT_ID}/plan`, { exposeTestHandle: true });
+  const app = await renderApp('/project/plan', { exposeTestHandle: true });
   await screen.findByTestId('project-name');
   return app;
 }

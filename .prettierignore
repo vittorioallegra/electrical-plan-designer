@@ -1,6 +1,5 @@
 pnpm-lock.yaml
 dist
-supabase/.temp
 docs
 .gstack
 playwright-report

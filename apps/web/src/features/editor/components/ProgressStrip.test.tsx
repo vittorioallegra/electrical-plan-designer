@@ -2,12 +2,12 @@ import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
+import { renderApp } from '@/testing/renderApp';
 
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 async function openStrip() {
-  await renderApp(`/projects/${DEMO_PROJECT_ID}/plan`, { exposeTestHandle: true });
+  await renderApp('/project/plan', { exposeTestHandle: true });
   return screen.findByRole('navigation', { name: 'Progress' });
 }
 

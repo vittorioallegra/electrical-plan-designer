@@ -56,7 +56,6 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
         file: s.file,
         savedToFile: s.fileRevision === revision,
         savedAt: now().toISOString(),
-        ...(s.recordId ? { recordId: s.recordId } : {}),
       });
       store.setState({ draftRevision: revision, draftFailed: false });
     } catch (e) {
