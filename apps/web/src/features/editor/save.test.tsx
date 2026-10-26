@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { APP_VERSION } from '@/config/version';
@@ -137,5 +137,19 @@ describe('save', () => {
       await screen.findByText('Could not save the project. Your changes are still in the editor.'),
     ).toBeInTheDocument();
     expect(status()).not.toHaveTextContent('Saved');
+  });
+
+  // protects=one save per keystroke; fails_when=Ctrl/Cmd+S reaching both the page shortcut and the native menu accelerator writes the file twice or shows a false "changed on disk" question; no_claim=which of the two the OS delivers (platform dependent)
+  it('runs one save when the shortcut and the menu Save arrive together', async () => {
+    const { fileAccess, windowHost } = await openFromFile();
+    await addFloor();
+    act(() => {
+      fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+      windowHost.menuCommand({ command: 'save' });
+    });
+    await waitFor(() => expect(status()).toHaveTextContent('Saved'));
+    expect(fileAccess.writes).toEqual(['house.epd']);
+    expect(screen.queryByText(/changed on disk/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

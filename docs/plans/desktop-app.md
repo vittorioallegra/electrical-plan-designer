@@ -233,6 +233,7 @@ Approved: yes (2026-10-26)
   - a file that is not a project stayed in the recent list after the open error — `fix: drop a file that fails to open from the recent list`
   - a plan image dropped from the recovery copy while unreferenced (then restored by undo) was never sent again, so a recovered project lost it — `fix: resend a recovery asset that main dropped and the project uses again`
 - review: pending
+  - Ctrl/Cmd+S could reach both the page shortcut and the native menu's Save, each with its own in-flight guard: two writes, the second with a stale stat, showed a false "changed on disk" question — `fix: run one save when the shortcut and the menu Save arrive together`
 
 ### Decisions
 - Desktop only: the web/PWA build is removed (no users yet).
