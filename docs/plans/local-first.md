@@ -170,3 +170,30 @@ decoding), the per-user query keys go.
   fine for zip and IndexedDB. If it grows, keep only used plus manually added items.
 - **Existing cloud data:** no users yet, so no export from Supabase is planned. If that
   changes, add a one-off "download all my projects as `.epd`" before step 8.
+
+## Progress notes
+
+Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
+compatibility code. Decisions and deferrals the remaining steps must pick up:
+
+- **No migrations before the first release** (no users yet): the doc and project file schemas
+  stay at version 1 and change in place; update `projectFile/fixtures/v1.json` and run
+  `pnpm demo:epd`. The migrations scaffolding stays for later (see `CLAUDE.md`).
+- **Asset ids** (step 4): until the editor holds a `ProjectFile`, a background's `assetId` is
+  still its Supabase storage path, which contains `/`. `writeEpd` rejects ids outside
+  `[A-Za-z0-9_-]`, so new assets need `newId()` ids.
+- **Logo** (step 6): the app still reads it from the profile (`logoPath`); move it to
+  `company.logoAssetId` with the company tab.
+- **Check 10** (step 6): items marked `missing` after a catalog replace, and "price only" items
+  where attributes are needed, are not checked yet (`checks.ts`).
+- **Quotes** (step 7): the domain rules are in `packages/domain/src/issuedQuotes.ts`
+  (`nextQuoteNumber`, `addIssuedQuote` supersedes pending quotes, `setQuoteStatus`,
+  `setQuoteNote`); the app still uses `ProfileRepository.nextQuoteNumber`, appends snapshots
+  without superseding and prints `formatQuoteNumber` as year + counter. Approving a second
+  quote throws `already_approved`: the user first sets the approved one back to `issued`.
+- **Templates**: `projectFileFromTemplate` copies VAT and material adjustment but not labor
+  lines; the logo asset must be copied along by the caller.
+- **Catalog item fields**: `CatalogItem` gained `editedAt` (set on manual edits, step 6) and
+  `missing`; `ownerId` is gone and `isBuiltin()` checks the `builtin:` id prefix.
+- **Local database**: rows written before `c99e610` (backgrounds with `storagePath`, quotes
+  without `status`) no longer load; run `pnpm db:reset` before using the Supabase app.
