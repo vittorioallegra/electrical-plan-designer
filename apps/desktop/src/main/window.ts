@@ -63,6 +63,11 @@ export function createWindow(): BrowserWindow {
       lifecycle.quitting = false;
     },
   });
+  // A crashed or reloaded page can no longer answer the close question.
+  win.webContents.on('render-process-gone', () => guard.rendererLost());
+  win.webContents.on('did-start-navigation', (_event, _url, isInPlace, isMainFrame) => {
+    if (isMainFrame && !isInPlace) guard.rendererLost();
+  });
   windowContexts.set(win, { origin, guard });
   win.on('close', (event) => guard.onClose(event));
   // The title is the project name and the unsaved marker (set from the renderer), not the page's.

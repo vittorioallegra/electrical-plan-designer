@@ -8,7 +8,13 @@ function setup() {
   const askRenderer = vi.fn();
   const closeWindow = vi.fn();
   const onCancel = vi.fn();
-  const guard = createCloseGuard({ askRenderer, closeWindow, onCancel, ackTimeoutMs: 1000 });
+  const guard = createCloseGuard({
+    askRenderer,
+    closeWindow,
+    onCancel,
+    ackTimeoutMs: 1000,
+    answerTimeoutMs: 5000,
+  });
   const close = () => {
     const event = { preventDefault: vi.fn() };
     guard.onClose(event);
@@ -53,7 +59,29 @@ describe('close guard', () => {
     second.guard.setUnsaved(true);
     second.close();
     second.guard.ack();
-    vi.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(4000);
     expect(second.closeWindow).not.toHaveBeenCalled();
+  });
+
+  // protects=a renderer lost after the acknowledgement cannot trap the window; fails_when=a crash or reload of the page, or a hang with the question open, after the ack keeps the window open, or a lost renderer with no question pending closes it; no_claim=what the recovery copy holds
+  it('closes when the renderer is lost or silent after acknowledging', () => {
+    for (const lose of [
+      (g: ReturnType<typeof setup>['guard']) => g.rendererLost(),
+      () => vi.advanceTimersByTime(5000),
+    ]) {
+      const { guard, closeWindow, close } = setup();
+      guard.setUnsaved(true);
+      close();
+      guard.ack();
+      lose(guard);
+      expect(closeWindow).toHaveBeenCalledTimes(1);
+      expect(close().preventDefault).not.toHaveBeenCalled();
+    }
+
+    // Nothing was asked (e.g. the first load): a navigation does not close anything.
+    const idle = setup();
+    idle.guard.setUnsaved(true);
+    idle.guard.rendererLost();
+    expect(idle.closeWindow).not.toHaveBeenCalled();
   });
 });
