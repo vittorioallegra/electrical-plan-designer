@@ -8,7 +8,8 @@ import type { RecoveryCopy, RecoveryRepository } from './types';
 export function createDesktopRecoveryRepository(
   recovery: EpdBridge['recovery'],
 ): RecoveryRepository {
-  // Asset ids main already holds: each id's bytes cross the IPC once. Forgotten on clear.
+  // Asset ids main holds: each id's bytes cross the IPC once. Main drops the ones a save no
+  // longer lists, so after a save this is exactly that list. Forgotten on clear.
   const written = new Set<string>();
   return {
     async get() {
@@ -51,7 +52,8 @@ export function createDesktopRecoveryRepository(
         },
         newAssets,
       });
-      for (const { id } of newAssets) written.add(id);
+      written.clear();
+      for (const id of copy.assets.keys()) written.add(id);
     },
     async clear() {
       await recovery.clear();

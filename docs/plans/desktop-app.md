@@ -231,6 +231,7 @@ Approved: yes (2026-10-26)
 ### Verification
 - qa: in progress
   - a file that is not a project stayed in the recent list after the open error — `fix: drop a file that fails to open from the recent list`
+  - a plan image dropped from the recovery copy while unreferenced (then restored by undo) was never sent again, so a recovered project lost it — `fix: resend a recovery asset that main dropped and the project uses again`
 - review: pending
 
 ### Decisions
