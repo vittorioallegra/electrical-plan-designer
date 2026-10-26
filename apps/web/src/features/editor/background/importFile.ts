@@ -35,6 +35,26 @@ async function pdfjs(): Promise<PdfJs> {
   return pdfjsPromise;
 }
 
+// pdf.js decodes scanned images (CCITT fax, JBIG2, JPEG 2000) and ICC colors with wasm modules
+// it fetches by file name. Without them it silently skips those images. Vite serves each file
+// at its own (hashed) URL, so the files are looked up by name instead of under one base URL.
+const wasmFiles: Record<string, () => Promise<{ default: string }>> = {
+  'jbig2.wasm': () => import('pdfjs-dist/wasm/jbig2.wasm?url'),
+  'openjpeg.wasm': () => import('pdfjs-dist/wasm/openjpeg.wasm?url'),
+  'qcms_bg.wasm': () => import('pdfjs-dist/wasm/qcms_bg.wasm?url'),
+};
+
+/** pdf.js `BinaryDataFactory`: wasm modules from the bundle; no CMaps or standard fonts. */
+export class BundledBinaryDataFactory {
+  async fetch({ kind, filename }: { kind: string; filename: string }): Promise<Uint8Array> {
+    const load = kind === 'wasmUrl' ? wasmFiles[filename] : undefined;
+    if (!load) throw new Error(`No bundled ${kind} file: ${filename}`);
+    const response = await fetch((await load()).default);
+    if (!response.ok) throw new Error(`Cannot load ${filename}: HTTP ${response.status}`);
+    return new Uint8Array(await response.arrayBuffer());
+  }
+}
+
 export interface PdfHandle {
   pageCount: number;
   thumbnail(page: number, width: number): Promise<string>;
@@ -44,7 +64,10 @@ export interface PdfHandle {
 
 export async function openPdf(file: File): Promise<PdfHandle> {
   const lib = await pdfjs();
-  const task = lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+  const task = lib.getDocument({
+    data: new Uint8Array(await file.arrayBuffer()),
+    BinaryDataFactory: BundledBinaryDataFactory,
+  });
   let doc: Awaited<typeof task.promise>;
   try {
     doc = await task.promise;

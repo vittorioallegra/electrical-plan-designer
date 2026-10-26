@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import type * as ImportFile from '../src/features/editor/background/importFile';
 import { clickWorld, editorState, fixture, logIn, newProject } from './helpers';
+
+type ImportFileModule = typeof ImportFile;
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
@@ -84,4 +88,29 @@ test('import page 2 of a PDF as background', async ({ page }) => {
   const bg = await editorState(page, (s) => s.data.doc.floors[0]!.background!);
   expect(bg).toMatchObject({ kind: 'pdf', page: 2 });
   expect(Math.max(bg.widthPx, bg.heightPx)).toBeLessThanOrEqual(4096);
+});
+
+// protects=scanned PDFs (CCITT/JBIG2 images decoded by pdf.js wasm); fails_when=the scanned drawing is dropped and only vector content renders; no_claim=JPEG 2000 scans
+test('renders the scanned image of a CCITT-encoded PDF', async ({ page }) => {
+  const pdf = readFileSync(fixture('plan-ccitt.pdf')).toString('base64');
+  const darkShare = await page.evaluate(async (base64) => {
+    // Served by the e2e Vite dev server; a variable keeps TypeScript from resolving the path.
+    const modulePath = '/src/features/editor/background/importFile.ts';
+    const { openPdf } = (await import(/* @vite-ignore */ modulePath)) as ImportFileModule;
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const handle = await openPdf(new File([bytes], 'scan.pdf', { type: 'application/pdf' }));
+    const { blob } = await handle.render(1);
+    handle.destroy();
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext('2d')!;
+    context.drawImage(bitmap, 0, 0);
+    const { data } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+    let dark = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i]! < 128) dark++;
+    return dark / (data.length / 4);
+  }, pdf);
+  // The fixture's image is a black band over the middle half of the page.
+  expect(darkShare).toBeGreaterThan(0.4);
+  expect(darkShare).toBeLessThan(0.6);
 });
