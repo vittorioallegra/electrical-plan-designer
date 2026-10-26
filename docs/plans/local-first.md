@@ -175,7 +175,7 @@ decoding), the per-user query keys go.
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
 compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
-(company and catalogs inside the project). Decisions and deferrals the remaining steps
+(company and catalogs inside the project); step 7 (quotes). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -227,11 +227,13 @@ must pick up:
   and panel devices; inner Ø for conduits; rails × modules for enclosures). The Supabase
   profile, user catalog items and their repositories stay unused until step 8; server records
   open with empty company data and no imported catalogs.
-- **Quotes** (step 7): the domain rules are in `packages/domain/src/issuedQuotes.ts`
-  (`nextQuoteNumber`, `addIssuedQuote` supersedes pending quotes, `setQuoteStatus`,
-  `setQuoteNote`); the app still uses `ProfileRepository.nextQuoteNumber`, appends snapshots
-  without superseding and prints `formatQuoteNumber` as year + counter. Approving a second
-  quote throws `already_approved`: the user first sets the approved one back to `issued`.
+- **Quotes** (step 7): issuing takes `nextQuoteNumber(issued)` and goes through
+  `addIssuedQuote` (store `issueQuote`, outside undo; pending quotes become superseded).
+  Status and note are undoable commands (`setQuoteStatus`, `setQuoteNote`); approving while
+  others are pending asks whether to reject them; a second approval is refused with a toast.
+  The year-counter format is gone: lists show "No. 3", the PDF title is "Quote 3 – <project>"
+  with a status line, files are `<project>-quote-3`. `ProfileRepository.nextQuoteNumber` is
+  unused until step 8.
 - **Templates**: `projectFileFromTemplate` copies VAT and material adjustment but not labor
   lines; the logo asset must be copied along by the caller.
 - **Catalog item fields**: `CatalogItem` gained `editedAt` (set on manual edits, step 6) and

@@ -718,7 +718,7 @@
     "addLump": "A corpo",
     "addHourly": "A ore",
     "issuedTitle": "Preventivi emessi",
-    "noIssued": "Nessun preventivo emesso. L’emissione congela righe e prezzi attuali con un numero.",
+    "noIssued": "Nessun preventivo emesso. L’emissione congela righe e prezzi attuali con il prossimo numero del progetto; i preventivi in attesa prima di esso diventano sostituiti.",
     "unit": "Unità",
     "note": "Nota",
     "noPrice": "Senza prezzo",
@@ -726,11 +726,28 @@
     "exportCsv": "CSV",
     "exportPdf": "PDF",
     "exportLive": "Esporta il preventivo attuale",
-    "exportFailed": "Impossibile creare il PDF. Riprova."
+    "exportFailed": "Impossibile creare il PDF. Riprova.",
+    "status": {
+      "issued": "Emesso",
+      "approved": "Approvato",
+      "rejected": "Rifiutato",
+      "superseded": "Sostituito"
+    },
+    "number": "N. {{number}}",
+    "statusFor": "Stato del preventivo {{number}}",
+    "noteFor": "Nota sul preventivo {{number}}",
+    "notePlaceholder": "Nota",
+    "exportCsvOf": "CSV del preventivo {{number}}",
+    "exportPdfOf": "PDF del preventivo {{number}}",
+    "alreadyApproved": "Il preventivo {{number}} è approvato: riportalo prima a Emesso.",
+    "approveTitle": "Approva il preventivo {{number}}",
+    "approveBody": "Altri preventivi di questo progetto sono ancora in attesa. Segnarli come rifiutati?",
+    "approveKeepPending": "Lasciali in attesa",
+    "approveRejectOthers": "Segnali rifiutati"
   },
   "pdf": {
     "vatNumber": "P. IVA {{value}}",
-    "quoteTitle": "Preventivo {{number}}",
+    "quoteTitle": "Preventivo {{number}} – {{project}}",
     "quoteDraft": "Preventivo (bozza)",
     "date": "Data: {{date}}",
     "client": "Cliente: {{name}}",
@@ -751,7 +768,8 @@
     "bomTitle": "Distinta materiali",
     "warningsTitle": "Avvisi aperti",
     "floorTitle": "Pianta: {{name}}",
-    "emptyFloor": "Niente disegnato su questo piano."
+    "emptyFloor": "Niente disegnato su questo piano.",
+    "status": "Stato: {{status}}"
   },
   "purchases": {
     "saveFailed": "Impossibile salvare l’acquisto. Controlla la connessione e riprova.",

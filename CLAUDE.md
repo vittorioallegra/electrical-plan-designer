@@ -45,7 +45,7 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   `auth.ts` (auth middleware), `layouts/`, `routes/` (route modules composing features)
 - `src/features/<name>/` — start, auth, projects, editor, panel, circuits, catalog, company, bom,
   checks, quote, exports, mobile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
-- `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, profile, record)
+- `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, record)
 - `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks; `useCatalog` reads catalogs,
   prices, box presets and company from the open project), `src/config/` (env, version)
 - `src/lib/` — `repositories/` (interfaces, Supabase + in-memory, the only Supabase code; draft

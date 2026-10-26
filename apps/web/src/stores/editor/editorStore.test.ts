@@ -105,7 +105,7 @@ describe('editor store', () => {
     expect(store.getState().ui.selection).toEqual([]);
   });
 
-  // protects=issued quotes outside undo; fails_when=undo removes an issued quote or issuing is not saved; no_claim=numbering (repository)
+  // protects=issued quotes outside undo; fails_when=undo removes an issued quote or issuing is not saved; no_claim=numbering and superseding (domain issuedQuotes.test)
   it('keeps issued quotes when undoing quote setting edits', async () => {
     const { store } = await demoStore();
     store.getState().applyCommand('vat', (d) => {
@@ -130,7 +130,7 @@ describe('editor store', () => {
       status: 'issued',
       note: '',
     };
-    expect(store.getState().appendIssuedQuote(issued)).toEqual({ ok: true });
+    expect(store.getState().issueQuote(issued)).toEqual({ ok: true });
     expect(saveStatusOf(store.getState())).toBe('unsaved');
     store.getState().undo();
     expect(store.getState().data.quote.settings.vatPercent).toBe(22);

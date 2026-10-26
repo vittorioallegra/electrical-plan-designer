@@ -54,12 +54,46 @@ describe('quote page', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Issue quote' }));
     const issued = screen.getByRole('region', { name: 'Issued quotes' });
-    expect(await within(issued).findByText(/^\d{4}-001$/)).toBeInTheDocument();
+    expect(await within(issued).findByText('No. 1')).toBeInTheDocument();
     expect(issued).toHaveTextContent('€110.00');
 
     await typeNumber(screen.getByLabelText('VAT'), '22');
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€122.00');
     expect(issued).toHaveTextContent('€110.00');
+  });
+
+  // protects=quote status rules in the UI; fails_when=numbers are not per project, issuing does not supersede pending quotes, approving does not offer to reject the others, a second approval is allowed, or the note is lost; no_claim=rule edge cases (domain issuedQuotes.test)
+  it('numbers quotes per project and tracks their status and note', async () => {
+    await renderApp(quotePath, { exposeTestHandle: true });
+    await userEvent.click(await screen.findByRole('button', { name: 'Issue quote' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Issue quote' }));
+    const status = (n: number) => screen.getByLabelText(`Status of quote ${n}`);
+    expect(status(1)).toHaveValue('superseded');
+    expect(status(2)).toHaveValue('issued');
+
+    await userEvent.selectOptions(status(1), 'issued');
+    await userEvent.selectOptions(status(2), 'approved');
+    const dialog = await screen.findByRole('dialog', { name: 'Approve quote 2' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark them rejected' }));
+    expect(status(2)).toHaveValue('approved');
+    expect(status(1)).toHaveValue('rejected');
+
+    await userEvent.selectOptions(status(1), 'approved');
+    expect(
+      await screen.findByText('Quote 2 is approved: set it back to Issued first.'),
+    ).toBeInTheDocument();
+    expect(status(1)).toHaveValue('rejected');
+
+    await userEvent.type(screen.getByLabelText('Note on quote 2'), 'Signed on site');
+    await userEvent.tab();
+    expect(
+      editorStore()
+        .getState()
+        .data.quote.issued.map((q) => [q.number, q.status, q.note]),
+    ).toEqual([
+      [1, 'rejected', ''],
+      [2, 'approved', 'Signed on site'],
+    ]);
   });
 
   // protects=CSV download wiring; fails_when=the button does not download the live quote as CSV; no_claim=CSV layout (quoteCsv tests)

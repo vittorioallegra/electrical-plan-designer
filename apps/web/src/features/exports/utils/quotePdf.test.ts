@@ -51,10 +51,17 @@ const company = {
 const meta = { name: 'Casa Bianchi', clientName: 'Mario Bianchi', address: 'Via Po 1' };
 
 describe('quote PDF', () => {
-  // protects=AC 15 quote PDF with business header; fails_when=header fields, € amounts or accented text are missing or garbled; no_claim=visual layout
+  // protects=AC 15 quote PDF with business header; fails_when=header fields, the number with the project name, the status, € amounts or accented text are missing or garbled; no_claim=visual layout
   it('renders the business header, lines and totals in Italian', async () => {
     const pdf = buildQuotePdf({
-      quote: { ...live, number: 7, issuedAt: '2026-10-25T09:00:00.000Z', language: 'it' },
+      quote: {
+        ...live,
+        number: 7,
+        issuedAt: '2026-10-25T09:00:00.000Z',
+        language: 'it',
+        status: 'approved',
+        note: '',
+      },
       company,
       meta,
       t: createI18n('it').t,
@@ -68,7 +75,8 @@ describe('quote PDF', () => {
     expect(page).toContain('P. IVA IT01234567890');
     expect(page).toContain('info@rossi.example');
     expect(page).not.toContain(' · ');
-    expect(page).toContain('Preventivo 2026-007');
+    expect(page).toContain('Preventivo 7 – Casa Bianchi');
+    expect(page).toContain('Stato: Approvato');
     expect(page).toContain('Cliente: Mario Bianchi');
     expect(page).toContain('Cavo H07V-K 2,5 mm² marrone');
     expect(page).toContain('Scatola 503 (Senza prezzo)');

@@ -36,7 +36,7 @@ test('issue a quote and download its CSV and PDF', async ({ page }) => {
   await expect(page.getByTestId('quote-total')).toHaveText('€122.00');
   await page.getByRole('button', { name: 'Issue quote' }).click();
   const issued = page.getByRole('region', { name: 'Issued quotes' });
-  await expect(issued.getByText(/^\d{4}-\d{3}$/)).toBeVisible();
+  await expect(issued.getByText('No. 1')).toBeVisible();
 
   const csvDownload = page.waitForEvent('download');
   await issued.getByRole('button', { name: /^CSV / }).click();

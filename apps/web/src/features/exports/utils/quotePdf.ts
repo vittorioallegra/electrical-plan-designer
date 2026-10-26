@@ -1,7 +1,7 @@
 // Quote PDF: business header, client, numbered lines, labor and totals.
 import type { TFunction } from 'i18next';
 import type { Company } from '@epd/domain/projectFile';
-import { formatQuoteNumber, laborAmounts } from '@epd/domain/quote';
+import { laborAmounts } from '@epd/domain/quote';
 import type { IssuedQuote, ProjectMeta } from '@epd/domain/types';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
 import { CONTENT_WIDTH, PAGE, PdfWriter, type ImageData } from './pdfKit';
@@ -55,11 +55,14 @@ export function buildQuotePdf({ quote, company, logo, meta, t, locale, now }: Qu
   pdf.y = Math.max(pdf.y, top + logoHeight) + 8;
 
   pdf.heading(
-    issued ? t('pdf.quoteTitle', { number: formatQuoteNumber(issued) }) : t('pdf.quoteDraft'),
+    issued
+      ? t('pdf.quoteTitle', { number: issued.number, project: meta.name })
+      : t('pdf.quoteDraft'),
     16,
   );
   pdf.lines([
     t('pdf.date', { date }),
+    issued ? t('pdf.status', { status: t(`quote.status.${issued.status}`) }) : '',
     t('pdf.client', { name: meta.clientName || '—' }),
     meta.address ? t('pdf.siteAddress', { address: meta.address }) : '',
     t('pdf.project', { name: meta.name }),

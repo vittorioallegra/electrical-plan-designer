@@ -143,8 +143,3 @@ export function issueQuote(
     note: '',
   });
 }
-
-/** "2026-007": issue year + per-account counter. */
-export function formatQuoteNumber(quote: Pick<IssuedQuote, 'number' | 'issuedAt'>): string {
-  return `${quote.issuedAt.slice(0, 4)}-${String(quote.number).padStart(3, '0')}`;
-}

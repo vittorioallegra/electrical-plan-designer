@@ -3,13 +3,7 @@ import { computeBom, type BomLine } from './bom';
 import { createCatalogLookup } from './catalog/lookup';
 import type { CatalogItem } from './catalog/types';
 import { defaultProjectSettings, defaultQuoteSettings } from './defaults';
-import {
-  computeQuote,
-  formatQuoteNumber,
-  issueQuote,
-  lookupPrice,
-  type PriceContext,
-} from './quote';
+import { computeQuote, issueQuote, lookupPrice, type PriceContext } from './quote';
 import { ac4Doc } from './testing/builders';
 import type { QuoteSettings } from './types';
 
@@ -162,6 +156,6 @@ describe('issued quotes', () => {
     settings.vatPercent = 10;
     expect(issued).toEqual(before);
     expect(issued).toMatchObject({ status: 'issued', note: '' });
-    expect(formatQuoteNumber(issued)).toBe('2026-007');
+    expect(issued.number).toBe(7);
   });
 });

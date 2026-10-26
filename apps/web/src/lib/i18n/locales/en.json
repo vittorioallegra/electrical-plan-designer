@@ -718,7 +718,7 @@
     "addLump": "Lump sum",
     "addHourly": "Hourly",
     "issuedTitle": "Issued quotes",
-    "noIssued": "No quote issued yet. Issuing freezes the current lines and prices under a number.",
+    "noIssued": "No quote issued yet. Issuing freezes the current lines and prices under the next number of this project; pending quotes before it become superseded.",
     "unit": "Unit",
     "note": "Note",
     "noPrice": "No price",
@@ -726,11 +726,28 @@
     "exportCsv": "CSV",
     "exportPdf": "PDF",
     "exportLive": "Export the current quote",
-    "exportFailed": "Could not create the PDF. Try again."
+    "exportFailed": "Could not create the PDF. Try again.",
+    "status": {
+      "issued": "Issued",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "superseded": "Superseded"
+    },
+    "number": "No. {{number}}",
+    "statusFor": "Status of quote {{number}}",
+    "noteFor": "Note on quote {{number}}",
+    "notePlaceholder": "Note",
+    "exportCsvOf": "CSV of quote {{number}}",
+    "exportPdfOf": "PDF of quote {{number}}",
+    "alreadyApproved": "Quote {{number}} is approved: set it back to Issued first.",
+    "approveTitle": "Approve quote {{number}}",
+    "approveBody": "Other quotes of this project are still pending. Mark them rejected?",
+    "approveKeepPending": "Keep them pending",
+    "approveRejectOthers": "Mark them rejected"
   },
   "pdf": {
     "vatNumber": "VAT no. {{value}}",
-    "quoteTitle": "Quote {{number}}",
+    "quoteTitle": "Quote {{number}} – {{project}}",
     "quoteDraft": "Quote (draft)",
     "date": "Date: {{date}}",
     "client": "Client: {{name}}",
@@ -751,7 +768,8 @@
     "bomTitle": "Bill of materials",
     "warningsTitle": "Open warnings",
     "floorTitle": "Floor plan: {{name}}",
-    "emptyFloor": "Nothing drawn on this floor yet."
+    "emptyFloor": "Nothing drawn on this floor yet.",
+    "status": "Status: {{status}}"
   },
   "purchases": {
     "saveFailed": "Could not save the purchase. Check the connection and try again.",

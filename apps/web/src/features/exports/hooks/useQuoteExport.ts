@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { formatQuoteNumber } from '@epd/domain/quote';
 import type { IssuedQuote } from '@epd/domain/types';
 import { useEditor } from '@/stores/editor/EditorContext';
 import { downloadBlob, fileSafe } from '@/lib/download';
@@ -26,7 +25,7 @@ export function useQuoteExport() {
     return {
       t: i18n.getFixedT(language),
       locale: localeOf(language),
-      base: `${fileSafe(meta.name)}-quote${issued ? `-${formatQuoteNumber(issued)}` : ''}`,
+      base: `${fileSafe(meta.name)}-quote${issued ? `-${issued.number}` : ''}`,
     };
   }
 

@@ -3,6 +3,7 @@
 import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch } from 'immer';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProjectFile } from '@epd/domain/projectFile';
+import { addIssuedQuote } from '@epd/domain/issuedQuotes';
 import { docIntegrityIssues } from '@epd/domain/schema';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
 import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
@@ -78,8 +79,11 @@ export interface EditorState {
   future: HistoryEntry[];
   ui: EditorUi;
   applyCommand(label: string, recipe: (draft: Draft<EditorData>) => void): CommandResult;
-  /** Appends an issued quote outside undo/redo: issued quotes are append-only. */
-  appendIssuedQuote(quote: IssuedQuote): CommandResult;
+  /**
+   * Adds an issued quote outside undo/redo (a number given to a client is never taken back);
+   * pending quotes before it become superseded.
+   */
+  issueQuote(quote: IssuedQuote): CommandResult;
   undo(): void;
   redo(): void;
   setUi(patch: Partial<EditorUi>): void;
@@ -176,13 +180,10 @@ export function createEditorStore(init: EditorInit): EditorStore {
         return { ok: true };
       },
 
-      appendIssuedQuote(quote) {
+      issueQuote(quote) {
         const s = get();
         if (s.readOnly) return { ok: false, reason: 'read_only' };
-        const data = {
-          ...s.data,
-          quote: { ...s.data.quote, issued: [...s.data.quote.issued, quote] },
-        };
+        const data = { ...s.data, quote: addIssuedQuote(s.data.quote, quote, new Date()) };
         changed(data, {});
         return { ok: true };
       },

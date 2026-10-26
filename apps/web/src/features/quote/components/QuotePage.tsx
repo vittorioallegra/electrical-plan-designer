@@ -31,7 +31,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
   const settings = useEditor((s) => s.data.quote.settings);
   const issued = useEditor((s) => s.data.quote.issued);
   const { quote } = useLiveQuote();
-  const { issue, issuing } = useIssueQuote();
+  const { issue } = useIssueQuote();
 
   const editSettings = (label: string, fn: (s: QuoteSettings) => void) =>
     store.getState().applyCommand(label, (d) => {
@@ -61,7 +61,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
               {t('quote.exportPdf')}
             </Button>
           </div>
-          <Button variant="primary" disabled={readOnly || issuing} onClick={() => void issue()}>
+          <Button variant="primary" disabled={readOnly} onClick={issue}>
             <Stamp size={16} />
             {t('quote.issue')}
           </Button>
@@ -89,6 +89,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
         <IssuedQuotes
           issued={issued}
           locale={locale}
+          readOnly={readOnly}
           exportCsv={exporter.csv}
           exportPdf={exportPdf}
         />
