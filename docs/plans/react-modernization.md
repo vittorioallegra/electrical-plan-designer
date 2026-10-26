@@ -297,7 +297,7 @@ Approved: yes (2026-10-25)
 - [x] 14. CLAUDE.md, full verify, bundle sizes — `docs: finish the modernization with CLAUDE.md and bundle sizes`
 
 ### Verification
-- qa: pending
+- qa: done
   - Opening a project (route loader) left the list on screen with no loading sign until the record arrived (main showed "Loading" at once) — `fix: show a loading notice while a navigation is pending`
 - review: pending
 
