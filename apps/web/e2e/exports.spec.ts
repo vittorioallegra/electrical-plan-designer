@@ -15,7 +15,7 @@ test('export the project PDF of a floor with a private background', async ({ pag
   await expect(page.getByTestId('background-panel')).toContainText('Not calibrated');
   await page.getByTestId('tool-panel').click();
   await clickWorld(page, { x: 1, y: 1 });
-  await expect(page.getByTestId('save-status')).toHaveText('Saved', { timeout: 5000 });
+  await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
 
   await page.getByRole('button', { name: 'Export' }).click();
   const download = page.waitForEvent('download');

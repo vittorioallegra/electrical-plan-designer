@@ -1,14 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { useProjectSaved } from '@/api/projectRecord';
 import { useRepositories } from '@/lib/repositories/provider';
-import type { ProjectRecord } from '@/lib/repositories/types';
+import type { Draft, ProjectRecord } from '@/lib/repositories/types';
+import { openRecord } from '@/lib/projectFile/record';
 import { DocLoadError, loadDoc } from '@epd/domain/load';
+import { projectFileSchema } from '@epd/domain/projectFile';
 import { startAutosave, type Autosave } from '@/stores/editor/autosave';
 import { EditorProvider, useEditorServices } from '@/stores/editor/EditorContext';
 import { createEditorStore, type EditorStore } from '@/stores/editor/editorStore';
-import { shouldOfferRestore, type UnsavedCopy } from '@/stores/editor/unsavedStore';
 import { Button } from '@/components/ui/Button';
 import { downloadJson } from '@/lib/download';
 
@@ -17,7 +17,7 @@ type LoadState =
   | { status: 'not_found' }
   | { status: 'failed' }
   | { status: 'invalid'; error: DocLoadError; raw: unknown; name: string }
-  | { status: 'ready'; store: EditorStore; autosave: Autosave; restore: UnsavedCopy | null };
+  | { status: 'ready'; store: EditorStore; autosave: Autosave };
 
 declare global {
   interface Window {
@@ -25,15 +25,17 @@ declare global {
   }
 }
 
-export interface ProjectFrameProps {
-  restore: UnsavedCopy | null;
-  onRestoreHandled: () => void;
+/** The draft, when it was opened from this record and still passes the file schema. */
+function draftFor(draft: Draft | null, recordId: string): Draft | null {
+  if (!draft || draft.recordId !== recordId) return null;
+  return projectFileSchema.safeParse(draft.project).success ? draft : null;
 }
 
 /**
  * Validates a loaded project record, then mounts the editor with its store and autosave.
- * The route loads the record and remounts this component per project (`key`); the store is
- * created once from the record it mounted with, so a later record never re-seeds the editor.
+ * A draft opened from the same record is newer than the record (autosave writes only the
+ * draft), so the editor resumes it. The route remounts this component per project (`key`);
+ * the store is created once, so a later record never re-seeds the editor.
  * The app supplies the frame (top bar, views, drawer), which composes several features.
  */
 export function ProjectLoader({
@@ -41,13 +43,12 @@ export function ProjectLoader({
   renderFrame,
 }: {
   record: ProjectRecord | null;
-  renderFrame: (props: ProjectFrameProps) => ReactNode;
+  renderFrame: () => ReactNode;
 }) {
   const { t } = useTranslation();
   const [record] = useState(loaded);
   const repos = useRepositories();
-  const onSaved = useProjectSaved();
-  const { unsaved, exposeTestHandle } = useEditorServices();
+  const { drafts, exposeTestHandle } = useEditorServices();
   const [state, setState] = useState<LoadState>(() =>
     record ? { status: 'loading' } : { status: 'not_found' },
   );
@@ -66,32 +67,23 @@ export function ProjectLoader({
         setState({ status: 'invalid', error: e, raw: record.rawDoc, name: record.meta.name });
         return;
       }
-      const copy = await unsaved.get(id).catch(() => undefined);
+      const draft = loadedDoc.readOnly ? null : draftFor(await drafts.get().catch(() => null), id);
+      const opened = draft ?? (await openRecord(record, loadedDoc.doc, repos.files));
       if (!active) return;
       const store = createEditorStore({
         projectId: id,
-        meta: record.meta,
-        data: { doc: loadedDoc.doc, settings: record.settings, quote: record.quote },
+        data: opened.project,
+        assets: opened.assets,
         readOnly: loadedDoc.readOnly,
+        status: draft && !draft.savedToFile ? 'draft' : 'saved',
       });
-      const autosave = startAutosave(store, {
-        projects: repos.projects,
-        auth: repos.auth,
-        unsaved,
-        onSaved,
-      });
+      const autosave = startAutosave(store, { drafts });
       if (exposeTestHandle) window.__epd = { store };
       cleanup = () => {
         autosave.stop();
         if (window.__epd?.store === store) delete window.__epd;
       };
-      setState({
-        status: 'ready',
-        store,
-        autosave,
-        restore:
-          !loadedDoc.readOnly && shouldOfferRestore(copy, record.meta.version) ? copy! : null,
-      });
+      setState({ status: 'ready', store, autosave });
     })().catch((e: unknown) => {
       // An unexpected error (not a DocLoadError) must not leave the page on "Loading".
       console.error(e);
@@ -101,7 +93,7 @@ export function ProjectLoader({
       active = false;
       cleanup?.();
     };
-  }, [record, repos, unsaved, exposeTestHandle, onSaved]);
+  }, [record, repos, drafts, exposeTestHandle]);
 
   if (state.status === 'loading')
     return <p className="p-4 text-text-muted">{t('common.loading')}</p>;
@@ -143,10 +135,7 @@ export function ProjectLoader({
   }
   return (
     <EditorProvider store={state.store} autosave={state.autosave}>
-      {renderFrame({
-        restore: state.restore,
-        onRestoreHandled: () => setState({ ...state, restore: null }),
-      })}
+      {renderFrame()}
     </EditorProvider>
   );
 }

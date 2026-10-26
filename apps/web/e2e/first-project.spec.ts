@@ -83,5 +83,5 @@ test('first project: follow the progress strip from walls to BOM', async ({ page
   const view = await editorState(page, (s) => s.ui.view);
   expect(view.x + 4 * view.scale).toBeCloseTo(canvas.width / 2, 0);
   expect(view.y + 4 * view.scale).toBeCloseTo(canvas.height / 2, 0);
-  await expect(page.getByTestId('save-status')).toHaveText('Saved', { timeout: 5000 });
+  await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
 });

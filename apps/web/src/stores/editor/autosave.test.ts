@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SaveError } from '@/lib/repositories/types';
+import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
 import { startAutosave, type Autosave } from './autosave';
-import type { EditorStore } from './editorStore';
-import { demoStore } from '@/testing/editor';
-import { createMemoryUnsavedStore, shouldOfferRestore } from './unsavedStore';
+import { saveStatusOf, type EditorInit, type EditorStore } from './editorStore';
+import { DEMO_ID, demoStore } from '@/testing/editor';
 
 const edit = (store: EditorStore, label: string) =>
   store.getState().applyCommand(label, (d) => {
@@ -17,159 +16,127 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function setup() {
-  const ctx = await demoStore();
-  const unsaved = createMemoryUnsavedStore();
+async function setup(init: Partial<EditorInit> = {}) {
+  const { store } = await demoStore(init);
+  const drafts = createMemoryDraftRepository();
+  const save = vi.spyOn(drafts, 'save');
   const target = new EventTarget();
-  autosave = startAutosave(ctx.store, {
-    projects: ctx.repos.projects,
-    auth: ctx.repos.auth,
-    unsaved,
+  autosave = startAutosave(store, {
+    drafts,
     target: target as unknown as Window,
+    now: () => new Date('2026-10-26T10:00:00Z'),
   });
-  return { ...ctx, unsaved, target };
+  return { store, drafts, save, target };
 }
 
 describe('autosave', () => {
-  // protects=debounce; fails_when=each keystroke triggers a save; no_claim=exact timing in the browser
-  it('debounces edits into one save after 1 s', async () => {
-    const { store, control } = await setup();
+  // protects=debounce; fails_when=each keystroke writes the draft; no_claim=exact timing in the browser
+  it('debounces edits into one draft write after 1 s', async () => {
+    const { store, drafts, save } = await setup();
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(500);
     edit(store, 'b');
     await vi.advanceTimersByTimeAsync(999);
-    expect(control.saveCalls).toHaveLength(0);
+    expect(save).not.toHaveBeenCalled();
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
     await vi.advanceTimersByTimeAsync(1);
-    expect(control.saveCalls).toHaveLength(1);
-    expect(store.getState().saveStatus).toBe('saved');
-    expect(store.getState().version).toBe(2);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(saveStatusOf(store.getState())).toBe('draft');
+    expect(drafts.draft).toMatchObject({
+      savedToFile: false,
+      savedAt: '2026-10-26T10:00:00.000Z',
+      recordId: DEMO_ID,
+    });
+    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('b');
   });
 
-  // protects=no self-conflict; fails_when=an edit during an in-flight save causes a version_conflict; no_claim=—
-  it('an edit during an in-flight save leads to a second save, no conflict', async () => {
-    const { store, control } = await setup();
+  // protects=no lost edit during a write; fails_when=an edit made while the draft is being written is never stored; no_claim=—
+  it('writes again when an edit arrives during a write', async () => {
+    const { store, drafts, save } = await setup();
     let release!: () => void;
-    control.beforeSave = () => new Promise<void>((r) => (release = r));
+    save.mockImplementationOnce(async (draft) => {
+      await new Promise<void>((r) => (release = r));
+      drafts.draft = structuredClone(draft);
+    });
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
-    expect(store.getState().saveStatus).toBe('saving');
     edit(store, 'b');
-    control.beforeSave = undefined;
     release();
     await vi.advanceTimersByTimeAsync(0);
-    expect(store.getState().saveStatus).toBe('dirty');
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
     await vi.advanceTimersByTimeAsync(1000);
-    expect(control.saveCalls.map((c) => c.expectedVersion)).toEqual([1, 2]);
-    expect(store.getState().saveStatus).toBe('saved');
-    expect(control.projects.get(store.getState().projectId)!.doc).toMatchObject({
-      nodes: expect.arrayContaining([expect.objectContaining({ label: 'b' })]),
-    });
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(saveStatusOf(store.getState())).toBe('draft');
+    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('b');
   });
 
-  // protects=network retry; fails_when=a transient failure loses the save or retries forever; no_claim=—
-  it('retries network errors 3 times, then waits for online or the next edit', async () => {
-    const { store, control, target } = await setup();
-    control.beforeSave = () => {
-      throw new SaveError('network');
-    };
-    edit(store, 'a');
-    await vi.advanceTimersByTimeAsync(1000 + 1000 + 2000 + 4000);
-    expect(control.saveCalls).toHaveLength(4);
-    expect(store.getState()).toMatchObject({ saveStatus: 'error', saveError: 'network' });
-    control.beforeSave = undefined;
-    target.dispatchEvent(new Event('online'));
-    await vi.advanceTimersByTimeAsync(0);
-    expect(store.getState().saveStatus).toBe('saved');
-  });
-
-  // protects=conflict handling; fails_when=a stale save overwrites newer data or autosave keeps retrying; no_claim=dialog UI
-  it('stops on version_conflict', async () => {
-    const { store, control } = await setup();
-    control.projects.get(store.getState().projectId)!.meta.version = 5;
+  // protects=draft write failures; fails_when=a failed write looks stored, or is not retried on the next edit or on Retry; no_claim=UI text
+  it('flags a failed write and retries on the next edit or flush', async () => {
+    const { store, save } = await setup();
+    save.mockRejectedValueOnce(new Error('quota')).mockRejectedValueOnce(new Error('quota'));
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
-    expect(store.getState()).toMatchObject({
-      saveStatus: 'conflict',
-      saveError: 'version_conflict',
-    });
+    expect(store.getState()).toMatchObject({ draftFailed: true });
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
     edit(store, 'b');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(save).toHaveBeenCalledTimes(2);
+    autosave!.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.getState()).toMatchObject({ draftFailed: false });
+    expect(saveStatusOf(store.getState())).toBe('draft');
+  });
+
+  // protects=assets in the draft; fails_when=the draft misses a referenced asset or keeps one nothing references; no_claim=asset decoding
+  it('stores only the assets the project references', async () => {
+    const { store, drafts } = await setup();
+    const png = { mimeType: 'image/png' as const, bytes: new Uint8Array([1, 2]) };
+    store.getState().addAsset('used', png);
+    store.getState().addAsset('unused', png);
+    store.getState().applyCommand('bg', (d) => {
+      d.doc.floors[0]!.background = {
+        assetId: 'used',
+        kind: 'image',
+        widthPx: 2,
+        heightPx: 1,
+        offset: { x: 0, y: 0 },
+        rotation: 0,
+        opacity: 0.4,
+      };
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect([...drafts.draft!.assets.keys()]).toEqual(['used']);
+  });
+
+  // protects=edits right before leaving the editor; fails_when=stopping autosave drops changes still waiting for the debounce; no_claim=tab close (beforeunload)
+  it('writes pending changes when stopped', async () => {
+    const { store, drafts } = await setup();
+    edit(store, 'last');
+    autosave!.stop();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(drafts.draft!.project.doc.nodes[0]!.label).toBe('last');
+  });
+
+  // protects=read-only docs; fails_when=a newer, read-only doc is written to the draft; no_claim=—
+  it('never writes a read-only project', async () => {
+    const { save } = await setup({ readOnly: true, status: 'unsaved' });
     await vi.advanceTimersByTimeAsync(5000);
-    expect(control.saveCalls).toHaveLength(1);
+    expect(save).not.toHaveBeenCalled();
   });
 
-  // protects=auth expiry; fails_when=an expired session silently drops edits or never retries; no_claim=login UI
-  it('auth_expired waits for a new session, then saves', async () => {
-    const { store, control, repos } = await setup();
-    control.expireSession();
-    edit(store, 'a');
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(store.getState()).toMatchObject({ saveStatus: 'error', saveError: 'auth_expired' });
-    await repos.auth.signIn('dev@example.test', 'devpassword');
-    await vi.advanceTimersByTimeAsync(0);
-    expect(store.getState().saveStatus).toBe('saved');
-  });
-
-  // protects=non-retryable errors; fails_when=forbidden or invalid_doc are retried in a loop; no_claim=—
-  it.each(['forbidden', 'invalid_doc'] as const)('%s is an error without retry', async (code) => {
-    const { store, control } = await setup();
-    control.beforeSave = () => {
-      throw new SaveError(code);
-    };
-    edit(store, 'a');
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(control.saveCalls).toHaveLength(1);
-    expect(store.getState()).toMatchObject({ saveStatus: 'error', saveError: code });
-  });
-
-  // protects=offline loss; fails_when=edits made offline are gone after a reload; no_claim=browser IndexedDB quota
-  it('keeps a local copy of unsaved edits and clears it after a save', async () => {
-    const { store, control, unsaved } = await setup();
-    control.beforeSave = () => {
-      throw new SaveError('network');
-    };
-    edit(store, 'offline edit');
-    await vi.advanceTimersByTimeAsync(0);
-    const copy = await unsaved.get(store.getState().projectId);
-    expect(copy?.data.doc.nodes[0]!.label).toBe('offline edit');
-    // "Reload": the server still has version 1, the copy sits on top of it.
-    expect(shouldOfferRestore(copy, 1)).toBe(true);
-    expect(shouldOfferRestore(copy, 2)).toBe(false);
-
-    control.beforeSave = undefined;
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(store.getState().saveStatus).toBe('saved');
-    expect(await unsaved.get(store.getState().projectId)).toBeUndefined();
-  });
-
-  // protects=offline loss after a partial save; fails_when=an edit made during an in-flight save is not offered for restore once that save lands and the next one fails; no_claim=browser IndexedDB ordering
-  it('rebases the local copy on the new version when edits arrived during a save', async () => {
-    const { store, control, unsaved } = await setup();
-    let release!: () => void;
-    control.beforeSave = () => new Promise<void>((r) => (release = r));
-    edit(store, 'a');
-    await vi.advanceTimersByTimeAsync(1000);
-    edit(store, 'b');
-    control.beforeSave = () => {
-      throw new SaveError('network');
-    };
-    release();
-    await vi.advanceTimersByTimeAsync(10_000);
-    expect(store.getState()).toMatchObject({ version: 2, saveStatus: 'error' });
-    // "Reload": the server has version 2 (edit a); edit b only lives in the local copy.
-    const copy = await unsaved.get(store.getState().projectId);
-    expect(copy?.data.doc.nodes[0]!.label).toBe('b');
-    expect(shouldOfferRestore(copy, 2)).toBe(true);
-  });
-
-  // protects=beforeunload guard; fails_when=closing the tab with unsaved edits gives no warning; no_claim=browser dialog text
-  it('guards beforeunload while not saved', async () => {
+  // protects=beforeunload guard; fails_when=closing the tab with changes not in the draft gives no warning, or it warns once they are stored; no_claim=browser dialog text
+  it('guards beforeunload while changes are not in the draft', async () => {
     const { store, target } = await setup();
-    const clean = new Event('beforeunload', { cancelable: true });
-    target.dispatchEvent(clean);
-    expect(clean.defaultPrevented).toBe(false);
+    const unload = () => {
+      const event = new Event('beforeunload', { cancelable: true });
+      target.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    expect(unload()).toBe(false);
     edit(store, 'a');
-    const dirty = new Event('beforeunload', { cancelable: true });
-    target.dispatchEvent(dirty);
-    expect(dirty.defaultPrevented).toBe(true);
+    expect(unload()).toBe(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(unload()).toBe(false);
   });
 });

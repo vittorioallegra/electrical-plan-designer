@@ -13,12 +13,6 @@ function checklistRows(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('[data-testid="checklist"] [data-key]')];
 }
 
-async function waitSaved() {
-  await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'), {
-    timeout: 3000,
-  });
-}
-
 describe('server state (TanStack Query)', () => {
   // protects=per-line optimistic rollback; fails_when=a failed save of one line rolls back another line saved meanwhile; no_claim=server ordering
   it('rolls back only the line whose save failed', async () => {
@@ -76,33 +70,25 @@ describe('server state (TanStack Query)', () => {
     expect(control.saveCalls).toEqual([]);
   });
 
-  // protects=fresh record on re-entry; fails_when=re-opening a project after an autosave uses the old version and the next save conflicts; no_claim=concurrent devices
-  it('reads a fresh record when re-entering the editor and saves without conflict', async () => {
-    const { router, control } = await renderApp(planPath, { exposeTestHandle: true });
+  // protects=draft on re-entry; fails_when=re-opening a project after leaving the editor shows the older server record instead of its draft; no_claim=other devices
+  it('resumes the draft when re-entering the editor, without writing the server', async () => {
+    const { router, control, drafts } = await renderApp(planPath, { exposeTestHandle: true });
     await screen.findByTestId('project-name');
-    const rename = (label: string) =>
-      act(() =>
-        editorStore()
-          .getState()
-          .applyCommand('rename', (d) => {
-            d.doc.nodes[0]!.label = label;
-          }),
-      );
-    rename('first edit');
-    await waitSaved();
-    const savedVersion = editorStore().getState().version;
-
+    act(() =>
+      editorStore()
+        .getState()
+        .applyCommand('rename', (d) => {
+          d.doc.nodes[0]!.label = 'first edit';
+        }),
+    );
+    // Leaving right away: the pending change is written when autosave stops.
     await act(() => router.navigate('/projects'));
     await screen.findByRole('link', { name: /Demo house/ });
+    await waitFor(async () => expect((await drafts.get())?.recordId).toBe(DEMO_PROJECT_ID));
     await act(() => router.navigate(planPath));
     await screen.findByTestId('project-name');
-    expect(editorStore().getState().version).toBe(savedVersion);
     expect(editorStore().getState().data.doc.nodes[0]!.label).toBe('first edit');
-
-    rename('second edit');
-    await waitSaved();
-    expect(control.saveCalls.at(-1)?.expectedVersion).toBe(savedVersion);
-    expect(editorStore().getState().saveStatus).toBe('saved');
-    // Two debounced autosaves (1 s each) plus two project loads.
-  }, 15_000);
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
+    expect(control.saveCalls).toEqual([]);
+  });
 });

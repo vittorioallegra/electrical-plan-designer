@@ -50,7 +50,7 @@ test('import a PNG, calibrate two points 4.20 m apart, and measure 4.20 m betwee
   expect(walls).toHaveLength(1);
   const length = Math.hypot(walls[0]!.b.x - walls[0]!.a.x, walls[0]!.b.y - walls[0]!.a.y);
   expect(Math.abs(length - 4.2)).toBeLessThan(0.01);
-  await expect(page.getByTestId('save-status')).toHaveText('Saved', { timeout: 5000 });
+  await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
 });
 
 // protects=AC 3 walls-only plans; fails_when=walls drawn without a background are not in meters; no_claim=segments (step 14)
@@ -71,7 +71,7 @@ test('draw a plan with walls only, in meters', async ({ page }) => {
     s.data.doc.floors[0]!.walls.map((w) => Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y)),
   );
   expect(lengths).toEqual([5, 4, 5, 4]);
-  await expect(page.getByTestId('save-status')).toHaveText('Saved', { timeout: 5000 });
+  await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
   await page.reload();
   await expect(page.getByTestId('project-name')).toBeVisible();
   expect(await editorState(page, (s) => s.data.doc.floors[0]!.walls.length)).toBe(4);

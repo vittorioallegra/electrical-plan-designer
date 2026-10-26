@@ -7,7 +7,5 @@ import type { ProjectRecord } from '@/lib/repositories/types';
 export function ProjectLayoutRoute() {
   const record = useLoaderData<ProjectRecord | null>();
   const { id = '' } = useParams();
-  return (
-    <ProjectLoader key={id} record={record} renderFrame={(props) => <ProjectFrame {...props} />} />
-  );
+  return <ProjectLoader key={id} record={record} renderFrame={() => <ProjectFrame />} />;
 }

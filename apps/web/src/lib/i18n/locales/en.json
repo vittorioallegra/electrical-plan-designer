@@ -34,14 +34,12 @@
     "untitledProject": "Untitled project",
     "saveStatus": {
       "saved": "Saved",
-      "dirty": "Unsaved changes",
-      "saving": "Saving…",
-      "conflict": "Conflict",
-      "error_network": "Offline — will retry",
-      "error_auth_expired": "Session expired — log in again",
-      "error_forbidden": "No permission to save",
-      "error_invalid_doc": "Save rejected",
-      "error_version_conflict": "Conflict",
+      "draft": "Draft",
+      "unsaved": "Unsaved changes",
+      "saved_hint": "Every change is in the project file",
+      "draft_hint": "Changes are kept on this device; save the project to keep them in the file",
+      "unsaved_hint": "Changes are being stored on this device",
+      "draftFailed": "Not stored on this device",
       "retry": "Retry"
     },
     "undo": "Undo",
@@ -70,17 +68,6 @@
       "title": "This project cannot be opened",
       "body": "The stored document failed validation. Download the raw data to keep it safe; nothing is overwritten.",
       "download": "Download raw JSON"
-    },
-    "restore": {
-      "body": "Unsaved changes from {{date}} were found on this device.",
-      "restore": "Restore",
-      "discard": "Discard"
-    },
-    "conflict": {
-      "title": "Project changed elsewhere",
-      "body": "Another tab or device saved this project. Download your version to keep it, then reload to see the latest one.",
-      "download": "Download my version (JSON)",
-      "reload": "Reload"
     },
     "exportJson": "Download project JSON",
     "importJson": "Import project JSON",
@@ -390,8 +377,6 @@
     "importTitle": "Import floor plan",
     "importHint": "PDF, PNG or JPG up to 20 MB. A PDF page is converted to an image.",
     "reading": "Reading the file…",
-    "uploading": "Uploading…",
-    "retryUpload": "Retry upload",
     "pages": "Pages",
     "page": "Page {{page}}",
     "usePage": "Use page {{page}}",
@@ -414,8 +399,7 @@
       "unsupported": "Use a PDF, PNG or JPG file.",
       "encrypted": "This PDF is password-protected. Remove the protection and retry.",
       "corrupt": "The file cannot be read. It may be damaged.",
-      "render_failed": "The page could not be rendered.",
-      "upload_failed": "Upload failed. Check the connection and retry."
+      "render_failed": "The page could not be rendered."
     }
   },
   "nodeKind": {

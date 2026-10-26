@@ -31,5 +31,5 @@ test('place a panel and a socket box, draw a conduit, see its length with drops'
   await page.getByLabel('Run elevation').selectOption('ceiling');
   // 5.00 + (2.70 − 1.50) + (2.70 − 0.30)
   await expect(page.getByTestId('segment-length')).toHaveText('8.60 m');
-  await expect(page.getByTestId('save-status')).toHaveText('Saved', { timeout: 5000 });
+  await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
 });

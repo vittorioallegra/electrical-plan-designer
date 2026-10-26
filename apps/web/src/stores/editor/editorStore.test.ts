@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { IssuedQuote } from '@epd/domain/types';
-import { CommandError } from './editorStore';
+import { CommandError, saveStatusOf } from './editorStore';
 import { demoStore } from '@/testing/editor';
 
 describe('editor store', () => {
@@ -39,6 +39,41 @@ describe('editor store', () => {
     ).toEqual({ ok: false, reason: 'nope' });
   });
 
+  // protects=save status; fails_when=an edit leaves the status "saved", or the status ignores where the data was opened from or what the draft has; no_claim=autosave timing
+  it('derives saved, draft and unsaved from the revisions', async () => {
+    const { store } = await demoStore();
+    expect(saveStatusOf(store.getState())).toBe('saved');
+    store.getState().applyCommand('a', (d) => void (d.doc.nodes[0]!.label = 'A'));
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
+    store.setState({ draftRevision: 1 });
+    expect(saveStatusOf(store.getState())).toBe('draft');
+    expect(saveStatusOf((await demoStore({ status: 'draft' })).store.getState())).toBe('draft');
+    expect(saveStatusOf((await demoStore({ status: 'unsaved' })).store.getState())).toBe('unsaved');
+  });
+
+  // protects=assets outside undo; fails_when=adding an asset counts as a change or undo drops the asset a redo needs; no_claim=pruning unused assets (autosave)
+  it('keeps added assets out of the history', async () => {
+    const { store } = await demoStore();
+    const asset = { mimeType: 'image/png' as const, bytes: new Uint8Array([1]) };
+    store.getState().addAsset('plan_1', asset);
+    expect(store.getState().revision).toBe(0);
+    store.getState().applyCommand('bg', (d) => {
+      d.doc.floors[0]!.background = {
+        assetId: 'plan_1',
+        kind: 'image',
+        widthPx: 10,
+        heightPx: 10,
+        offset: { x: 0, y: 0 },
+        rotation: 0,
+        opacity: 0.4,
+      };
+    });
+    store.getState().undo();
+    expect(store.getState().assets.get('plan_1')).toBe(asset);
+    store.getState().redo();
+    expect(store.getState().data.doc.floors[0]!.background?.assetId).toBe('plan_1');
+  });
+
   // protects=dirty tracking; fails_when=an edit leaves the status "saved"; no_claim=—
   it('marks the store dirty and clears redo on a new command', async () => {
     const { store } = await demoStore();
@@ -46,7 +81,7 @@ describe('editor store', () => {
     store.getState().undo();
     store.getState().applyCommand('b', (d) => void (d.doc.nodes[0]!.label = 'B'));
     expect(store.getState().future).toEqual([]);
-    expect(store.getState().saveStatus).toBe('dirty');
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
     expect(store.getState().revision).toBe(3);
   });
 
@@ -96,7 +131,7 @@ describe('editor store', () => {
       note: '',
     };
     expect(store.getState().appendIssuedQuote(issued)).toEqual({ ok: true });
-    expect(store.getState().saveStatus).toBe('dirty');
+    expect(saveStatusOf(store.getState())).toBe('unsaved');
     store.getState().undo();
     expect(store.getState().data.quote.settings.vatPercent).toBe(22);
     expect(store.getState().data.quote.issued).toEqual([issued]);

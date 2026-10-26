@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLoaderData, useParams } from 'react-router';
 import type { ProjectRecord } from '@/lib/repositories/types';
+import { useRepositories } from '@/lib/repositories/provider';
+import { openRecord } from '@/lib/projectFile/record';
 import { loadDoc } from '@epd/domain/load';
 import type { Point } from '@epd/domain/types';
 import type { Autosave } from '@/stores/editor/autosave';
@@ -17,7 +19,8 @@ import { Checklist } from '@/features/bom/components/Checklist';
 
 const noAutosave: Autosave = { flush: () => undefined, stop: () => undefined };
 
-type State = { status: 'not_found' | 'failed' } | { status: 'ready'; store: EditorStore };
+type State =
+  { status: 'loading' | 'not_found' | 'failed' } | { status: 'ready'; store: EditorStore };
 
 /** Mobile project route: the loader's record, remounted per project. */
 export function MobileProjectRoute() {
@@ -26,27 +29,38 @@ export function MobileProjectRoute() {
   return <MobileProjectPage key={id} record={record} />;
 }
 
-function initialState(record: ProjectRecord | null): State {
-  if (!record) return { status: 'not_found' };
-  try {
-    const { doc } = loadDoc(record.rawDoc);
-    const store = createEditorStore({
-      projectId: record.meta.id,
-      meta: record.meta,
-      data: { doc, settings: record.settings, quote: record.quote },
-      readOnly: true,
-    });
-    return { status: 'ready', store };
-  } catch {
-    return { status: 'failed' };
-  }
-}
-
 /** Mobile light view of one project: purchase checklist and read-only plan. */
 function MobileProjectPage({ record }: { record: ProjectRecord | null }) {
   const { t } = useTranslation();
-  const [state] = useState(() => initialState(record));
+  const { files } = useRepositories();
+  const [state, setState] = useState<State>(() =>
+    record ? { status: 'loading' } : { status: 'not_found' },
+  );
 
+  // Builds the read-only store once; the record's backgrounds are downloaded as assets.
+  useEffect(() => {
+    if (!record) return;
+    let active = true;
+    void (async () => {
+      const { doc } = loadDoc(record.rawDoc);
+      const { project, assets } = await openRecord(record, doc, files);
+      const store = createEditorStore({
+        projectId: record.meta.id,
+        data: project,
+        assets,
+        readOnly: true,
+      });
+      if (active) setState({ status: 'ready', store });
+    })().catch(() => {
+      if (active) setState({ status: 'failed' });
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (state.status === 'loading') return <p className="text-text-muted">{t('common.loading')}</p>;
   if (state.status !== 'ready') {
     return (
       <div className="flex flex-col gap-3">
@@ -66,7 +80,7 @@ function MobileProjectPage({ record }: { record: ProjectRecord | null }) {
 
 function MobileProject() {
   const { t } = useTranslation();
-  const meta = useEditor((s) => s.meta);
+  const meta = useEditor((s) => s.data.meta);
   return (
     <div className="flex flex-col gap-2">
       <div>

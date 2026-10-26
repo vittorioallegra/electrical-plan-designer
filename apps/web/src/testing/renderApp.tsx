@@ -8,7 +8,7 @@ import { AppProviders } from '@/app/provider';
 import { createMemoryRepositories } from '@/lib/repositories/memory';
 import { DEV_LOGIN, seedMemory } from '@/lib/repositories/memorySeed';
 import { createI18n, type Language } from '@/lib/i18n';
-import { createMemoryUnsavedStore } from '@/stores/editor/unsavedStore';
+import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
 
 export const DEMO_PROJECT_ID = '00000000-0000-4000-8000-0000000000aa';
 
@@ -36,7 +36,7 @@ export async function renderApp(
     else await memory.repos.auth.signIn(DEV_LOGIN.email, DEV_LOGIN.password);
   }
   prepare?.(memory);
-  const unsaved = createMemoryUnsavedStore();
+  const drafts = createMemoryDraftRepository();
   const queryClient = createQueryClient();
   const router = createMemoryRouter(createRoutes({ repos: memory.repos, queryClient }), {
     initialEntries: [path],
@@ -46,7 +46,7 @@ export async function renderApp(
       repos={memory.repos}
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ unsaved, exposeTestHandle }}
+      services={{ drafts, exposeTestHandle }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
@@ -65,5 +65,5 @@ export async function renderApp(
         });
       }),
   );
-  return { ...result, ...memory, router, unsaved, queryClient };
+  return { ...result, ...memory, router, drafts, queryClient };
 }

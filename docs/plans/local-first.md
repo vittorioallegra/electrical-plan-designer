@@ -174,14 +174,33 @@ decoding), the per-user query keys go.
 ## Progress notes
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
-compatibility code. Decisions and deferrals the remaining steps must pick up:
+compatibility code; step 4 (open project state). Decisions and deferrals the remaining steps
+must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
   stay at version 1 and change in place; update `projectFile/fixtures/v1.json` and run
   `pnpm demo:epd`. The migrations scaffolding stays for later (see `CLAUDE.md`).
-- **Asset ids** (step 4): until the editor holds a `ProjectFile`, a background's `assetId` is
-  still its Supabase storage path, which contains `/`. `writeEpd` rejects ids outside
-  `[A-Za-z0-9_-]`, so new assets need `newId()` ids.
+- **Open project** (step 4): the store holds `data: ProjectFile` (undoable) and `assets`
+  (outside undo; autosave and saves keep only referenced ones). Imported backgrounds get
+  `newId()` asset ids and live in the store, nothing is uploaded. Until step 5 the editor is
+  opened from a server record: `lib/projectFile/record.ts` (`openRecord`) downloads its
+  backgrounds as assets with fresh ids and fills company, catalogs, price overrides and box
+  presets with empty defaults (the UI still reads them from the profile, step 6).
+- **Draft** (step 4): `DraftRepository` (`lib/repositories/drafts.ts`, IndexedDB `epd` v2,
+  one record; replaces the per-project `unsavedStore`) holds the project, its assets,
+  `savedToFile` and a transitional `recordId`; the loader resumes it when `recordId` matches
+  the opened record, so the server record is no longer written (`ProjectRepository.save` is
+  unused, as are the restore banner and the conflict dialog, both removed). Step 5 replaces
+  `recordId` with the opened file and resumes the draft from the start screen; still to do
+  there: "draft in use" across tabs (`BroadcastChannel`, read-only second tab).
+- **Save status** (step 4): `saveStatusOf(state)` from three revisions: `saved` (the opened
+  file has every change: `fileRevision`), `draft` (changes only in the draft:
+  `draftRevision`), `unsaved` (not stored anywhere yet); `draftFailed` shows a retry.
+  `beforeunload` warns only while `unsaved`. Without Save (step 5) an edited project stays
+  `draft`; step 5 sets `fileRevision` on Save and may also warn on `draft`.
+  `navigator.storage.persist()` is requested on the first draft write.
+- **Mobile** (step 4): it reads the server record, which desktop edits no longer reach, so
+  the E2E only checks purchase-mark sync now.
 - **Logo** (step 6): the app still reads it from the profile (`logoPath`); move it to
   `company.logoAssetId` with the company tab.
 - **Check 10** (step 6): items marked `missing` after a catalog replace, and "price only" items

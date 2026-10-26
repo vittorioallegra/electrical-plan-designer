@@ -34,6 +34,12 @@ const MIME_TYPES = new Map<string, AssetMimeType>(
   Object.entries(EXTENSIONS).map(([mime, ext]) => [ext, mime as AssetMimeType]),
 );
 
+/** The asset as a Blob, e.g. to decode an image. */
+export function assetBlob(asset: ProjectAsset): Blob {
+  // fflate and IndexedDB always hand out plain ArrayBuffer-backed arrays.
+  return new Blob([asset.bytes as Uint8Array<ArrayBuffer>], { type: asset.mimeType });
+}
+
 export function isAssetMimeType(type: string): type is AssetMimeType {
   return type in EXTENSIONS;
 }

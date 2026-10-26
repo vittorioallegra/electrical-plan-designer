@@ -1,13 +1,11 @@
 import { Download, Redo2, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet } from 'react-router';
 import { loadDoc } from '@epd/domain/load';
-import { useEditor, useEditorContext, useEditorServices } from '@/stores/editor/EditorContext';
+import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
-import type { ProjectFrameProps } from '@/features/editor/components/ProjectLoader';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
 import { downloadJson, fileSafe } from '@/lib/download';
 import { Menu } from '@/components/ui/Menu';
 import { Tabs } from '@/components/ui/Tabs';
@@ -34,19 +32,15 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /** Shared frame of the project pages: top bar, view content, bottom drawer, dialogs. */
-export function ProjectFrame({ restore, onRestoreHandled }: ProjectFrameProps) {
-  const { t, i18n } = useTranslation();
+export function ProjectFrame() {
+  const { t } = useTranslation();
   const { store } = useEditorContext();
-  const { unsaved } = useEditorServices();
   const toast = useToast();
-  const navigate = useNavigate();
-  const meta = useEditor((s) => s.meta);
+  const meta = useEditor((s) => s.data.meta);
   const readOnly = useEditor((s) => s.readOnly);
   const canUndo = useEditor((s) => s.past.length > 0 && !s.readOnly);
   const canRedo = useEditor((s) => s.future.length > 0 && !s.readOnly);
-  const conflict = useEditor((s) => s.saveStatus === 'conflict');
   const importInput = useRef<HTMLInputElement>(null);
-  const [conflictOpen, setConflictOpen] = useState(true);
   // 768–1023 px gets the editor with a non-blocking notice, checked once on open.
   const [narrow, setNarrow] = useState(() => window.innerWidth < 1024);
 
@@ -75,7 +69,7 @@ export function ProjectFrame({ restore, onRestoreHandled }: ProjectFrameProps) {
   }
 
   const exportJson = () =>
-    downloadJson(store.getState().data.doc, `${fileSafe(store.getState().meta.name)}.json`);
+    downloadJson(store.getState().data.doc, `${fileSafe(store.getState().data.meta.name)}.json`);
 
   async function importJson(file: File) {
     try {
@@ -190,60 +184,11 @@ export function ProjectFrame({ restore, onRestoreHandled }: ProjectFrameProps) {
           {t('editor.readOnly')}
         </p>
       ) : null}
-      {restore ? (
-        <div className="flex items-center gap-3 bg-warning-bg px-3 py-1.5" role="status">
-          <span>
-            {t('editor.restore.body', {
-              date: new Intl.DateTimeFormat(i18n.language, {
-                dateStyle: 'short',
-                timeStyle: 'short',
-              }).format(new Date(restore.savedAt)),
-            })}
-          </span>
-          <Button
-            variant="primary"
-            onClick={() => {
-              store.getState().applyCommand('restore', (d) => {
-                d.doc = restore.data.doc;
-                d.settings = restore.data.settings;
-                d.quote = restore.data.quote;
-              });
-              onRestoreHandled();
-            }}
-          >
-            {t('editor.restore.restore')}
-          </Button>
-          <Button
-            onClick={() => {
-              void unsaved.delete(restore.projectId);
-              onRestoreHandled();
-            }}
-          >
-            {t('editor.restore.discard')}
-          </Button>
-        </div>
-      ) : null}
-
       <ProgressStrip />
       <div className="min-h-0 flex-1">
         <Outlet />
       </div>
       <BottomDrawer />
-
-      <Dialog
-        open={conflict && conflictOpen}
-        onOpenChange={setConflictOpen}
-        title={t('editor.conflict.title')}
-        description={t('editor.conflict.body')}
-        footer={
-          <>
-            <Button onClick={exportJson}>{t('editor.conflict.download')}</Button>
-            <Button variant="primary" onClick={() => navigate(0)}>
-              {t('editor.conflict.reload')}
-            </Button>
-          </>
-        }
-      />
     </div>
   );
 }

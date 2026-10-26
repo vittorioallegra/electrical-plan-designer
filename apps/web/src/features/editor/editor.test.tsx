@@ -1,13 +1,13 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import demo from '../../../../../tests/fixtures/demo-project.json';
-import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
-import type { ProjectDoc } from '@epd/domain/types';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { demoProjectFile } from '@/testing/editor';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
 const planPath = `/projects/${DEMO_PROJECT_ID}/plan`;
+const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 describe('editor shell', () => {
   // protects=project load; fails_when=a valid project does not open with its name and "Saved"; no_claim=canvas
@@ -33,38 +33,43 @@ describe('editor shell', () => {
     expect(screen.getByRole('button', { name: 'Download raw JSON' })).toBeInTheDocument();
   });
 
-  // protects=offline recovery; fails_when=a local unsaved copy is not offered after reopening; no_claim=IndexedDB itself
-  it('offers to restore unsaved changes kept on this device', async () => {
-    const { unsaved, router } = await renderApp('/projects');
-    const doc = structuredClone(demo) as ProjectDoc;
-    doc.nodes[0]!.label = 'Q1 restored';
-    await unsaved.put({
-      projectId: DEMO_PROJECT_ID,
-      baseVersion: 1,
-      data: {
-        doc,
-        settings: defaultProjectSettings(),
-        quote: { settings: defaultQuoteSettings(), issued: [] },
-      },
+  // protects=draft resume; fails_when=reopening a project ignores the draft written from it, or opens another project's draft; no_claim=IndexedDB itself (drafts.test.ts)
+  it('resumes the draft opened from the same project only', async () => {
+    const { drafts, router } = await renderApp('/projects', { exposeTestHandle: true });
+    const project = demoProjectFile();
+    project.doc.nodes[0]!.label = 'Q1 from draft';
+    const draft = {
+      project,
+      assets: new Map(),
+      savedToFile: false,
       savedAt: '2026-10-25T10:00:00Z',
-    });
+    };
+    await drafts.save({ ...draft, recordId: 'another-project' });
     await router.navigate(planPath);
-    await userEvent.click(await screen.findByRole('button', { name: 'Restore' }));
-    expect(screen.getByTestId('save-status')).toHaveTextContent(/Unsaved changes|Saving/);
-    await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'), {
-      timeout: 3000,
-    });
+    await screen.findByTestId('project-name');
+    expect(editorStore().getState().data.doc.nodes[0]!.label).not.toBe('Q1 from draft');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
+
+    await act(() => router.navigate('/projects'));
+    await drafts.save({ ...draft, recordId: DEMO_PROJECT_ID });
+    await act(() => router.navigate(planPath));
+    await screen.findByTestId('project-name');
+    expect(editorStore().getState().data.doc.nodes[0]!.label).toBe('Q1 from draft');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
   });
 
-  // protects=conflict dialog; fails_when=a version conflict is silent or offers no way to keep local work; no_claim=merge
-  it('shows the conflict dialog with a download of the local version', async () => {
-    const { control } = await renderApp(planPath);
-    await screen.findByTestId('project-name');
-    control.projects.get(DEMO_PROJECT_ID)!.meta.version = 9;
-    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+  // protects=draft write failure; fails_when=a failed draft write looks stored or offers no retry; no_claim=storage quotas
+  it('shows a failed draft write with a retry', async () => {
+    const { drafts } = await renderApp(planPath);
+    const save = vi.spyOn(drafts, 'save').mockRejectedValueOnce(new Error('quota'));
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await userEvent.click(await screen.findByRole('button', { name: 'Add floor' }));
     expect(
-      await screen.findByRole('button', { name: 'Download my version (JSON)' }, { timeout: 3000 }),
+      await screen.findByText('Not stored on this device', undefined, { timeout: 3000 }),
     ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Draft'));
+    expect(save).toHaveBeenCalledTimes(2);
   });
 });
 

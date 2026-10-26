@@ -34,14 +34,12 @@
     "untitledProject": "Progetto senza nome",
     "saveStatus": {
       "saved": "Salvato",
-      "dirty": "Modifiche non salvate",
-      "saving": "Salvataggio…",
-      "conflict": "Conflitto",
-      "error_network": "Offline — nuovo tentativo in corso",
-      "error_auth_expired": "Sessione scaduta — accedi di nuovo",
-      "error_forbidden": "Nessun permesso di salvare",
-      "error_invalid_doc": "Salvataggio rifiutato",
-      "error_version_conflict": "Conflitto",
+      "draft": "Bozza",
+      "unsaved": "Modifiche non salvate",
+      "saved_hint": "Tutte le modifiche sono nel file del progetto",
+      "draft_hint": "Le modifiche sono conservate su questo dispositivo; salva il progetto per averle nel file",
+      "unsaved_hint": "Le modifiche vengono conservate su questo dispositivo",
+      "draftFailed": "Non conservato su questo dispositivo",
       "retry": "Riprova"
     },
     "undo": "Annulla",
@@ -70,17 +68,6 @@
       "title": "Questo progetto non si può aprire",
       "body": "Il documento salvato non ha superato la validazione. Scarica i dati grezzi per conservarli; nulla viene sovrascritto.",
       "download": "Scarica JSON grezzo"
-    },
-    "restore": {
-      "body": "Su questo dispositivo ci sono modifiche non salvate del {{date}}.",
-      "restore": "Ripristina",
-      "discard": "Scarta"
-    },
-    "conflict": {
-      "title": "Progetto modificato altrove",
-      "body": "Un'altra scheda o un altro dispositivo ha salvato questo progetto. Scarica la tua versione per conservarla, poi ricarica per vedere la più recente.",
-      "download": "Scarica la mia versione (JSON)",
-      "reload": "Ricarica"
     },
     "exportJson": "Scarica JSON del progetto",
     "importJson": "Importa JSON del progetto",
@@ -390,8 +377,6 @@
     "importTitle": "Importa pianta",
     "importHint": "PDF, PNG o JPG fino a 20 MB. Una pagina PDF viene convertita in immagine.",
     "reading": "Lettura del file…",
-    "uploading": "Caricamento…",
-    "retryUpload": "Riprova caricamento",
     "pages": "Pagine",
     "page": "Pagina {{page}}",
     "usePage": "Usa pagina {{page}}",
@@ -414,8 +399,7 @@
       "unsupported": "Usa un file PDF, PNG o JPG.",
       "encrypted": "Questo PDF è protetto da password. Rimuovi la protezione e riprova.",
       "corrupt": "Il file non si può leggere. Potrebbe essere danneggiato.",
-      "render_failed": "Impossibile convertire la pagina.",
-      "upload_failed": "Caricamento non riuscito. Controlla la connessione e riprova."
+      "render_failed": "Impossibile convertire la pagina."
     }
   },
   "nodeKind": {

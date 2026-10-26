@@ -2,27 +2,21 @@
 // which records immer patches for undo/redo.
 import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch } from 'immer';
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { SaveErrorCode } from '@/lib/repositories/types';
+import type { ProjectFile } from '@epd/domain/projectFile';
 import { docIntegrityIssues } from '@epd/domain/schema';
-import type {
-  IssuedQuote,
-  Point,
-  ProjectDoc,
-  ProjectMeta,
-  ProjectQuote,
-  ProjectSettings,
-} from '@epd/domain/types';
+import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
+import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
 
 enablePatches();
 
-/** The undoable part of a project: doc + per-project settings + quote settings. */
-export interface EditorData {
-  doc: ProjectDoc;
-  settings: ProjectSettings;
-  quote: ProjectQuote;
-}
+/** The undoable part of the open project: the whole project file except its assets. */
+export type EditorData = ProjectFile;
 
-export type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict';
+/**
+ * Where the latest changes are: in the opened file (`saved`), only in the draft on this
+ * device (`draft`), or not stored anywhere yet (`unsaved`).
+ */
+export type SaveStatus = 'saved' | 'draft' | 'unsaved';
 
 interface HistoryEntry {
   label: string;
@@ -63,17 +57,20 @@ export interface EditorUi {
 export type DrawerTab = 'circuits' | 'bom' | 'warnings';
 
 export interface EditorState {
+  /** Route id of the project (the server record it was opened from). */
   projectId: string;
-  meta: ProjectMeta;
   data: EditorData;
+  /** Asset bytes by id. Kept outside undo/redo; unreferenced ones are left out of saves. */
+  assets: ProjectAssets;
   readOnly: boolean;
-  /** Server version the data is based on (expected_version of the next save). */
-  version: number;
-  /** Increments on every change; compared with savedRevision to know if we are dirty. */
+  /** Increments on every change; compared with the revisions below to get the save status. */
   revision: number;
-  savedRevision: number;
-  saveStatus: SaveStatus;
-  saveError: SaveErrorCode | null;
+  /** Revision last written to the draft. */
+  draftRevision: number;
+  /** Revision the opened file matches; null when there is no file or it is already behind. */
+  fileRevision: number | null;
+  /** The last draft write failed: the changes since draftRevision exist only in this tab. */
+  draftFailed: boolean;
   past: HistoryEntry[];
   future: HistoryEntry[];
   ui: EditorUi;
@@ -83,7 +80,8 @@ export interface EditorState {
   undo(): void;
   redo(): void;
   setUi(patch: Partial<EditorUi>): void;
-  setMeta(patch: Partial<ProjectMeta>): void;
+  /** Adds an asset (a new background, a logo); a command then references it. */
+  addAsset(id: string, asset: ProjectAsset): void;
 }
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
@@ -96,9 +94,18 @@ const HISTORY_LIMIT = 200;
 
 export interface EditorInit {
   projectId: string;
-  meta: ProjectMeta;
   data: EditorData;
+  assets?: ProjectAssets;
   readOnly?: boolean;
+  /** Where the opened data already is (default `saved`: it matches the opened file). */
+  status?: SaveStatus;
+}
+
+export function saveStatusOf(
+  s: Pick<EditorState, 'revision' | 'draftRevision' | 'fileRevision'>,
+): SaveStatus {
+  if (s.fileRevision === s.revision) return 'saved';
+  return s.draftRevision === s.revision ? 'draft' : 'unsaved';
 }
 
 export type EditorStore = StoreApi<EditorState>;
@@ -112,22 +119,20 @@ export function createEditorStore(init: EditorInit): EditorStore {
         data,
         ...history,
         revision: s.revision + 1,
-        saveStatus:
-          s.saveStatus === 'conflict' ? 'conflict' : s.saveStatus === 'saving' ? 'saving' : 'dirty',
         ui: keepUiValid(s.ui, data.doc),
       });
     };
 
     return {
       projectId: init.projectId,
-      meta: init.meta,
       data: init.data,
+      assets: init.assets ?? new Map(),
       readOnly: init.readOnly ?? false,
-      version: init.meta.version,
       revision: 0,
-      savedRevision: 0,
-      saveStatus: 'saved',
-      saveError: null,
+      // `unsaved` at open = written nowhere yet: draftRevision -1 makes the first save write it.
+      draftRevision: init.status === 'unsaved' ? -1 : 0,
+      fileRevision: (init.status ?? 'saved') === 'saved' ? 0 : null,
+      draftFailed: false,
       past: [],
       future: [],
       ui: {
@@ -196,8 +201,8 @@ export function createEditorStore(init: EditorInit): EditorStore {
         set({ ui: { ...get().ui, ...patch } });
       },
 
-      setMeta(patch) {
-        set({ meta: { ...get().meta, ...patch } });
+      addAsset(id, asset) {
+        set({ assets: new Map(get().assets).set(id, asset) });
       },
     };
   });

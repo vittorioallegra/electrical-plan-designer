@@ -18,7 +18,7 @@ export function useQuoteExport() {
   const { i18n } = useTranslation();
   const { files } = useRepositories();
   const { profile } = useCatalog();
-  const meta = useEditor((s) => s.meta);
+  const meta = useEditor((s) => s.data.meta);
 
   function target(quote: QuoteDocument | IssuedQuote) {
     const issued = 'number' in quote ? quote : null;

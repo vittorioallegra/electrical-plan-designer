@@ -1,5 +1,6 @@
 // Repository interfaces: the app's only view of persistence.
 import type { CatalogItem } from '@epd/domain/catalog/types';
+import type { ProjectFile } from '@epd/domain/projectFile';
 import type {
   BoxPreset,
   PriceOverrides,
@@ -7,6 +8,7 @@ import type {
   ProjectQuote,
   ProjectSettings,
 } from '@epd/domain/types';
+import type { ProjectAssets } from '@/lib/projectFile/epd';
 
 export interface Session {
   userId: string;
@@ -133,4 +135,23 @@ export interface Repositories {
   catalog: CatalogRepository;
   purchases: PurchaseRepository;
   files: FileRepository;
+}
+
+/** The open project as autosave keeps it on this device. */
+export interface Draft {
+  project: ProjectFile;
+  /** Only the assets the project references. */
+  assets: ProjectAssets;
+  /** True when the opened file already has every change in the draft. */
+  savedToFile: boolean;
+  savedAt: string;
+  /** Server project the draft was opened from, while projects still come from the server. */
+  recordId?: string;
+}
+
+/** One draft per app: the project open in the tab. */
+export interface DraftRepository {
+  get(): Promise<Draft | null>;
+  save(draft: Draft): Promise<void>;
+  clear(): Promise<void>;
 }

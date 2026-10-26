@@ -50,7 +50,8 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
 - `src/lib/` — `repositories/` (interfaces, Supabase + in-memory; the only Supabase code),
   `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `projectFile/` (`.epd` zip read/write,
   `fflate`), `query-client.ts`, formatting helpers
-- `src/stores/editor/` — editor store (zustand + immer patches), undo/redo, autosave
+- `src/stores/editor/` — editor store (open `ProjectFile` + assets, zustand + immer patches),
+  undo/redo, autosave to the draft (`lib/repositories/drafts.ts`, IndexedDB)
 - `src/testing/` — `setup.ts`, `renderApp.tsx`, `editor.ts`, `pdfText.ts`
 - `supabase/` (config, migrations, seed), `scripts/` (check-env, env-local, build-seed),
   `tests/fixtures/` (shared fixtures; e2e uses `fixture(name)`), `tests/lint/` (lint rule tests)
@@ -67,7 +68,7 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
 - Server data: TanStack Query over `useRepositories()`, never `useEffect` fetches. Keys from
   `src/api/keys.ts` start with the user id; cache cleared when a user signs out or changes; no
   retries or refetch on focus. The project record is fetched fresh and never re-seeds an open
-  editor.
+  editor; autosave writes only the draft, and a draft opened from the same record is resumed.
 - Routes: auth middleware before loaders; loaders read via the query client, side effects stay
   in components; every route has an `ErrorBoundary` (`components/ui/RouteError`); editor,
   canvas and PDF code are lazy. `renderApp()` (real routes, in-memory repos, fresh query client)

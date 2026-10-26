@@ -1,144 +1,98 @@
-// Autosave: debounced, one save in flight at a time, typed error handling.
-import type { AuthRepository, ProjectRepository } from '@/lib/repositories/types';
-import { SaveError } from '@/lib/repositories/types';
-import type { ProjectMeta } from '@epd/domain/types';
-import type { EditorData, EditorStore } from './editorStore';
-import type { UnsavedStore } from './unsavedStore';
+// Autosave: writes the open project to the draft, debounced, one write in flight at a time.
+import { referencedAssetIds } from '@epd/domain/projectFile';
+import type { DraftRepository } from '@/lib/repositories/types';
+import type { ProjectAssets } from '@/lib/projectFile/epd';
+import { saveStatusOf, type EditorState, type EditorStore } from './editorStore';
 
 export interface AutosaveOptions {
-  projects: ProjectRepository;
-  auth?: AuthRepository;
-  unsaved?: UnsavedStore;
+  drafts: DraftRepository;
   debounceMs?: number;
-  /** Delays of the bounded retry for network errors. */
-  retryDelaysMs?: number[];
   target?: Pick<Window, 'addEventListener' | 'removeEventListener'>;
-  /** Called after each successful save with the new meta and the data that was saved. */
-  onSaved?: (meta: ProjectMeta, data: EditorData) => void;
+  now?: () => Date;
 }
 
 export interface Autosave {
-  /** Saves now (skips the debounce), e.g. on an explicit retry click. */
+  /** Writes the draft now (skips the debounce), e.g. on an explicit retry click. */
   flush(): void;
   stop(): void;
 }
 
+function usedAssets(s: EditorState): ProjectAssets {
+  const assets: ProjectAssets = new Map();
+  for (const id of referencedAssetIds(s.data)) {
+    const asset = s.assets.get(id);
+    if (asset) assets.set(id, asset);
+  }
+  return assets;
+}
+
 export function startAutosave(store: EditorStore, options: AutosaveOptions): Autosave {
   const debounceMs = options.debounceMs ?? 1000;
-  const retryDelays = options.retryDelaysMs ?? [1000, 2000, 4000];
+  const now = options.now ?? (() => new Date());
   const target = options.target ?? (typeof window !== 'undefined' ? window : undefined);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight = false;
-  let attempt = 0;
   let stopped = false;
 
   const schedule = (delay = debounceMs) => {
+    if (stopped) return;
     clearTimeout(timer);
     timer = setTimeout(() => void run(), delay);
   };
 
   async function run() {
     const s = store.getState();
-    if (stopped || inFlight || s.readOnly || s.saveStatus === 'conflict') return;
-    if (s.revision === s.savedRevision) return;
+    if (inFlight || s.readOnly || s.revision === s.draftRevision) return;
     inFlight = true;
     const revision = s.revision;
-    store.setState({ saveStatus: 'saving' });
     try {
-      const version = await options.projects.save(
-        s.projectId,
-        s.version,
-        s.data.doc,
-        s.data.settings,
-        s.data.quote,
-      );
-      attempt = 0;
-      const now = store.getState();
-      const clean = now.revision === revision;
-      store.setState({
-        version,
-        savedRevision: revision,
-        saveStatus: clean ? 'saved' : 'dirty',
-        saveError: null,
-        meta: { ...now.meta, version },
+      await options.drafts.save({
+        project: s.data,
+        assets: usedAssets(s),
+        savedToFile: s.fileRevision === revision,
+        savedAt: now().toISOString(),
+        recordId: s.projectId,
       });
-      options.onSaved?.({ ...now.meta, version }, s.data);
-      if (clean) {
-        void options.unsaved?.delete(s.projectId).catch(() => undefined);
-      } else {
-        // Edits made during the save now sit on top of the new version: rebase the local
-        // copy, or a reload would see it as stale and never offer it.
-        void options.unsaved
-          ?.put({
-            projectId: s.projectId,
-            baseVersion: version,
-            data: now.data,
-            savedAt: new Date().toISOString(),
-          })
-          .catch(() => undefined);
-        schedule();
-      }
+      store.setState({ draftRevision: revision, draftFailed: false });
     } catch (e) {
-      const code = e instanceof SaveError ? e.code : 'network';
-      if (code === 'version_conflict') {
-        store.setState({ saveStatus: 'conflict', saveError: code });
-      } else if (code === 'network' && attempt < retryDelays.length) {
-        store.setState({ saveStatus: 'saving', saveError: code });
-        schedule(retryDelays[attempt++]);
-      } else {
-        attempt = 0;
-        store.setState({ saveStatus: 'error', saveError: code });
-      }
+      console.error(e);
+      store.setState({ draftFailed: true });
     } finally {
       inFlight = false;
+    }
+    // Edits made during the write go in the next one.
+    if (store.getState().revision !== revision && !store.getState().draftFailed) {
+      if (stopped) void run();
+      else schedule();
     }
   }
 
   const unsubscribe = store.subscribe((state, prev) => {
     if (state.revision === prev.revision || state.readOnly) return;
-    void options.unsaved
-      ?.put({
-        projectId: state.projectId,
-        baseVersion: state.version,
-        data: state.data,
-        savedAt: new Date().toISOString(),
-      })
-      .catch(() => undefined);
-    if (state.saveStatus === 'conflict') return;
-    if (state.saveStatus === 'error') store.setState({ saveStatus: 'dirty' });
-    attempt = 0;
     if (!inFlight) schedule();
   });
+  if (saveStatusOf(store.getState()) === 'unsaved') schedule(0);
 
-  const onOnline = () => {
-    const s = store.getState();
-    if (s.saveStatus === 'error' && s.saveError === 'network') schedule(0);
-  };
+  // Changes not in the draft yet would be lost with the tab.
   const onBeforeUnload = (e: BeforeUnloadEvent) => {
-    if (store.getState().saveStatus !== 'saved') {
+    if (saveStatusOf(store.getState()) === 'unsaved') {
       e.preventDefault();
       e.returnValue = '';
     }
   };
-  target?.addEventListener('online', onOnline);
   target?.addEventListener('beforeunload', onBeforeUnload as EventListener);
-  const unsubscribeAuth = options.auth?.onChange((session) => {
-    const s = store.getState();
-    if (session && s.saveStatus === 'error' && s.saveError === 'auth_expired') schedule(0);
-  });
 
   return {
     flush() {
-      attempt = 0;
       schedule(0);
     },
+    /** Stops watching; changes still waiting for the debounce are written right away. */
     stop() {
       stopped = true;
       clearTimeout(timer);
       unsubscribe();
-      unsubscribeAuth?.();
-      target?.removeEventListener('online', onOnline);
       target?.removeEventListener('beforeunload', onBeforeUnload as EventListener);
+      void run();
     },
   };
 }

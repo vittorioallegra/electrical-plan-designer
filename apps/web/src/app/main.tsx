@@ -8,7 +8,7 @@ import { getConfig } from '@/config/env';
 import { createQueryClient } from '@/lib/query-client';
 import { createRepositories } from '@/lib/repositories/provider';
 import { createI18n } from '@/lib/i18n';
-import { createIndexedDbUnsavedStore } from '@/stores/editor/unsavedStore';
+import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
 import './styles.css';
 
 const config = getConfig();
@@ -28,7 +28,7 @@ createRoot(document.getElementById('root')!).render(
       queryClient={queryClient}
       repos={repos}
       i18n={i18n}
-      services={{ unsaved: createIndexedDbUnsavedStore(), exposeTestHandle: config.testHandle }}
+      services={{ drafts: createIndexedDbDraftRepository(), exposeTestHandle: config.testHandle }}
     >
       <RouterProvider router={router} />
     </AppProviders>

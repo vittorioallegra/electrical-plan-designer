@@ -2,11 +2,12 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
-import { createIndexedDbUnsavedStore, type UnsavedStore } from './unsavedStore';
+import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
+import type { DraftRepository } from '@/lib/repositories/types';
 
 /** App-wide editor services, injectable for tests. */
 export interface EditorServices {
-  unsaved: UnsavedStore;
+  drafts: DraftRepository;
   /** Expose `window.__epd` (dev and E2E builds only). */
   exposeTestHandle: boolean;
 }
@@ -22,7 +23,7 @@ export function EditorServicesProvider({
   services?: EditorServices | undefined;
   children: ReactNode;
 }) {
-  defaultServices ??= { unsaved: createIndexedDbUnsavedStore(), exposeTestHandle: false };
+  defaultServices ??= { drafts: createIndexedDbDraftRepository(), exposeTestHandle: false };
   return (
     <ServicesContext.Provider value={services ?? defaultServices}>
       {children}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRepositories } from '@/lib/repositories/provider';
 import { newId } from '@epd/domain/ids';
 import type { Background } from '@epd/domain/types';
 import { useEditorContext } from '@/stores/editor/EditorContext';
@@ -8,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { FileDropZone } from '@/components/ui/FileDropZone';
 import { cn } from '@/lib/cn';
-import { useSession } from '@/lib/auth/AuthProvider';
 import { usePrimeBackgroundImage } from '../canvas/useBackgroundImage';
 import { checkFile, ImportError, loadImage, openPdf, type PdfHandle } from './importFile';
 
@@ -17,9 +15,7 @@ const MAX_THUMBNAILS = 30;
 type Step =
   | { kind: 'pick' }
   | { kind: 'reading' }
-  | { kind: 'pages'; pdf: PdfHandle; thumbs: (string | null)[]; selected: number }
-  | { kind: 'uploading' }
-  | { kind: 'upload_failed'; retry: () => void };
+  | { kind: 'pages'; pdf: PdfHandle; thumbs: (string | null)[]; selected: number };
 
 export function BackgroundImportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   // Mounted only while open, so every import starts from a clean state.
@@ -28,8 +24,6 @@ export function BackgroundImportDialog({ open, onClose }: { open: boolean; onClo
 
 function ImportDialogBody({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const { files } = useRepositories();
-  const session = useSession();
   const primeBackgroundImage = usePrimeBackgroundImage();
   const { store } = useEditorContext();
   const [step, setStep] = useState<Step>({ kind: 'pick' });
@@ -43,45 +37,37 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
     [],
   );
 
-  async function upload(
+  /** Keeps the image as a project asset and sets it as the current floor's background. */
+  async function applyImage(
     blob: Blob,
     image: HTMLImageElement,
     kind: Background['kind'],
     page?: number,
   ) {
+    const assetId = newId();
+    const bytes = new Uint8Array(await blob.arrayBuffer());
     const s = store.getState();
-    const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
-    // The storage path doubles as the background's asset id.
-    const path = `${session.userId}/${s.projectId}/${newId()}.${ext}`;
-    const attempt = async () => {
-      setStep({ kind: 'uploading' });
-      setError(null);
-      try {
-        await files.upload('backgrounds', path, blob);
-      } catch {
-        setError(t('background.errors.upload_failed'));
-        setStep({ kind: 'upload_failed', retry: () => void attempt() });
-        return;
-      }
-      primeBackgroundImage(path, image);
-      const floorId = store.getState().ui.floorId;
-      store.getState().applyCommand('import background', (d) => {
-        const floor = d.doc.floors.find((f) => f.id === floorId);
-        if (!floor) return;
-        floor.background = {
-          assetId: path,
-          kind,
-          ...(page ? { page } : {}),
-          widthPx: image.naturalWidth || image.width,
-          heightPx: image.naturalHeight || image.height,
-          offset: { x: 0, y: 0 },
-          rotation: 0,
-          opacity: 0.4,
-        };
-      });
-      onClose();
-    };
-    await attempt();
+    s.addAsset(assetId, {
+      mimeType: blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/png',
+      bytes,
+    });
+    primeBackgroundImage(assetId, image);
+    const floorId = s.ui.floorId;
+    s.applyCommand('import background', (d) => {
+      const floor = d.doc.floors.find((f) => f.id === floorId);
+      if (!floor) return;
+      floor.background = {
+        assetId,
+        kind,
+        ...(page ? { page } : {}),
+        widthPx: image.naturalWidth || image.width,
+        heightPx: image.naturalHeight || image.height,
+        offset: { x: 0, y: 0 },
+        rotation: 0,
+        opacity: 0.4,
+      };
+    });
+    onClose();
   }
 
   async function onFile(file: File) {
@@ -91,7 +77,7 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
       setStep({ kind: 'reading' });
       if (kind === 'image') {
         const image = await loadImage(file);
-        await upload(file, image, 'image');
+        await applyImage(file, image, 'image');
         return;
       }
       const pdf = await openPdf(file);
@@ -118,7 +104,7 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
     try {
       const { blob } = await pdf.render(page);
       const image = await loadImage(blob);
-      await upload(blob, image, 'pdf', page);
+      await applyImage(blob, image, 'pdf', page);
     } catch (e) {
       setError(t(`background.errors.${e instanceof ImportError ? e.code : 'render_failed'}`));
       setStep({ kind: 'pick' });
@@ -139,13 +125,6 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
               {t('background.usePage', { page: step.selected })}
             </Button>
           </>
-        ) : step.kind === 'upload_failed' ? (
-          <>
-            <Button onClick={onClose}>{t('common.cancel')}</Button>
-            <Button variant="primary" onClick={step.retry}>
-              {t('background.retryUpload')}
-            </Button>
-          </>
         ) : (
           <Button onClick={onClose}>{t('common.cancel')}</Button>
         )
@@ -164,7 +143,6 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
         />
       ) : null}
       {step.kind === 'reading' ? <p role="status">{t('background.reading')}</p> : null}
-      {step.kind === 'uploading' ? <p role="status">{t('background.uploading')}</p> : null}
       {step.kind === 'pages' ? (
         <div
           className="grid max-h-96 grid-cols-3 gap-2 overflow-y-auto"
