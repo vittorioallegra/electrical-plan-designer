@@ -14,8 +14,12 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
-        <RadixDialog.Overlay className="fixed inset-0 bg-black/30" />
-        <RadixDialog.Content className="fixed top-1/2 left-1/2 w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-surface p-5 shadow-xl">
+        {/* Above sticky bars (z-10); below toasts (z-50). */}
+        <RadixDialog.Overlay
+          className="fixed inset-0 z-40 bg-black/30"
+          data-testid="dialog-overlay"
+        />
+        <RadixDialog.Content className="fixed top-1/2 z-40 left-1/2 w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-surface p-5 shadow-xl">
           <RadixDialog.Title className="text-lg font-semibold">{title}</RadixDialog.Title>
           {description ? (
             <RadixDialog.Description className="mt-1 text-text-muted">

@@ -6,12 +6,19 @@ test.beforeEach(async ({ page }) => {
   await logIn(page);
 });
 
-// protects=AC 2 import + calibration; fails_when=a calibrated 4.20 m distance measures off by > 1 cm; no_claim=PDF import
+// protects=AC 2 import + calibration, dialog overlay above the drawer tab bar; fails_when=a calibrated 4.20 m distance measures off by > 1 cm or the tab bar shows over the overlay; no_claim=PDF import
 test('import a PNG, calibrate two points 4.20 m apart, and measure 4.20 m between them', async ({
   page,
 }) => {
   await newProject(page, `AC2 ${Date.now()}`);
   await page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }).click();
+  // The dialog overlay covers the sticky drawer tab bar.
+  const tab = await page.getByRole('tab', { name: 'Circuits', includeHidden: true }).boundingBox();
+  const topmost = await page.evaluate(
+    ({ x, y }) => document.elementFromPoint(x, y)?.getAttribute('data-testid') ?? null,
+    { x: tab!.x + tab!.width / 2, y: tab!.y + tab!.height / 2 },
+  );
+  expect(topmost).toBe('dialog-overlay');
   await page.getByTestId('background-file').setInputFiles(fixture('plan-1000x800.png'));
   await expect(page.getByTestId('background-panel')).toContainText('Not calibrated');
 
