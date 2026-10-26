@@ -14,7 +14,9 @@
     "quote": "Quote",
     "settings": "Settings",
     "start": "Start",
-    "company": "Company"
+    "company": "Company",
+    "presets": "Presets",
+    "defaults": "Defaults"
   },
   "pages": {
     "plan": "Plan",
@@ -23,7 +25,9 @@
     "settings": "Project settings",
     "catalog": "Catalog",
     "notFound": "Page not found",
-    "company": "Company"
+    "company": "Company",
+    "presets": "Box presets",
+    "defaults": "Defaults for new projects"
   },
   "editor": {
     "saveStatus": {
@@ -162,7 +166,7 @@
       "usb_charger": "USB charger"
     },
     "missingItem": "Missing catalog item ({{id}})",
-    "hint": "Built-in items are generic: give them a price, or duplicate them to add your code and brand. Imported catalogs are copied into the project, so it prices the same when reopened. Items are archived, never deleted.",
+    "hint": "Built-in items are generic: give them a price, or duplicate them to add your code and brand. Items are archived, never deleted. Projects keep their own copies of the items they use.",
     "category": "Category",
     "categories": {
       "device": "Devices",
@@ -244,9 +248,9 @@
     "export": "Export .epc",
     "remove": "Remove",
     "removeTitle": "Remove \"{{name}}\"?",
-    "removeBody": "The catalog and its items leave this project. Undo brings them back.",
-    "removeInUse_one": "{{name}} cannot be removed: {{count}} of its items is used in the project.",
-    "removeInUse_other": "{{name}} cannot be removed: {{count}} of its items are used in the project.",
+    "removeBody": "The catalog and its items leave the library. Projects that use them keep their own copies.",
+    "removeInUse_one": "{{name}} cannot be removed: {{count}} of its items is used in a box preset.",
+    "removeInUse_other": "{{name}} cannot be removed: {{count}} of its items are used in box presets.",
     "missingBadge": "not in the new list",
     "priceOnlyBadge": "price only",
     "import": {
@@ -297,8 +301,8 @@
       "dropped_one": "{{count}} unused item no longer listed (removed)",
       "dropped_other": "{{count}} unused items no longer listed (removed)",
       "priceChanges": "Price changes",
-      "missingInUse": "Used in the project but missing from the new list",
-      "missingInUseHint": "They keep their current data and show a warning in the checks.",
+      "missingInUse": "Used in box presets but missing from the new list",
+      "missingInUseHint": "They keep their current data.",
       "edited": "Items you edited by hand",
       "editedHint": "Checked items keep your edit; unchecked ones take the new list's data.",
       "keepEdit": "Keep my edit of {{name}}",
@@ -789,7 +793,7 @@
     }
   },
   "company": {
-    "hint": "The business shown on this project's quotes. Empty fields are left out. Saved with the project file.",
+    "hint": "The business shown on every quote and PDF. Empty fields are left out. Saved in the library, not in the project file.",
     "businessName": "Business name",
     "vatNumber": "VAT number",
     "address": "Address",
@@ -799,6 +803,48 @@
     "removeLogo": "Remove logo",
     "logoType": "The logo must be a PNG or JPG image.",
     "logoTooLarge": "The logo must be at most 2 MB."
+  },
+  "library": {
+    "title": "Library",
+    "open": "Library",
+    "sections": "Library sections",
+    "backToProject": "Back to {{name}}",
+    "backToStart": "Back to start",
+    "invalidNotice": "Some library files were not valid. They were set aside, not deleted, and the library started with defaults for those parts: {{files}}.",
+    "writeFailed": "A library change could not be saved: {{message}}",
+    "dismiss": "Dismiss",
+    "export": {
+      "action": "Export library…",
+      "done": "Library exported."
+    },
+    "import": {
+      "action": "Import library…",
+      "title": "Replace the library?",
+      "body_one": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalog). Your current library is first copied to a backup folder in the app data folder.",
+      "body_other": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalogs). Your current library is first copied to a backup folder in the app data folder.",
+      "confirm": "Replace library",
+      "done": "Library replaced.",
+      "failed": "Could not replace the library. Nothing was changed.",
+      "errors": {
+        "not_a_library": "This is not a library file.",
+        "newer_version": "This library was exported by a newer version of the app.",
+        "invalid": "The library file is damaged."
+      }
+    },
+    "defaults": {
+      "hint": "New projects start with these project and quote settings, then edit their own copy."
+    },
+    "presets": {
+      "hint": "A preset is a box with its contents, applied when a box is placed.",
+      "empty": "No presets yet.",
+      "new": "New preset",
+      "newTitle": "New preset",
+      "create": "Create",
+      "box": "Box",
+      "delete": "Delete",
+      "deleteTitle": "Delete \"{{name}}\"?",
+      "deleteBody": "The preset leaves the library. Boxes already placed in projects are not changed."
+    }
   },
   "counts": {
     "elements_one": "{{count}} element",

@@ -10,6 +10,7 @@ export const exportFilters = {
   csv: [{ name: 'CSV', extensions: ['csv'] }],
   json: [{ name: 'JSON', extensions: ['json'] }],
   catalog: [{ name: 'Catalog', extensions: ['epc'] }],
+  library: [{ name: 'Library', extensions: ['epl'] }],
 } satisfies Record<string, ExportFilter[]>;
 
 /**

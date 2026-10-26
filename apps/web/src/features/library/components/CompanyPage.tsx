@@ -1,33 +1,25 @@
 import { useCallback, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { newId } from '@epd/domain/ids';
-import type { Company } from '@epd/domain/projectFile';
-import { assetBlob, type ProjectAsset } from '@/lib/projectFile/epd';
-import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { isLogoMimeType, matchesLogoType, MAX_LOGO_BYTES } from '@epd/domain/library';
+import { assetBlob } from '@/lib/projectFile/epd';
+import { useEditorServices } from '@/stores/editor/EditorContext';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 
-const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 const fields = ['businessName', 'vatNumber', 'address', 'phone', 'email'] as const;
-type Field = (typeof fields)[number];
 
-/** `/project/company`: the business shown on this project's quotes, logo included. */
+/** `/library/company`: the business shown on every quote and PDF, logo included. */
 export function CompanyPage() {
   const { t } = useTranslation();
-  const { store } = useEditorContext();
+  const { library } = useEditorServices();
   const toast = useToast();
-  const company = useEditor((s) => s.data.company);
-  const readOnly = useEditor((s) => s.readOnly);
-  const logo = useEditor((s) =>
-    s.data.company.logoAssetId ? s.assets.get(s.data.company.logoAssetId) : undefined,
-  );
-
-  const setCompany = (label: string, recipe: (c: Company) => void) =>
-    store.getState().applyCommand(label, (d) => recipe(d.company));
+  const company = useLibrary((s) => s.library.company);
+  const logo = useLibrary((s) => s.logo);
 
   async function setLogo(file: File) {
-    if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
+    if (!isLogoMimeType(file.type)) {
       toast(t('company.logoType'), 'error');
       return;
     }
@@ -35,18 +27,16 @@ export function CompanyPage() {
       toast(t('company.logoTooLarge'), 'error');
       return;
     }
-    const id = newId();
-    store.getState().addAsset(id, {
-      mimeType: file.type,
-      bytes: new Uint8Array(await file.arrayBuffer()),
-    });
-    setCompany('logo', (c) => {
-      c.logoAssetId = id;
-    });
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (!matchesLogoType(file.type, bytes)) {
+      toast(t('company.logoType'), 'error');
+      return;
+    }
+    library.getState().setLogo({ mimeType: file.type, bytes });
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-lg flex-col gap-3 overflow-y-auto p-4">
+    <div className="mx-auto flex max-w-lg flex-col gap-3">
       <h1 className="text-xl font-semibold">{t('pages.company')}</h1>
       <p className="text-text-muted">{t('company.hint')}</p>
       {fields.map((field) => (
@@ -54,18 +44,17 @@ export function CompanyPage() {
           key={field}
           label={t(`company.${field}`)}
           value={company[field]}
-          disabled={readOnly}
           onCommit={(value) =>
-            setCompany(field, (c) => {
-              c[field as Field] = value;
+            library.getState().apply((d) => {
+              d.company[field] = value;
             })
           }
         />
       ))}
       <div className="flex items-center gap-3">
         {logo ? (
-          <AssetImage
-            asset={logo}
+          <LogoImage
+            logo={logo}
             alt={t('company.logo')}
             className="h-16 w-auto rounded border border-border"
           />
@@ -75,7 +64,6 @@ export function CompanyPage() {
           <input
             type="file"
             accept="image/png,image/jpeg"
-            disabled={readOnly}
             onChange={(e) => {
               const file = e.target.files?.[0];
               e.target.value = '';
@@ -84,15 +72,7 @@ export function CompanyPage() {
           />
         </label>
         {logo ? (
-          <Button
-            variant="ghost"
-            disabled={readOnly}
-            onClick={() =>
-              setCompany('remove logo', (c) => {
-                delete c.logoAssetId;
-              })
-            }
-          >
+          <Button variant="ghost" onClick={() => library.getState().setLogo(null)}>
             {t('company.removeLogo')}
           </Button>
         ) : null}
@@ -101,15 +81,14 @@ export function CompanyPage() {
   );
 }
 
-/** A text field that edits its own copy and commits on blur; undo/redo resets the copy. */
+/** A text field that edits its own copy and commits on blur. */
 function CommitField({
   value,
   onCommit,
-  ...props
+  label,
 }: {
   label: string;
   value: string;
-  disabled: boolean;
   onCommit: (value: string) => void;
 }) {
   const [text, setText] = useState(value);
@@ -120,7 +99,7 @@ function CommitField({
   }
   return (
     <TextField
-      {...props}
+      label={label}
       value={text}
       onChange={(e) => setText(e.target.value)}
       onBlur={() => {
@@ -130,19 +109,22 @@ function CommitField({
   );
 }
 
-/** An <img> showing an asset through an object URL that is revoked when the image goes away. */
-function AssetImage({
-  asset,
+/** An <img> showing the logo through an object URL that is revoked when the image goes away. */
+function LogoImage({
+  logo,
   ...props
-}: { asset: ProjectAsset } & Omit<ComponentProps<'img'>, 'src'>) {
+}: { logo: { mimeType: 'image/png' | 'image/jpeg'; bytes: Uint8Array } } & Omit<
+  ComponentProps<'img'>,
+  'src'
+>) {
   const ref = useCallback(
     (img: HTMLImageElement | null) => {
       if (!img) return;
-      const url = URL.createObjectURL(assetBlob(asset));
+      const url = URL.createObjectURL(assetBlob(logo));
       img.src = url;
       return () => URL.revokeObjectURL(url);
     },
-    [asset],
+    [logo],
   );
   return <img ref={ref} {...props} />;
 }

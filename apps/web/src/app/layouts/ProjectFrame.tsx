@@ -26,8 +26,6 @@ const viewTabs = [
   { to: 'panel', key: 'nav.panel' },
   { to: 'quote', key: 'nav.quote' },
   { to: 'settings', key: 'nav.settings' },
-  { to: 'catalog', key: 'nav.catalog' },
-  { to: 'company', key: 'nav.company' },
 ] as const;
 
 function isTyping(target: EventTarget | null): boolean {
@@ -165,6 +163,9 @@ export function ProjectFrame() {
             </NavLink>
           ))}
         </nav>
+        <NavLink to="/library/company" className="text-text-muted hover:text-text">
+          {t('library.open')}
+        </NavLink>
         <Menu
           trigger={
             <Button variant="secondary">

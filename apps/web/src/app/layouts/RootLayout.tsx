@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigation } from 'react-router';
 import { MenuCommands } from '@/app/MenuCommands';
+import { LibraryNotices } from '@/app/LibraryNotices';
 
 /**
  * Root of every route. A navigation waits for its loaders and lazy modules (e.g. opening a
@@ -11,6 +12,7 @@ export function RootLayout() {
     <>
       <NavigationPending />
       <MenuCommands />
+      <LibraryNotices />
       <Outlet />
     </>
   );

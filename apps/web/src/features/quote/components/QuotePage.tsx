@@ -9,9 +9,9 @@ import { useLiveQuote } from '@/features/quote/hooks/useQuote';
 import type { Locale } from '@/lib/format';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { IssuedQuotes } from './IssuedQuotes';
-import { LaborLines } from './LaborLines';
+import { LaborLines } from '@/components/quote/LaborLines';
 import { QuoteMaterials } from './QuoteMaterials';
-import { QuoteSettingsForm } from './QuoteSettingsForm';
+import { QuoteSettingsForm } from '@/components/quote/QuoteSettingsForm';
 import { QuoteTotals } from './QuoteTotals';
 
 /** Quote downloads, supplied by the app (built by the exports feature). */

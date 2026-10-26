@@ -1,20 +1,26 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import type { Draft } from 'immer';
-import type { ProjectFile } from '@epd/domain/projectFile';
-import type { EditorStore } from '@/stores/editor/editorStore';
 import { renderApp } from '@/testing/renderApp';
 
-/** The demo's first wall box. */
-const box = (d: Draft<ProjectFile>) => d.doc.nodes.find((n) => n.id === 'n_s1')!;
-const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
+let app: Awaited<ReturnType<typeof renderApp>>;
+const catalogs = () => app.library.getState().library.catalogs;
 
 async function openCatalog() {
-  const app = await renderApp('/project/catalog', { exposeTestHandle: true });
+  app = await renderApp('/library/catalog');
   await screen.findByRole('heading', { name: 'Catalog' });
   return app;
 }
+
+/** A preset that uses these items: the library's own notion of "in use". */
+const usePreset = (...itemIds: string[]) =>
+  app.library.getState().apply((d) => {
+    d.boxPresets.push({
+      id: 'p1',
+      name: 'Kitchen',
+      contents: itemIds.map((itemId) => ({ itemId, qty: 1 })),
+    });
+  });
 
 async function chooseFile(name: string, content: string) {
   const dialog = await screen.findByRole('dialog');
@@ -34,9 +40,9 @@ const socket = (unitPrice: number) => ({
   attributes: { deviceType: 'socket' },
 });
 
-describe('project catalog page', () => {
-  // protects=hand-made items; fails_when=a new item is not stored in the project in cents under "My items"; no_claim=—
-  it('creates an item in the project', async () => {
+describe('library catalog page', () => {
+  // protects=hand-made items; fails_when=a new item is not stored in the library in cents under "My items"; no_claim=—
+  it('creates an item in the library', async () => {
     await openCatalog();
     await userEvent.click(screen.getByRole('button', { name: 'New item' }));
     const dialog = await screen.findByRole('dialog');
@@ -46,7 +52,7 @@ describe('project catalog page', () => {
     await userEvent.type(within(dialog).getByLabelText('Modules'), '1');
     await userEvent.selectOptions(within(dialog).getByLabelText('Device type'), 'socket');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
-    const [own] = editorStore().getState().data.catalogs;
+    const [own] = catalogs();
     expect(own).toMatchObject({ id: 'own', name: 'My items' });
     expect(own!.items).toEqual([
       expect.objectContaining({
@@ -58,6 +64,8 @@ describe('project catalog page', () => {
       }),
     ]);
     expect(await screen.findByText('Brand socket')).toBeInTheDocument();
+    // Written through to the library files, as the one catalog file that changed.
+    await waitFor(() => expect(app.libraryRepository.writes).toEqual(['catalog:own']));
   });
 
   // protects=no dangling references; fails_when=archiving deletes the item; no_claim=—
@@ -70,47 +78,43 @@ describe('project catalog page', () => {
     await userEvent.click(
       await screen.findByRole('button', { name: 'Archive Schuko socket (copy)' }),
     );
-    expect(editorStore().getState().data.catalogs[0]!.items[0]!.archived).toBe(true);
+    expect(catalogs()[0]!.items[0]!.archived).toBe(true);
     expect(screen.queryByText('Schuko socket (copy)')).not.toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Show archived'));
     expect(screen.getByText('Schuko socket (copy)')).toBeInTheDocument();
   });
 
-  // protects=pricing built-ins per project; fails_when=a built-in price is not written to the project's price overrides; no_claim=quote math
-  it('prices a built-in in the project', async () => {
+  // protects=pricing built-ins in the library; fails_when=a built-in price is not written to the library's price overrides; no_claim=quote math
+  it('prices a built-in in the library', async () => {
     await openCatalog();
     await userEvent.type(screen.getByLabelText('Price of Schuko socket'), '3,90{Enter}');
     await waitFor(() =>
-      expect(editorStore().getState().data.priceOverrides['builtin:socket_schuko']).toEqual({
+      expect(app.library.getState().library.priceOverrides['builtin:socket_schuko']).toEqual({
         unitPrice: 390,
       }),
     );
   });
 
-  // protects=.epc import and remove; fails_when=an imported catalog is not copied into the project, or a catalog with items in use can be removed; no_claim=export download
+  // protects=.epc import and remove; fails_when=an imported catalog is not stored in the library, or a catalog with items used by a box preset can be removed; no_claim=export download
   it('imports an .epc catalog and refuses to remove it while in use', async () => {
     await openCatalog();
     await userEvent.click(screen.getByRole('button', { name: 'Import catalog…' }));
     const dialog = await chooseFile('vimar.epc', epc([socket(520)]));
     expect(within(dialog).getByLabelText('Catalog name')).toHaveValue('Vimar 2026');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Import 1 item' }));
-    const [catalog] = editorStore().getState().data.catalogs;
+    const [catalog] = catalogs();
     expect(catalog).toMatchObject({ name: 'Vimar 2026', source: 'vimar.epc' });
     expect(catalog!.items[0]!.id).toBe(`${catalog!.id}:V1`);
     expect(await screen.findByText('Vimar socket')).toBeInTheDocument();
 
-    editorStore()
-      .getState()
-      .applyCommand('use', (d) => {
-        box(d).contents!.push({ itemId: catalog!.items[0]!.id, qty: 1 });
-      });
+    usePreset(catalog!.items[0]!.id);
     await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(
       await screen.findByText(
-        'Vimar 2026 cannot be removed: 1 of its items is used in the project.',
+        'Vimar 2026 cannot be removed: 1 of its items is used in a box preset.',
       ),
     ).toBeInTheDocument();
-    expect(editorStore().getState().data.catalogs).toHaveLength(1);
+    expect(catalogs()).toHaveLength(1);
   });
 
   // protects=CSV import with mapping; fails_when=guessed columns, default category or modules are not applied, or rows without a name are imported; no_claim=price formats (domain tests)
@@ -123,7 +127,7 @@ describe('project catalog page', () => {
     expect(within(dialog).getByText(/1 row has no name/)).toBeInTheDocument();
     await userEvent.selectOptions(within(dialog).getByLabelText('Default category'), 'plate');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Import 2 items' }));
-    const [catalog] = editorStore().getState().data.catalogs;
+    const [catalog] = catalogs();
     expect(catalog!.name).toBe('bticino');
     expect(catalog!.items.map((i) => [i.code, i.category, i.unitPrice])).toEqual([
       ['P1', 'plate', 240],
@@ -138,13 +142,8 @@ describe('project catalog page', () => {
     const plate = { category: 'plate', name: 'Old plate', code: 'P9', unit: 'pcs', attributes: {} };
     let dialog = await chooseFile('v1.epc', epc([socket(520), plate]));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Import 2 items' }));
-    const before = editorStore().getState().data.catalogs[0]!;
-    editorStore()
-      .getState()
-      .applyCommand('use', (d) => {
-        box(d).contents!.push({ itemId: before.items[0]!.id, qty: 1 });
-        box(d).contents!.push({ itemId: before.items[1]!.id, qty: 1 });
-      });
+    const before = catalogs()[0]!;
+    usePreset(before.items[0]!.id, before.items[1]!.id);
 
     await userEvent.click(screen.getByRole('button', { name: 'Replace…' }));
     dialog = await chooseFile('v2.epc', epc([socket(610)]));
@@ -157,7 +156,7 @@ describe('project catalog page', () => {
     expect(diff).toHaveTextContent('Old plate');
     await userEvent.click(screen.getByRole('button', { name: 'Replace' }));
 
-    const after = editorStore().getState().data.catalogs[0]!;
+    const after = catalogs()[0]!;
     expect(after.items.map((i) => [i.id, i.unitPrice, i.missing])).toEqual([
       [before.items[0]!.id, 610, undefined],
       [before.items[1]!.id, undefined, true],

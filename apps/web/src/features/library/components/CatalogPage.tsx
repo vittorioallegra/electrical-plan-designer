@@ -17,18 +17,18 @@ import {
   type CatalogItem,
   type ProjectCatalog,
 } from '@epd/domain/catalog/types';
-import type { ProjectFile } from '@epd/domain/projectFile';
+import type { Library } from '@epd/domain/library';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { useToast } from '@/components/ui/Toast';
-import { useCatalog } from '@/hooks/useCatalog';
 import { useItemName } from '@/hooks/useItemName';
 import { cn } from '@/lib/cn';
 import { fileSafe } from '@/lib/download';
 import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { formatMoney } from '@/lib/format';
-import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { useEditorServices } from '@/stores/editor/EditorContext';
+import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
 import { categories, ItemDialog, type ItemDraft } from './ItemDialog';
 import { ImportDialog } from './ImportDialog';
 import { ReplaceDialog } from './ReplaceDialog';
@@ -45,16 +45,14 @@ type Editing = {
 type Importing =
   { mode: 'import' } | { mode: 'replace'; catalog: ProjectCatalog; incoming?: IncomingCatalog };
 
-/** `/project/catalog`: the built-ins and the catalogs imported into this project. */
+/** `/library/catalog`: the built-ins and the catalogs of the library. */
 export function CatalogPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
-  const { store } = useEditorContext();
+  const { library } = useEditorServices();
   const toast = useToast();
   const exportFile = useExportFile();
-  const readOnly = useEditor((s) => s.readOnly);
-  const doc = useEditor((s) => s.data.doc);
-  const { items, catalogs, priceOverrides, boxPresets } = useCatalog();
+  const { items, catalogs, priceOverrides, boxPresets } = useLibraryCatalog();
   const itemName = useItemName();
   const [category, setCategory] = useState<CatalogCategory>('device');
   const [showArchived, setShowArchived] = useState(false);
@@ -62,7 +60,11 @@ export function CatalogPage() {
   const [importing, setImporting] = useState<Importing | null>(null);
   const [removing, setRemoving] = useState<ProjectCatalog | null>(null);
 
-  const used = useMemo(() => usedItemIds(doc, boxPresets), [doc, boxPresets]);
+  // In the library only box presets use items; a project keeps its own copies.
+  const used = useMemo(
+    () => usedItemIds({ nodes: [], segments: [], panels: [] }, boxPresets),
+    [boxPresets],
+  );
   const catalogOf = useMemo(
     () => new Map(catalogs.flatMap((c) => c.items.map((i) => [i.id, c] as const))),
     [catalogs],
@@ -75,13 +77,12 @@ export function CatalogPage() {
     dateStyle: 'medium',
   });
 
-  const apply = (label: string, recipe: (d: Draft<ProjectFile>) => void) =>
-    store.getState().applyCommand(label, recipe);
+  const apply = (recipe: (d: Draft<Library>) => void) => library.getState().apply(recipe);
 
   function saveItem(item: ItemDraft) {
     const id = editing?.id;
     const now = new Date().toISOString();
-    apply(id ? 'edit item' : 'new item', (d) => {
+    apply((d) => {
       if (id) {
         for (const c of d.catalogs) {
           const index = c.items.findIndex((i) => i.id === id);
@@ -103,7 +104,7 @@ export function CatalogPage() {
   }
 
   function setArchived(item: CatalogItem, archived: boolean) {
-    apply(archived ? 'archive item' : 'restore item', (d) => {
+    apply((d) => {
       for (const c of d.catalogs) {
         const found = c.items.find((i) => i.id === item.id);
         if (found) found.archived = archived;
@@ -112,7 +113,7 @@ export function CatalogPage() {
   }
 
   function setOverride(itemId: string, euros: number | null) {
-    apply('price', (d) => {
+    apply((d) => {
       if (euros === null) delete d.priceOverrides[itemId];
       else
         d.priceOverrides[itemId] = {
@@ -123,7 +124,7 @@ export function CatalogPage() {
   }
 
   function importCatalog(incoming: IncomingCatalog) {
-    apply('import catalog', (d) => {
+    apply((d) => {
       d.catalogs.push(createProjectCatalog(incoming, new Date()));
     });
     setImporting(null);
@@ -135,7 +136,7 @@ export function CatalogPage() {
 
   function replace(current: ProjectCatalog, incoming: IncomingCatalog, keep: ReadonlySet<string>) {
     const next = replaceCatalog(current, incoming, used, { keepEdited: keep }, new Date());
-    apply('replace catalog', (d) => {
+    apply((d) => {
       const index = d.catalogs.findIndex((c) => c.id === current.id);
       if (index >= 0) d.catalogs[index] = next;
     });
@@ -153,11 +154,7 @@ export function CatalogPage() {
     <div className="mx-auto h-full max-w-5xl overflow-y-auto p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">{t('pages.catalog')}</h1>
-        <Button
-          variant="primary"
-          disabled={readOnly}
-          onClick={() => setImporting({ mode: 'import' })}
-        >
+        <Button variant="primary" onClick={() => setImporting({ mode: 'import' })}>
           {t('catalog.import.open')}
         </Button>
       </div>
@@ -180,11 +177,7 @@ export function CatalogPage() {
                   {c.source ? ` · ${c.source}` : ''}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                disabled={readOnly}
-                onClick={() => setImporting({ mode: 'replace', catalog: c })}
-              >
+              <Button variant="ghost" onClick={() => setImporting({ mode: 'replace', catalog: c })}>
                 {t('catalog.replace.open')}
               </Button>
               <Button
@@ -199,7 +192,7 @@ export function CatalogPage() {
               >
                 {t('catalog.export')}
               </Button>
-              <Button variant="ghost" disabled={readOnly} onClick={() => askRemove(c)}>
+              <Button variant="ghost" onClick={() => askRemove(c)}>
                 {t('catalog.remove')}
               </Button>
             </li>
@@ -234,7 +227,6 @@ export function CatalogPage() {
             {t('catalog.showArchived')}
           </label>
           <Button
-            disabled={readOnly}
             onClick={() => setEditing({ title: t('catalog.newItem'), initial: { category } })}
           >
             {t('catalog.newItem')}
@@ -288,7 +280,6 @@ export function CatalogPage() {
                       placeholder={t('catalog.unpriced')}
                       unit="€"
                       min={0}
-                      disabled={readOnly}
                       onValueChange={(v) => setOverride(item.id, v)}
                     />
                   ) : item.unitPrice !== undefined ? (
@@ -302,7 +293,6 @@ export function CatalogPage() {
                     {!builtin ? (
                       <Button
                         variant="ghost"
-                        disabled={readOnly}
                         aria-label={t('catalog.edit', { name })}
                         onClick={() =>
                           setEditing({ title: t('catalog.editTitle'), initial: item, id: item.id })
@@ -313,7 +303,6 @@ export function CatalogPage() {
                     ) : null}
                     <Button
                       variant="ghost"
-                      disabled={readOnly}
                       aria-label={t('catalog.duplicate', { name })}
                       onClick={() => {
                         const { id: _id, editedAt: _e, missing: _m, archived: _a, ...copy } = item;
@@ -328,7 +317,6 @@ export function CatalogPage() {
                     {!builtin ? (
                       <Button
                         variant="ghost"
-                        disabled={readOnly}
                         aria-label={t(item.archived ? 'catalog.restore' : 'catalog.archive', {
                           name,
                         })}
@@ -390,7 +378,7 @@ export function CatalogPage() {
               onClick={() => {
                 const id = removing?.id;
                 setRemoving(null);
-                apply('remove catalog', (d) => {
+                apply((d) => {
                   d.catalogs = d.catalogs.filter((c) => c.id !== id);
                 });
               }}

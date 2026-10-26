@@ -14,7 +14,9 @@
     "quote": "Preventivo",
     "settings": "Impostazioni",
     "start": "Inizio",
-    "company": "Azienda"
+    "company": "Azienda",
+    "presets": "Preset",
+    "defaults": "Predefiniti"
   },
   "pages": {
     "plan": "Pianta",
@@ -23,7 +25,9 @@
     "settings": "Impostazioni progetto",
     "catalog": "Catalogo",
     "notFound": "Pagina non trovata",
-    "company": "Azienda"
+    "company": "Azienda",
+    "presets": "Preset scatole",
+    "defaults": "Predefiniti per i nuovi progetti"
   },
   "editor": {
     "saveStatus": {
@@ -162,7 +166,7 @@
       "usb_charger": "Caricatore USB"
     },
     "missingItem": "Articolo di catalogo mancante ({{id}})",
-    "hint": "Gli articoli predefiniti sono generici: dai loro un prezzo, oppure duplicali per aggiungere codice e marca. I cataloghi importati vengono copiati nel progetto, così riaperto avrà gli stessi prezzi. Gli articoli si archiviano, non si eliminano.",
+    "hint": "Gli articoli predefiniti sono generici: dai loro un prezzo, oppure duplicali per aggiungere codice e marca. Gli articoli si archiviano, non si eliminano. I progetti conservano una copia degli articoli che usano.",
     "category": "Categoria",
     "categories": {
       "device": "Frutti",
@@ -244,9 +248,9 @@
     "export": "Esporta .epc",
     "remove": "Rimuovi",
     "removeTitle": "Rimuovere \"{{name}}\"?",
-    "removeBody": "Il catalogo e i suoi articoli escono da questo progetto. Annulla li riporta.",
-    "removeInUse_one": "Impossibile rimuovere {{name}}: {{count}} suo articolo è usato nel progetto.",
-    "removeInUse_other": "Impossibile rimuovere {{name}}: {{count}} suoi articoli sono usati nel progetto.",
+    "removeBody": "Il catalogo e i suoi articoli escono dalla libreria. I progetti che li usano ne mantengono la copia.",
+    "removeInUse_one": "Impossibile rimuovere {{name}}: {{count}} suo articolo è usato in un preset di scatola.",
+    "removeInUse_other": "Impossibile rimuovere {{name}}: {{count}} suoi articoli sono usati in preset di scatola.",
     "missingBadge": "non nel nuovo listino",
     "priceOnlyBadge": "solo prezzo",
     "import": {
@@ -297,8 +301,8 @@
       "dropped_one": "{{count}} articolo non usato non più a listino (rimosso)",
       "dropped_other": "{{count}} articoli non usati non più a listino (rimossi)",
       "priceChanges": "Prezzi cambiati",
-      "missingInUse": "Usati nel progetto ma assenti dal nuovo listino",
-      "missingInUseHint": "Mantengono i dati attuali e compaiono come avviso nei controlli.",
+      "missingInUse": "Usati nei preset di scatola ma assenti dal nuovo listino",
+      "missingInUseHint": "Mantengono i dati attuali.",
       "edited": "Articoli modificati a mano",
       "editedHint": "Quelli selezionati mantengono la tua modifica; gli altri prendono i dati del nuovo listino.",
       "keepEdit": "Mantieni la mia modifica di {{name}}",
@@ -789,7 +793,7 @@
     }
   },
   "company": {
-    "hint": "L'azienda che compare nei preventivi di questo progetto. I campi vuoti non vengono stampati. Salvata nel file del progetto.",
+    "hint": "L'azienda che compare in ogni preventivo e PDF. I campi vuoti non vengono stampati. Salvata nella libreria, non nel file del progetto.",
     "businessName": "Ragione sociale",
     "vatNumber": "Partita IVA",
     "address": "Indirizzo",
@@ -799,6 +803,48 @@
     "removeLogo": "Rimuovi logo",
     "logoType": "Il logo deve essere un'immagine PNG o JPG.",
     "logoTooLarge": "Il logo può pesare al massimo 2 MB."
+  },
+  "library": {
+    "title": "Libreria",
+    "open": "Libreria",
+    "sections": "Sezioni della libreria",
+    "backToProject": "Torna a {{name}}",
+    "backToStart": "Torna all'inizio",
+    "invalidNotice": "Alcuni file della libreria non erano validi. Sono stati messi da parte, non eliminati, e la libreria è partita con i valori predefiniti per quelle parti: {{files}}.",
+    "writeFailed": "Non è stato possibile salvare una modifica della libreria: {{message}}",
+    "dismiss": "Chiudi",
+    "export": {
+      "action": "Esporta libreria…",
+      "done": "Libreria esportata."
+    },
+    "import": {
+      "action": "Importa libreria…",
+      "title": "Sostituire la libreria?",
+      "body_one": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} catalogo). La libreria attuale viene prima copiata in una cartella di backup nei dati dell'app.",
+      "body_other": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} cataloghi). La libreria attuale viene prima copiata in una cartella di backup nei dati dell'app.",
+      "confirm": "Sostituisci libreria",
+      "done": "Libreria sostituita.",
+      "failed": "Impossibile sostituire la libreria. Non è stato modificato nulla.",
+      "errors": {
+        "not_a_library": "Questo non è un file di libreria.",
+        "newer_version": "Questa libreria è stata esportata da una versione più recente dell'app.",
+        "invalid": "Il file della libreria è danneggiato."
+      }
+    },
+    "defaults": {
+      "hint": "I nuovi progetti partono con queste impostazioni di progetto e di preventivo, poi modificano la propria copia."
+    },
+    "presets": {
+      "hint": "Un preset è una scatola con il suo contenuto, applicato quando si posiziona una scatola.",
+      "empty": "Nessun preset.",
+      "new": "Nuovo preset",
+      "newTitle": "Nuovo preset",
+      "create": "Crea",
+      "box": "Scatola",
+      "delete": "Elimina",
+      "deleteTitle": "Eliminare «{{name}}»?",
+      "deleteBody": "Il preset esce dalla libreria. Le scatole già posizionate nei progetti non cambiano."
+    }
   },
   "counts": {
     "elements_one": "{{count}} elemento",

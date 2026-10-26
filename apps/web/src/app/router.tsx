@@ -24,7 +24,8 @@ function withErrorBoundaries(routes: RouteObject[]): RouteObject[] {
 }
 
 /**
- * The app's routes: the start screen at `/` and the open project's views under `/project/`.
+ * The app's routes: the start screen at `/`, the library under `/library/` and the open
+ * project's views under `/project/`.
  * The editor, the canvas and the PDF code are lazy route modules, outside the initial bundle.
  */
 export function createRoutes(): RouteObject[] {
@@ -68,26 +69,50 @@ export function createRoutes(): RouteObject[] {
                   (await import('@/features/settings/components/SettingsPage')).SettingsPage,
               },
             },
-            {
-              path: 'catalog',
-              lazy: {
-                Component: async () =>
-                  (await import('@/features/catalog/components/CatalogPage')).CatalogPage,
-              },
-            },
-            {
-              path: 'company',
-              lazy: {
-                Component: async () =>
-                  (await import('@/features/company/components/CompanyPage')).CompanyPage,
-              },
-            },
           ],
         },
         {
           element: <AppShell />,
           children: [
             { index: true, element: <StartPage /> },
+            {
+              path: 'library',
+              lazy: {
+                Component: async () =>
+                  (await import('@/features/library/components/LibraryLayout')).LibraryLayout,
+              },
+              children: [
+                { index: true, element: <Navigate to="company" replace /> },
+                {
+                  path: 'company',
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/features/library/components/CompanyPage')).CompanyPage,
+                  },
+                },
+                {
+                  path: 'catalog',
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/features/library/components/CatalogPage')).CatalogPage,
+                  },
+                },
+                {
+                  path: 'presets',
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/features/library/components/PresetsPage')).PresetsPage,
+                  },
+                },
+                {
+                  path: 'defaults',
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/features/library/components/DefaultsPage')).DefaultsPage,
+                  },
+                },
+              ],
+            },
             { path: '*', element: <PlaceholderPage titleKey="pages.notFound" /> },
           ],
         },

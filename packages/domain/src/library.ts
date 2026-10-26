@@ -48,6 +48,11 @@ export type LibraryCompany = z.infer<typeof libraryCompanySchema>;
 export type LibraryCore = z.infer<typeof libraryCoreSchema>;
 export type Library = z.infer<typeof librarySchema>;
 
+/** Catalog ids become file names (`catalogs/<id>.json`): letters, digits, `_` and `-` only. */
+export function isCatalogFileId(id: string): boolean {
+  return /^[A-Za-z0-9_-]{1,128}$/.test(id);
+}
+
 /** The company logo: a PNG or JPEG file of the library. */
 export const LOGO_MIME_TYPES = ['image/png', 'image/jpeg'] as const;
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];

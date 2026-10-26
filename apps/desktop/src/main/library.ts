@@ -9,6 +9,7 @@ import type { LibraryLogo, LibraryReplacement, LibrarySnapshot } from '@epd/brid
 import type { ProjectCatalog } from '@epd/domain/catalog/types';
 import {
   defaultLibraryCore,
+  isCatalogFileId,
   isLogoMimeType,
   libraryCoreOf,
   loadLibrary,
@@ -34,8 +35,6 @@ export interface LibraryService {
   replace(replacement: LibraryReplacement): Promise<void>;
 }
 
-/** Catalog ids become file names: letters, digits, `_` and `-` only. */
-const CATALOG_ID = /^[A-Za-z0-9_-]{1,128}$/;
 const LOGO_EXTENSIONS = ['png', 'jpg'] as const;
 const logoMimeTypes: Record<(typeof LOGO_EXTENSIONS)[number], LogoMimeType> = {
   png: 'image/png',
@@ -52,7 +51,7 @@ const encode = (value: unknown) => new TextEncoder().encode(JSON.stringify(value
 const stamp = (date: Date) => date.toISOString().replace(/[:.]/g, '-');
 
 function checkedId(id: unknown): string {
-  if (typeof id !== 'string' || !CATALOG_ID.test(id))
+  if (typeof id !== 'string' || !isCatalogFileId(id))
     throw new InvalidLibraryArgument('invalid catalog id');
   return id;
 }
