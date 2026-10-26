@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { defaultLibrary, libraryCoreOf, type Library } from '@epd/domain/library';
-import { createLibraryService } from './library';
+import * as nodeFs from 'node:fs/promises';
+import { createLibraryService, type LibraryFsOps } from './library';
 
 let root: string;
 let dir: string;
@@ -169,5 +170,38 @@ describe('library storage', () => {
     const loaded = await service().load();
     expect(loaded.library).toEqual(next);
     expect(loaded.logo).toEqual({ mimeType: 'image/jpeg', bytes: jpg });
+  });
+
+  // protects=replace is all-or-nothing on disk; fails_when=a disk error midway through an import leaves a mixed library, a staging folder behind, or no way back to the old library; no_claim=the in-memory store (renderer tests)
+  it('keeps the old library intact when replacing fails midway', async () => {
+    const old = filled();
+    const files = service();
+    await files.saveCore(libraryCoreOf(old));
+    for (const c of old.catalogs) await files.saveCatalog(c);
+    const next: Library = { ...defaultLibrary(), catalogs: [catalog('c3'), catalog('c4')] };
+
+    // Fails while writing the second new catalog, then while swapping the new folder in.
+    for (const failsOn of [
+      (from: string, to: string) => to.endsWith('c4.json'),
+      (from: string, to: string) =>
+        from.endsWith('.staging-2026-11-01T08-00-00-000Z') && to === dir,
+    ]) {
+      const failing: LibraryFsOps = {
+        ...nodeFs,
+        rename: async (from, to) => {
+          if (failsOn(String(from), String(to)))
+            throw Object.assign(new Error('boom'), { code: 'EIO' });
+          return nodeFs.rename(from, to);
+        },
+      };
+      const broken = createLibraryService({
+        dir,
+        fs: failing,
+        now: () => new Date('2026-11-01T08:00:00.000Z'),
+      });
+      await expect(broken.replace({ library: next, logo: null })).rejects.toThrow('boom');
+      expect(names(root)).toEqual(['library']);
+      expect((await service().load()).library).toEqual(old);
+    }
   });
 });

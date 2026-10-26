@@ -1,6 +1,7 @@
 // The library as files in a folder of the app data: `library.json` (everything but the catalogs),
 // `catalogs/<id>.json` (one per catalog) and `logo.<ext>`. Every file goes through the same atomic
 // write as Save, so one change rewrites one small file and a crash leaves the previous one.
+// Replacing the whole library (`.epl` import) is all-or-nothing: staged in a sibling folder and swapped in.
 // A file that fails validation is renamed `<name>.invalid-<time>`, never overwritten. No Electron
 // imports: tested in Node.
 import * as nodeFs from 'node:fs/promises';
@@ -24,7 +25,7 @@ import {
 } from '@epd/domain/library';
 import { atomicWrite, type FsOps } from './atomicWrite';
 
-export type LibraryFsOps = FsOps & Pick<typeof nodeFs, 'cp' | 'mkdir' | 'readdir' | 'rm'>;
+export type LibraryFsOps = FsOps & Pick<typeof nodeFs, 'mkdir' | 'readdir' | 'rm'>;
 
 export interface LibraryService {
   load(): Promise<LibrarySnapshot & { library: Library }>;
@@ -138,23 +139,24 @@ export function createLibraryService({
     return null;
   }
 
-  async function writeCatalog(catalog: ProjectCatalog): Promise<void> {
-    await fs.mkdir(catalogsDir, { recursive: true });
-    await atomicWrite(join(catalogsDir, `${checkedId(catalog.id)}.json`), encode(catalog), fs);
+  async function writeCatalog(catalog: ProjectCatalog, base = dir): Promise<void> {
+    const folder = join(base, 'catalogs');
+    await fs.mkdir(folder, { recursive: true });
+    await atomicWrite(join(folder, `${checkedId(catalog.id)}.json`), encode(catalog), fs);
   }
 
-  async function writeLogo(logo: LibraryLogo | null): Promise<void> {
-    await fs.mkdir(dir, { recursive: true });
+  async function writeLogo(logo: LibraryLogo | null, base = dir): Promise<void> {
+    await fs.mkdir(base, { recursive: true });
     const keep = logo ? logoExtension(logo.mimeType) : null;
-    if (logo) await atomicWrite(join(dir, `logo.${keep}`), logo.bytes, fs);
+    if (logo) await atomicWrite(join(base, `logo.${keep}`), logo.bytes, fs);
     for (const ext of LOGO_EXTENSIONS) {
-      if (ext !== keep) await fs.rm(join(dir, `logo.${ext}`), { force: true });
+      if (ext !== keep) await fs.rm(join(base, `logo.${ext}`), { force: true });
     }
   }
 
-  async function writeCore(core: LibraryCore): Promise<void> {
-    await fs.mkdir(dir, { recursive: true });
-    await atomicWrite(join(dir, 'library.json'), encode(core), fs);
+  async function writeCore(core: LibraryCore, base = dir): Promise<void> {
+    await fs.mkdir(base, { recursive: true });
+    await atomicWrite(join(base, 'library.json'), encode(core), fs);
   }
 
   return {
@@ -206,23 +208,35 @@ export function createLibraryService({
         const library = loadLibrary(replacement.library);
         library.catalogs.forEach((c) => checkedId(c.id));
         const logo = checkedLogo(replacement.logo);
-        // The old library stays readable next to the new one; this folder is never touched again.
+        // All-or-nothing: the new library is written to a sibling folder, then swapped in with
+        // renames. The old library becomes the backup folder, never touched again; if the swap
+        // fails it is put back, so the library on disk is always the old or the new one.
+        const staging = join(dirname(dir), `${basename(dir)}.staging-${stamp(now())}`);
+        const backup = join(dirname(dir), `${basename(dir)}.backup-${stamp(now())}`);
+        try {
+          await fs.mkdir(staging, { recursive: true });
+          for (const catalog of library.catalogs) await writeCatalog(catalog, staging);
+          await writeLogo(logo, staging);
+          await writeCore(libraryCoreOf(library), staging);
+        } catch (error) {
+          await fs.rm(staging, { recursive: true, force: true }).catch(() => undefined);
+          throw error;
+        }
         const exists = await fs.stat(dir).then(
           () => true,
           () => false,
         );
-        if (exists)
-          await fs.cp(dir, join(dirname(dir), `${basename(dir)}.backup-${stamp(now())}`), {
-            recursive: true,
-          });
-        for (const catalog of library.catalogs) await writeCatalog(catalog);
-        await writeLogo(logo);
-        await writeCore(libraryCoreOf(library));
-        // Catalogs of the old library that are not in the new one.
-        const keep = new Set(library.catalogs.map((c) => `${c.id}.json`));
-        for (const name of await fs.readdir(catalogsDir)) {
-          if (name.endsWith('.json') && !keep.has(name))
-            await fs.rm(join(catalogsDir, name), { force: true });
+        try {
+          if (exists) await fs.rename(dir, backup);
+          try {
+            await fs.rename(staging, dir);
+          } catch (error) {
+            if (exists) await fs.rename(backup, dir).catch(() => undefined);
+            throw error;
+          }
+        } catch (error) {
+          await fs.rm(staging, { recursive: true, force: true }).catch(() => undefined);
+          throw error;
         }
       }),
   };

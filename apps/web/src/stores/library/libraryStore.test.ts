@@ -81,4 +81,20 @@ describe('library store', () => {
     store.getState().dismissInvalid();
     expect(store.getState().invalid).toEqual([]);
   });
+
+  // protects=replace on the write queue; fails_when=an edit issued while a replace runs is written before it or lost from the replaced library; no_claim=edits made after the replace settled
+  it('applies an edit issued during a replace after it', async () => {
+    const repo = createMemoryLibraryRepository({ library: seeded() });
+    const store = await createLibraryStore(repo);
+    const replace = store.getState().replaceAll({ library: defaultLibrary(), logo: null });
+    store.getState().apply((d) => {
+      d.company.businessName = 'Rossi';
+    });
+    await replace;
+    await settled();
+    expect(repo.writes).toEqual(['replace', 'core']);
+    expect(store.getState().library.company.businessName).toBe('Rossi');
+    expect(store.getState().library.catalogs).toEqual([]);
+    expect(repo.data.library.company.businessName).toBe('Rossi');
+  });
 });

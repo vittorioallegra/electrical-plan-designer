@@ -46,6 +46,9 @@ export async function createLibraryStore(repository: LibraryRepository): Promise
   const loaded = await repository.load();
   // Writes run one after the other, in the order the changes were made.
   let queue: Promise<unknown> = Promise.resolve();
+  // Edits made while a replace runs wait for it and then apply to the replaced library.
+  let replacing = 0;
+  let deferred: Array<() => void> = [];
   const store = createStore<LibraryState>()((set, get) => {
     function persist(task: () => Promise<void>) {
       queue = queue.then(task).then(
@@ -60,6 +63,10 @@ export async function createLibraryStore(repository: LibraryRepository): Promise
       invalid: loaded.invalid,
       writeError: null,
       apply(recipe) {
+        if (replacing > 0) {
+          deferred.push(() => get().apply(recipe));
+          return;
+        }
         const before = get().library;
         const after = produce(before, recipe);
         if (after === before) return;
@@ -76,14 +83,33 @@ export async function createLibraryStore(repository: LibraryRepository): Promise
         for (const id of previous.keys()) persist(() => repository.removeCatalog(id));
       },
       setLogo(logo) {
+        if (replacing > 0) {
+          deferred.push(() => get().setLogo(logo));
+          return;
+        }
         set({ logo });
         persist(() => repository.setLogo(logo));
       },
       async replaceAll(data) {
-        // Behind the pending writes, so they cannot land on the new library.
-        await queue;
-        await repository.replace(data);
-        set({ library: data.library, logo: data.logo, writeError: null });
+        // On the write queue: behind the pending writes, ahead of the edits made meanwhile.
+        replacing++;
+        const run = queue.then(async () => {
+          await repository.replace(data);
+          set({ library: data.library, logo: data.logo, writeError: null });
+        });
+        queue = run.then(
+          () => undefined,
+          () => undefined,
+        );
+        try {
+          await run;
+        } finally {
+          if (--replacing === 0) {
+            const edits = deferred;
+            deferred = [];
+            edits.forEach((edit) => edit());
+          }
+        }
       },
       async reload() {
         await queue;
