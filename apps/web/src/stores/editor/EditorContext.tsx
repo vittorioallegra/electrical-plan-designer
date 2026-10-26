@@ -1,40 +1,37 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
+import type { DraftRepository, FileAccess } from '@/lib/repositories/types';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
-import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
-import type { DraftRepository } from '@/lib/repositories/types';
+import type { Workspace, WorkspaceState } from './workspace';
 
-/** App-wide editor services, injectable for tests. */
+/** App-wide services of the open project, injectable for tests. */
 export interface EditorServices {
   drafts: DraftRepository;
-  /** Expose `window.__epd` (dev and E2E builds only). */
-  exposeTestHandle: boolean;
+  fileAccess: FileAccess;
+  workspace: Workspace;
 }
 
 const ServicesContext = createContext<EditorServices | null>(null);
-
-let defaultServices: EditorServices | undefined;
 
 export function EditorServicesProvider({
   services,
   children,
 }: {
-  services?: EditorServices | undefined;
+  services: EditorServices;
   children: ReactNode;
 }) {
-  defaultServices ??= { drafts: createIndexedDbDraftRepository(), exposeTestHandle: false };
-  return (
-    <ServicesContext.Provider value={services ?? defaultServices}>
-      {children}
-    </ServicesContext.Provider>
-  );
+  return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
 }
 
 export function useEditorServices(): EditorServices {
   const services = useContext(ServicesContext);
   if (!services) throw new Error('EditorServicesProvider missing');
   return services;
+}
+
+export function useWorkspace<T>(selector: (s: WorkspaceState) => T): T {
+  return useStore(useEditorServices().workspace, selector);
 }
 
 const EditorContext = createContext<{ store: EditorStore; autosave: Autosave } | null>(null);

@@ -16,6 +16,7 @@ import { CatalogPage } from '@/features/catalog/components/CatalogPage';
 import { ViewModeGate } from '@/features/mobile/components/ViewModeGate';
 import { ProfilePage } from '@/features/profile/components/ProfilePage';
 import { ProjectsPage } from '@/features/projects/components/ProjectsPage';
+import { StartPage } from '@/features/start/components/StartPage';
 import type { Repositories } from '@/lib/repositories/types';
 
 export interface RouteDeps {
@@ -29,7 +30,7 @@ function Loading() {
 }
 
 function ProjectError() {
-  return <RouteError messageKey="editor.loadFailed" />;
+  return <RouteError messageKey="editor.loadFailed" backTo="/projects" />;
 }
 
 function MobileProjectError() {
@@ -106,10 +107,17 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
               element: <ViewModeGate />,
               children: [
                 {
-                  path: 'projects/:id',
+                  path: 'projects/:id/*',
                   loader: projectLoader,
                   shouldRevalidate: projectShouldRevalidate,
                   ErrorBoundary: ProjectError,
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/app/routes/project/record')).RecordRoute,
+                  },
+                },
+                {
+                  path: 'project',
                   lazy: {
                     Component: async () =>
                       (await import('@/app/routes/project/layout')).ProjectLayoutRoute,
@@ -166,7 +174,7 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
                 {
                   element: <AppShell />,
                   children: [
-                    { index: true, element: <Navigate to="/projects" replace /> },
+                    { index: true, element: <StartPage /> },
                     { path: 'projects', element: <ProjectsPage /> },
                     { path: 'catalog', element: <CatalogPage /> },
                     { path: 'profile', element: <ProfilePage /> },

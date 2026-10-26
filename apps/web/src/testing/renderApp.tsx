@@ -9,6 +9,8 @@ import { createMemoryRepositories } from '@/lib/repositories/memory';
 import { DEV_LOGIN, seedMemory } from '@/lib/repositories/memorySeed';
 import { createI18n, type Language } from '@/lib/i18n';
 import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
+import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import { createWorkspace } from '@/stores/editor/workspace';
 
 export const DEMO_PROJECT_ID = '00000000-0000-4000-8000-0000000000aa';
 
@@ -37,6 +39,8 @@ export async function renderApp(
   }
   prepare?.(memory);
   const drafts = createMemoryDraftRepository();
+  const fileAccess = createMemoryFileAccess();
+  const workspace = createWorkspace({ drafts, exposeTestHandle });
   const queryClient = createQueryClient();
   const router = createMemoryRouter(createRoutes({ repos: memory.repos, queryClient }), {
     initialEntries: [path],
@@ -46,7 +50,7 @@ export async function renderApp(
       repos={memory.repos}
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ drafts, exposeTestHandle }}
+      services={{ drafts, fileAccess, workspace }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
@@ -65,5 +69,5 @@ export async function renderApp(
         });
       }),
   );
-  return { ...result, ...memory, router, drafts, queryClient };
+  return { ...result, ...memory, router, drafts, fileAccess, workspace, queryClient };
 }

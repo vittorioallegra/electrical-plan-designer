@@ -5,6 +5,8 @@ import { reconcilePurchases, type BomLine, type PurchaseLineStatus } from '@epd/
 import { useToast } from '@/components/ui/Toast';
 
 export interface Purchases {
+  /** False for a project without purchase marks (opened from a file). */
+  available: boolean;
   loading: boolean;
   /** Loading the marks failed: the lines must not be shown as not bought. */
   loadFailed: boolean;
@@ -20,8 +22,11 @@ export interface Purchases {
   setPurchased(key: string, qty: number | null): void;
 }
 
-/** Purchase marks of a project, saved optimistically: a failed save rolls back with a toast. */
-export function usePurchases(projectId: string, bom: readonly BomLine[]): Purchases {
+/**
+ * Purchase marks of a server project, saved optimistically: a failed save rolls back with a
+ * toast. A project opened from a file (`projectId` null) has none and cannot be ticked.
+ */
+export function usePurchases(projectId: string | null, bom: readonly BomLine[]): Purchases {
   const { t } = useTranslation();
   const toast = useToast();
   const query = usePurchaseMarks(projectId);
@@ -40,7 +45,8 @@ export function usePurchases(projectId: string, bom: readonly BomLine[]): Purcha
   );
 
   return {
-    loading: query.isPending || retrying,
+    available: projectId !== null,
+    loading: projectId !== null && (query.isPending || retrying),
     loadFailed,
     retry: () => void query.refetch(),
     status,

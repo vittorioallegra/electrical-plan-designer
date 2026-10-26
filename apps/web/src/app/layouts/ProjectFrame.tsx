@@ -1,4 +1,4 @@
-import { Download, Redo2, Undo2 } from 'lucide-react';
+import { Download, Redo2, Save, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
@@ -18,6 +18,7 @@ import { useProjectPdfExport } from '@/features/exports/hooks/useProjectPdfExpor
 import { CircuitsTab } from '@/features/circuits/components/CircuitsTab';
 import { ProgressStrip } from '@/features/editor/components/ProgressStrip';
 import { SaveStatus } from '@/features/editor/components/SaveStatus';
+import { useSaveProject } from '@/features/editor/hooks/useSaveProject';
 
 const viewTabs = [
   { to: 'plan', key: 'nav.plan' },
@@ -54,6 +55,19 @@ export function ProjectFrame() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [store]);
+
+  const saver = useSaveProject();
+  const { save, saveAs } = saver;
+  // Ctrl+S saves (Ctrl+Shift+S: Save as), also while typing in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 's') return;
+      e.preventDefault();
+      void (e.shiftKey ? saveAs() : save());
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [save, saveAs]);
 
   const projectPdf = useProjectPdfExport();
   const [exporting, setExporting] = useState(false);
@@ -92,13 +106,30 @@ export function ProjectFrame() {
   return (
     <div data-density="compact" className="flex h-screen flex-col bg-surface text-text">
       <header className="flex items-center gap-3 border-b border-border px-3 py-1.5">
-        <NavLink to="/projects" className="text-text-muted hover:text-text">
-          {t('nav.projects')}
+        <NavLink to="/" className="text-text-muted hover:text-text">
+          {t('nav.start')}
         </NavLink>
         <span className="font-semibold" data-testid="project-name">
           {meta.name}
         </span>
         <SaveStatus />
+        <Button
+          variant="secondary"
+          disabled={readOnly || saver.saving}
+          title={t('editor.saveHint')}
+          onClick={() => void save()}
+        >
+          <Save size={16} />
+          {t('editor.save')}
+        </Button>
+        <Button
+          variant="ghost"
+          className="whitespace-nowrap"
+          disabled={readOnly || saver.saving}
+          onClick={() => void saveAs()}
+        >
+          {t('editor.saveAs')}
+        </Button>
         <div className="flex gap-1">
           <Button
             variant="ghost"

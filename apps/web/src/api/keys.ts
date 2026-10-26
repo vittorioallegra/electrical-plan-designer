@@ -9,5 +9,7 @@ export const queryKeys = {
   project: (userId: string, projectId: string) => [userId, 'project', projectId] as const,
   purchases: (userId: string, projectId: string) => [userId, 'purchases', projectId] as const,
   file: (userId: string, bucket: Bucket, path: string) => [userId, 'file', bucket, path] as const,
+  draft: (userId: string) => [userId, 'draft'] as const,
+  recentFiles: (userId: string) => [userId, 'recentFiles'] as const,
   backgroundImage: (userId: string, path: string) => [userId, 'backgroundImage', path] as const,
 };

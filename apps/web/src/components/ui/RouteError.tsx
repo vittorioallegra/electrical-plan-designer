@@ -36,7 +36,7 @@ export function ErrorState({
  */
 export function RouteError({
   messageKey = 'errors.unexpected',
-  backTo = '/projects',
+  backTo = '/',
 }: {
   messageKey?: string;
   backTo?: string;

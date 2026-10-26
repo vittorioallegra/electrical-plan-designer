@@ -72,7 +72,12 @@ test('draw a plan with walls only, in meters', async ({ page }) => {
   );
   expect(lengths).toEqual([5, 4, 5, 4]);
   await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
+  // A reload closes the project; the start screen offers its draft.
   await page.reload();
+  await page
+    .getByRole('region', { name: 'Draft on this device' })
+    .getByRole('button', { name: 'Resume' })
+    .click();
   await expect(page.getByTestId('project-name')).toBeVisible();
   expect(await editorState(page, (s) => s.data.doc.floors[0]!.walls.length)).toBe(4);
 });

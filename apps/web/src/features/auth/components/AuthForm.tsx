@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
 function safeNext(next: string | null): string {
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/projects';
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
 export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {

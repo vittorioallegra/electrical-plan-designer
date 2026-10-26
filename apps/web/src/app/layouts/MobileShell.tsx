@@ -22,7 +22,7 @@ export function MobileShell() {
             aria-label={t('mobile.desktopView')}
             onClick={() => {
               setViewMode('desktop');
-              void navigate('/projects');
+              void navigate('/');
             }}
           >
             <Monitor size={18} />

@@ -60,7 +60,6 @@ export function ProgressStrip() {
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const doc = useEditor((s) => s.data.doc);
-  const projectId = useEditor((s) => s.projectId);
   const readOnly = useEditor((s) => s.readOnly);
   const { bom } = useAnalysis();
   const navigate = useNavigate();
@@ -73,7 +72,7 @@ export function ProgressStrip() {
 
   function open(s: StageDef) {
     store.getState().setUi({ ...(readOnly ? {} : s.ui), pick: null });
-    const target = `/projects/${projectId}/${s.view}`;
+    const target = `/project/${s.view}`;
     if (pathname !== target) void navigate(target);
   }
 

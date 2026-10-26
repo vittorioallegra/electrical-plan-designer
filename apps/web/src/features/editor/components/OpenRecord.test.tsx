@@ -10,7 +10,7 @@ vi.mock('@epd/domain/load', async (importOriginal) => ({
   },
 }));
 
-describe('project loader', () => {
+describe('open record', () => {
   // protects=unexpected load errors; fails_when=an error other than DocLoadError leaves the page on "Loading"; no_claim=DocLoadError recovery screen
   it('shows the load error instead of loading forever', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});

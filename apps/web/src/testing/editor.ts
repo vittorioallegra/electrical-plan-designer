@@ -23,6 +23,6 @@ export async function demoStore(init: Partial<EditorInit> = {}) {
   const memory = createMemoryRepositories();
   seedMemory(memory.control);
   await memory.repos.auth.signIn(DEV_LOGIN.email, DEV_LOGIN.password);
-  const store = createEditorStore({ projectId: DEMO_ID, data: demoProjectFile(), ...init });
+  const store = createEditorStore({ recordId: DEMO_ID, data: demoProjectFile(), ...init });
   return { store, ...memory };
 }

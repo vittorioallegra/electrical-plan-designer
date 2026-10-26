@@ -25,13 +25,13 @@ describe('auth', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Email o password errate.');
   });
 
-  // protects=sign up; fails_when=a new account does not land on the project list; no_claim=email confirmation
-  it('signs up and lands on the empty project list', async () => {
+  // protects=sign up; fails_when=a new account does not land on the start screen; no_claim=email confirmation
+  it('signs up and lands on the start screen', async () => {
     await renderApp('/signup', { signedIn: false, seed: false });
     await userEvent.type(await screen.findByLabelText('Email'), 'new@example.test');
     await userEvent.type(screen.getByLabelText('Password'), 'secret-pw');
     await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
-    expect(await screen.findByText(/No projects yet/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Start' })).toBeInTheDocument();
   });
 
   // protects=session expiry; fails_when=an expired session leaves the user on a protected page; no_claim=unsaved state (editor step)

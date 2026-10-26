@@ -45,8 +45,8 @@ export function BomTab() {
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { bom } = useAnalysis();
   const { lookup } = useCatalog();
-  const projectId = useEditor((s) => s.projectId);
-  const purchases = usePurchases(projectId, bom);
+  const recordId = useEditor((s) => s.recordId);
+  const purchases = usePurchases(recordId, bom);
   if (bom.length === 0) return <p className="text-text-muted">{t('editor.empty.bom')}</p>;
   const groups = bomCategoryOrder
     .map((category) => [category, bom.filter((l) => l.category === category)] as const)
@@ -71,17 +71,19 @@ export function BomTab() {
                     data-key={line.key}
                     className={line.category === 'missing' ? 'text-error' : ''}
                   >
-                    <td className="w-6 py-0.5 align-top">
-                      <input
-                        type="checkbox"
-                        aria-label={t('purchases.boughtOf', {
-                          name: describeBomLine(line, lookup, t, locale),
-                        })}
-                        disabled={purchases.loading || purchases.loadFailed}
-                        checked={purchases.status.get(line.key)?.status === 'done'}
-                        onChange={() => purchases.toggle(line)}
-                      />
-                    </td>
+                    {purchases.available ? (
+                      <td className="w-6 py-0.5 align-top">
+                        <input
+                          type="checkbox"
+                          aria-label={t('purchases.boughtOf', {
+                            name: describeBomLine(line, lookup, t, locale),
+                          })}
+                          disabled={purchases.loading || purchases.loadFailed}
+                          checked={purchases.status.get(line.key)?.status === 'done'}
+                          onChange={() => purchases.toggle(line)}
+                        />
+                      </td>
+                    ) : null}
                     <td className="py-0.5 pr-2">
                       {describeBomLine(line, lookup, t, locale)}
                       <PartialNote line={line} purchased={purchases.status.get(line.key)} />

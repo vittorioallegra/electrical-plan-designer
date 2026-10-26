@@ -43,15 +43,16 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   quote, catalogs, `.epd` project file schema); source-only, imported as `@epd/domain/<module>`, no barrel
 - `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes({ repos, queryClient })`),
   `auth.ts` (auth middleware), `layouts/`, `routes/` (route modules composing features)
-- `src/features/<name>/` — auth, projects, editor, panel, circuits, catalog, bom, checks, quote,
-  exports, mobile, profile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
+- `src/features/<name>/` — start, auth, projects, editor, panel, circuits, catalog, bom, checks,
+  quote, exports, mobile, profile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
 - `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, catalog, profile, record)
-- `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks), `src/config/env.ts`
-- `src/lib/` — `repositories/` (interfaces, Supabase + in-memory; the only Supabase code),
+- `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks), `src/config/` (env, version)
+- `src/lib/` — `repositories/` (interfaces, Supabase + in-memory, the only Supabase code; draft
+  and file access: `drafts.ts`, `fileAccess.ts`, IndexedDB in `idb.ts`),
   `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `projectFile/` (`.epd` zip read/write,
   `fflate`), `query-client.ts`, formatting helpers
-- `src/stores/editor/` — editor store (open `ProjectFile` + assets, zustand + immer patches),
-  undo/redo, autosave to the draft (`lib/repositories/drafts.ts`, IndexedDB)
+- `src/stores/editor/` — `workspace.ts` (the tab's one open project), editor store (`ProjectFile`
+  - assets, zustand + immer patches), undo/redo, autosave to the draft
 - `src/testing/` — `setup.ts`, `renderApp.tsx`, `editor.ts`, `pdfText.ts`
 - `supabase/` (config, migrations, seed), `scripts/` (check-env, env-local, build-seed),
   `tests/fixtures/` (shared fixtures; e2e uses `fixture(name)`), `tests/lint/` (lint rule tests)
@@ -67,9 +68,10 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   handlers). Alias `@/` = `src/`.
 - Server data: TanStack Query over `useRepositories()`, never `useEffect` fetches. Keys from
   `src/api/keys.ts` start with the user id; cache cleared when a user signs out or changes; no
-  retries or refetch on focus. The project record is fetched fresh and never re-seeds an open
-  editor; autosave writes only the draft, and a draft opened from the same record is resumed.
-- Routes: auth middleware before loaders; loaders read via the query client, side effects stay
+  retries or refetch on focus. Autosave writes only the draft; `/projects/:id` opens a server
+  record into the workspace (resuming its draft), then redirects to `/project/<view>`.
+- Routes: `/` start screen; `/project/*` shows the workspace's open project (none → `/`).
+  Auth middleware before loaders; loaders read via the query client, side effects stay
   in components; every route has an `ErrorBoundary` (`components/ui/RouteError`); editor,
   canvas and PDF code are lazy. `renderApp()` (real routes, in-memory repos, fresh query client)
   waits for the first navigation; `prepare` installs spies before loaders run.

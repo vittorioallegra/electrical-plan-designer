@@ -16,10 +16,10 @@ import { useCatalog } from '@/api/catalog';
 export function Checklist() {
   const { t, i18n } = useTranslation();
   const locale: Locale = i18n.language === 'it' ? 'it' : 'en';
-  const projectId = useEditor((s) => s.projectId);
+  const recordId = useEditor((s) => s.recordId);
   const { bom } = useAnalysis();
   const { lookup } = useCatalog();
-  const purchases = usePurchases(projectId, bom);
+  const purchases = usePurchases(recordId, bom);
   const [remainingOnly, setRemainingOnly] = useState(false);
   const qty = (n: number, unit: BomLine['unit']) =>
     `${formatNumber(n, locale)} ${t(`bom.units.${unit}`)}`;

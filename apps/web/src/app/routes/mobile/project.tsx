@@ -45,7 +45,7 @@ function MobileProjectPage({ record }: { record: ProjectRecord | null }) {
       const { doc } = loadDoc(record.rawDoc);
       const { project, assets } = await openRecord(record, doc, files);
       const store = createEditorStore({
-        projectId: record.meta.id,
+        recordId: record.meta.id,
         data: project,
         assets,
         readOnly: true,

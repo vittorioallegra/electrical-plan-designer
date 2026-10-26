@@ -18,7 +18,7 @@ export function AppProviders({
   repos: Repositories;
   queryClient: QueryClient;
   i18n: i18n;
-  services?: EditorServices | undefined;
+  services: EditorServices;
   children: ReactNode;
 }) {
   return (

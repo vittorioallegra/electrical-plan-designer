@@ -6,6 +6,7 @@ import type { ProjectFile } from '@epd/domain/projectFile';
 import { docIntegrityIssues } from '@epd/domain/schema';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
 import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
+import type { FileRef } from '@/lib/repositories/types';
 
 enablePatches();
 
@@ -57,8 +58,10 @@ export interface EditorUi {
 export type DrawerTab = 'circuits' | 'bom' | 'warnings';
 
 export interface EditorState {
-  /** Route id of the project (the server record it was opened from). */
-  projectId: string;
+  /** Server record the project was opened from (purchase marks); null for files. */
+  recordId: string | null;
+  /** File the project was opened from or last saved to; null for a new project. */
+  file: FileRef | null;
   data: EditorData;
   /** Asset bytes by id. Kept outside undo/redo; unreferenced ones are left out of saves. */
   assets: ProjectAssets;
@@ -82,6 +85,8 @@ export interface EditorState {
   setUi(patch: Partial<EditorUi>): void;
   /** Adds an asset (a new background, a logo); a command then references it. */
   addAsset(id: string, asset: ProjectAsset): void;
+  /** The data at `revision` was written to `file`. */
+  markSaved(revision: number, file: FileRef): void;
 }
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
@@ -93,7 +98,8 @@ export class CommandError extends Error {
 const HISTORY_LIMIT = 200;
 
 export interface EditorInit {
-  projectId: string;
+  recordId?: string | null;
+  file?: FileRef | null;
   data: EditorData;
   assets?: ProjectAssets;
   readOnly?: boolean;
@@ -124,7 +130,8 @@ export function createEditorStore(init: EditorInit): EditorStore {
     };
 
     return {
-      projectId: init.projectId,
+      recordId: init.recordId ?? null,
+      file: init.file ?? null,
       data: init.data,
       assets: init.assets ?? new Map(),
       readOnly: init.readOnly ?? false,
@@ -203,6 +210,10 @@ export function createEditorStore(init: EditorInit): EditorStore {
 
       addAsset(id, asset) {
         set({ assets: new Map(get().assets).set(id, asset) });
+      },
+
+      markSaved(revision, file) {
+        set({ fileRevision: revision, file });
       },
     };
   });

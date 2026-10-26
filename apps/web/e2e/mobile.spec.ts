@@ -15,7 +15,7 @@ test('tick on the phone, see it on desktop, and untick it there', async ({ brows
   const context = await browser.newContext();
   const phone = await context.newPage();
   await phone.setViewportSize({ width: 375, height: 812 });
-  await logIn(phone);
+  await logIn(phone, 'Projects');
   await expect(phone).toHaveURL(/\/m\/projects$/);
 
   await openMobileDemo(phone);
@@ -45,7 +45,7 @@ test('tick on the phone, see it on desktop, and untick it there', async ({ brows
 // protects=read-only plan on the phone; fails_when=the plan tab does not render or floors cannot be switched; no_claim=touch gestures
 test('browse the read-only plan by floor on the phone', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await logIn(page);
+  await logIn(page, 'Projects');
   await openMobileDemo(page);
   await page.getByRole('tab', { name: 'Plan' }).click();
   await expect(page.getByTestId('mobile-plan').locator('canvas').first()).toBeVisible();

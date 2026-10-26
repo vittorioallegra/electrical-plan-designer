@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 /**
  * Protected routes. On sign-out or session expiry, redirects to /login and comes back after.
  * When another user signs in (e.g. in another tab), the protected tree is replaced by the
- * project list: an open editor must not restart or save the previous user's project.
+ * start screen (or the mobile list): pages loaded for the previous user must not stay.
  */
 export function RequireAuth() {
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export function RequireAuth() {
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
   }
   if (userChanged) {
-    const list = location.pathname.startsWith('/m/') ? '/m/projects' : '/projects';
+    const list = location.pathname.startsWith('/m/') ? '/m/projects' : '/';
     return <Navigate to={list} replace />;
   }
   return (

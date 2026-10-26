@@ -7,12 +7,13 @@ import { useRepositories } from '@/lib/repositories/provider';
 type Marks = Map<string, number | null>;
 
 /** Bought quantity per BOM line key (null = not bought). */
-export function usePurchaseMarks(projectId: string) {
+export function usePurchaseMarks(projectId: string | null) {
   const { userId } = useSession();
   const { purchases } = useRepositories();
   return useQuery({
-    queryKey: queryKeys.purchases(userId, projectId),
-    queryFn: () => purchases.list(projectId),
+    queryKey: queryKeys.purchases(userId, projectId ?? ''),
+    queryFn: () => purchases.list(projectId!),
+    enabled: projectId !== null,
   });
 }
 
@@ -22,7 +23,7 @@ export function usePurchaseMarks(projectId: string) {
  * `onFailed` reports the failure.
  */
 export function useSetPurchase(
-  projectId: string,
+  projectId: string | null,
   onFailed: () => void,
 ): (lineKey: string, qty: number | null) => void {
   const { userId } = useSession();
@@ -36,14 +37,15 @@ export function useSetPurchase(
       lineKey: string;
       qty: number | null;
       previous: number | null;
-    }) => purchases.set(projectId, lineKey, qty),
+    }) => purchases.set(projectId!, lineKey, qty),
     onError: (_error, { lineKey, previous }) => {
-      setMark(queryClient, queryKeys.purchases(userId, projectId), lineKey, previous);
+      setMark(queryClient, queryKeys.purchases(userId, projectId ?? ''), lineKey, previous);
       onFailed();
     },
   });
   return useCallback(
     (lineKey: string, qty: number | null) => {
+      if (projectId === null) return;
       const key = queryKeys.purchases(userId, projectId);
       const previous = queryClient.getQueryData<Marks>(key)?.get(lineKey) ?? null;
       setMark(queryClient, key, lineKey, qty);

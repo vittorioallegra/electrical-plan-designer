@@ -18,6 +18,9 @@ export function AppShell() {
         <span className="font-semibold">{t('app.name')}</span>
         {auth.status === 'signedIn' ? (
           <nav className="flex gap-3">
+            <NavLink to="/" end>
+              {t('nav.start')}
+            </NavLink>
             <NavLink to="/projects">{t('nav.projects')}</NavLink>
             <NavLink to="/catalog">{t('nav.catalog')}</NavLink>
             <NavLink to="/profile">{t('nav.profile')}</NavLink>

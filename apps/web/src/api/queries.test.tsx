@@ -63,32 +63,33 @@ describe('server state (TanStack Query)', () => {
     );
 
     await act(() => repos.auth.signUp('second@example.test', 'second-password'));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/projects'));
-    expect(await screen.findByText(/No projects yet/)).toBeInTheDocument();
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'));
+    expect(await screen.findByRole('heading', { name: 'Start' })).toBeInTheDocument();
     expect(screen.queryByTestId('project-name')).toBeNull();
     await act(() => new Promise((resolve) => setTimeout(resolve, 1500)));
     expect(control.saveCalls).toEqual([]);
   });
 
-  // protects=draft on re-entry; fails_when=re-opening a project after leaving the editor shows the older server record instead of its draft; no_claim=other devices
-  it('resumes the draft when re-entering the editor, without writing the server', async () => {
+  // protects=open project across pages; fails_when=leaving the editor and coming back reopens the server record and loses the edits; no_claim=reload (start screen resume)
+  it('keeps the open project when leaving and re-entering the editor, without writing the server', async () => {
     const { router, control, drafts } = await renderApp(planPath, { exposeTestHandle: true });
     await screen.findByTestId('project-name');
+    const store = editorStore();
     act(() =>
-      editorStore()
-        .getState()
-        .applyCommand('rename', (d) => {
-          d.doc.nodes[0]!.label = 'first edit';
-        }),
+      store.getState().applyCommand('rename', (d) => {
+        d.doc.nodes[0]!.label = 'first edit';
+      }),
     );
-    // Leaving right away: the pending change is written when autosave stops.
     await act(() => router.navigate('/projects'));
     await screen.findByRole('link', { name: /Demo house/ });
-    await waitFor(async () => expect((await drafts.get())?.recordId).toBe(DEMO_PROJECT_ID));
     await act(() => router.navigate(planPath));
     await screen.findByTestId('project-name');
-    expect(editorStore().getState().data.doc.nodes[0]!.label).toBe('first edit');
-    expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
+    expect(editorStore()).toBe(store);
+    expect(store.getState().data.doc.nodes[0]!.label).toBe('first edit');
+    await waitFor(
+      async () => expect((await drafts.get())?.project.doc.nodes[0]!.label).toBe('first edit'),
+      { timeout: 3000 },
+    );
     expect(control.saveCalls).toEqual([]);
   });
 });

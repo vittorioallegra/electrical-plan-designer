@@ -1,11 +1,14 @@
-import { useLoaderData, useParams } from 'react-router';
+import { Navigate } from 'react-router';
 import { ProjectFrame } from '@/app/layouts/ProjectFrame';
-import { ProjectLoader } from '@/features/editor/components/ProjectLoader';
-import type { ProjectRecord } from '@/lib/repositories/types';
+import { EditorProvider, useWorkspace } from '@/stores/editor/EditorContext';
 
-/** The loaded project in the shared project frame around the child route. */
+/** `/project/*`: the tab's open project in the shared frame; the start screen without one. */
 export function ProjectLayoutRoute() {
-  const record = useLoaderData<ProjectRecord | null>();
-  const { id = '' } = useParams();
-  return <ProjectLoader key={id} record={record} renderFrame={() => <ProjectFrame />} />;
+  const current = useWorkspace((s) => s.current);
+  if (!current) return <Navigate to="/" replace />;
+  return (
+    <EditorProvider key={current.id} store={current.store} autosave={current.autosave}>
+      <ProjectFrame />
+    </EditorProvider>
+  );
 }

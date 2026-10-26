@@ -9,6 +9,8 @@ import { createQueryClient } from '@/lib/query-client';
 import { createRepositories } from '@/lib/repositories/provider';
 import { createI18n } from '@/lib/i18n';
 import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
+import { createBrowserFileAccess } from '@/lib/repositories/fileAccess';
+import { createWorkspace } from '@/stores/editor/workspace';
 import './styles.css';
 
 const config = getConfig();
@@ -19,17 +21,19 @@ i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng;
 });
 
+const drafts = createIndexedDbDraftRepository();
+const services = {
+  drafts,
+  fileAccess: createBrowserFileAccess(),
+  workspace: createWorkspace({ drafts, exposeTestHandle: config.testHandle }),
+};
+
 const queryClient = createQueryClient();
 const router = createBrowserRouter(createRoutes({ repos, queryClient }));
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppProviders
-      queryClient={queryClient}
-      repos={repos}
-      i18n={i18n}
-      services={{ drafts: createIndexedDbDraftRepository(), exposeTestHandle: config.testHandle }}
-    >
+    <AppProviders queryClient={queryClient} repos={repos} i18n={i18n} services={services}>
       <RouterProvider router={router} />
     </AppProviders>
   </StrictMode>,

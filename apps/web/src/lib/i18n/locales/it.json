@@ -14,7 +14,8 @@
     "plan": "Pianta",
     "panel": "Quadro",
     "quote": "Preventivo",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "start": "Inizio"
   },
   "pages": {
     "login": "Accedi",
@@ -93,7 +94,12 @@
       "done": "Eliminato. Annulla lo ripristina."
     },
     "exportPdf": "PDF del progetto",
-    "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova."
+    "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova.",
+    "save": "Salva",
+    "saveAs": "Salva con nome…",
+    "saveHint": "Salva il file del progetto (Ctrl+S)",
+    "savedTo": "Salvato in {{name}}",
+    "saveFailed": "Impossibile salvare il file. Il file e la bozza su questo dispositivo non sono cambiati."
   },
   "catalog": {
     "builtin": {
@@ -727,5 +733,44 @@
   },
   "errors": {
     "unexpected": "Si è verificato un errore. Riprova o torna ai progetti."
+  },
+  "start": {
+    "title": "Inizio",
+    "new": "Nuovo progetto",
+    "fromTemplate": "Nuovo da modello…",
+    "open": "Apri file…",
+    "newTitle": "Nuovo progetto",
+    "templateTitle": "Nuovo progetto da {{name}}",
+    "name": "Nome del progetto",
+    "client": "Cliente",
+    "address": "Indirizzo",
+    "create": "Crea",
+    "firstFloorName": "Piano 1",
+    "continue": {
+      "title": "Progetto aperto",
+      "action": "Continua"
+    },
+    "draft": {
+      "title": "Bozza su questo dispositivo",
+      "lastChange": "Ultima modifica {{date}}",
+      "notInFile": "modifiche non salvate in un file",
+      "resume": "Riprendi",
+      "invalid": "Impossibile aprire la bozza."
+    },
+    "recent": "File recenti",
+    "recentGone": "Impossibile aprire {{name}}: potrebbe essere stato spostato, oppure l'accesso è stato negato.",
+    "browserNote": "Consigliati Chrome o Edge: in questo browser Salva scarica il file del progetto invece di sovrascriverlo.",
+    "failed": "Qualcosa è andato storto. Riprova.",
+    "openErrors": {
+      "not_a_project": "Questo non è un file di progetto.",
+      "newer_version": "Questo file è stato salvato da una versione più recente dell'app. Aggiorna l'app per aprirlo.",
+      "unsupported_version": "Questo file è stato salvato da una versione dell'app che non si può più aprire.",
+      "invalid": "Il file del progetto è danneggiato e non si può aprire."
+    },
+    "replaceDraft": {
+      "title": "Scartare le modifiche non salvate?",
+      "body": "“{{name}}” ha modifiche non salvate in un file. Aprendo un altro progetto vanno perse.",
+      "confirm": "Scarta e continua"
+    }
   }
 }

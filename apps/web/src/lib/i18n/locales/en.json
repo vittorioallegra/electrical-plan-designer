@@ -14,7 +14,8 @@
     "plan": "Plan",
     "panel": "Panel",
     "quote": "Quote",
-    "settings": "Settings"
+    "settings": "Settings",
+    "start": "Start"
   },
   "pages": {
     "login": "Log in",
@@ -93,7 +94,12 @@
       "done": "Deleted. Undo brings it back."
     },
     "exportPdf": "Project PDF",
-    "exportPdfFailed": "Could not create the project PDF. Try again."
+    "exportPdfFailed": "Could not create the project PDF. Try again.",
+    "save": "Save",
+    "saveAs": "Save as…",
+    "saveHint": "Save the project file (Ctrl+S)",
+    "savedTo": "Saved to {{name}}",
+    "saveFailed": "Could not save the file. The file and the draft on this device are unchanged."
   },
   "catalog": {
     "builtin": {
@@ -727,5 +733,44 @@
   },
   "errors": {
     "unexpected": "Something went wrong. Retry, or go back to the projects."
+  },
+  "start": {
+    "title": "Start",
+    "new": "New project",
+    "fromTemplate": "New from template…",
+    "open": "Open file…",
+    "newTitle": "New project",
+    "templateTitle": "New project from {{name}}",
+    "name": "Project name",
+    "client": "Client",
+    "address": "Address",
+    "create": "Create",
+    "firstFloorName": "Floor 1",
+    "continue": {
+      "title": "Open project",
+      "action": "Continue"
+    },
+    "draft": {
+      "title": "Draft on this device",
+      "lastChange": "Last change {{date}}",
+      "notInFile": "changes not saved to a file",
+      "resume": "Resume",
+      "invalid": "The draft cannot be opened."
+    },
+    "recent": "Recent files",
+    "recentGone": "Could not open {{name}}: it may have been moved, or access was denied.",
+    "browserNote": "Chrome or Edge are recommended: in this browser Save downloads the project file instead of overwriting it.",
+    "failed": "Something went wrong. Try again.",
+    "openErrors": {
+      "not_a_project": "This is not a project file.",
+      "newer_version": "This file was saved by a newer version of the app. Update the app to open it.",
+      "unsupported_version": "This file was saved by a version of the app that can no longer be opened.",
+      "invalid": "The project file is damaged and cannot be opened."
+    },
+    "replaceDraft": {
+      "title": "Discard unsaved changes?",
+      "body": "“{{name}}” has changes that are not saved to a file. Opening another project discards them.",
+      "confirm": "Discard and continue"
+    }
   }
 }

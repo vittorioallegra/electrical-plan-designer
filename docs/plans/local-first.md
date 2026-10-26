@@ -174,7 +174,7 @@ decoding), the per-user query keys go.
 ## Progress notes
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
-compatibility code; step 4 (open project state). Decisions and deferrals the remaining steps
+compatibility code; step 4 (open project state); step 5 (start screen, routes, Save). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -199,6 +199,19 @@ must pick up:
   `beforeunload` warns only while `unsaved`. Without Save (step 5) an edited project stays
   `draft`; step 5 sets `fileRevision` on Save and may also warn on `draft`.
   `navigator.storage.persist()` is requested on the first draft write.
+- **Start screen and Save** (step 5): `stores/editor/workspace.ts` holds the tab's one open
+  project (editor store + autosave), opened from the start screen (`features/start`), a draft,
+  or the `/projects/:id/*` bridge (`OpenRecord`, which also resumes that record's draft and asks
+  before replacing another draft with changes not in a file). `FileAccess`
+  (`lib/repositories/fileAccess.ts`): File System Access API with recent handles in IndexedDB
+  (`epd` v3, `idb.ts`), file input + download elsewhere, in-memory fake (`createMemoryFileAccess`)
+  in `renderApp`. The draft keeps the opened `file` (its handle too), so a resumed draft saves
+  back to the same file. Save / Save as / Ctrl+S in the frame (`useSaveProject`); autosave writes
+  the draft at open and after each save. Still open: the E2E app uses the real FS Access API
+  (no E2E saves yet; step 9 exposes the fake through `window.__epd`), "draft in use" across tabs
+  (`BroadcastChannel`), and the Supabase project list and its `New project` still exist next to
+  the start screen until step 8. Catalog and company stay global pages until step 6, so the
+  `/project/catalog` and `/project/company` routes come with it.
 - **Mobile** (step 4): it reads the server record, which desktop edits no longer reach, so
   the E2E only checks purchase-mark sync now.
 - **Logo** (step 6): the app still reads it from the profile (`logoPath`); move it to

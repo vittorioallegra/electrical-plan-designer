@@ -53,7 +53,7 @@ describe('circuits tab', () => {
     const tab = await screen.findByTestId('circuits-tab');
     await userEvent.click(within(tab).getByRole('button', { name: /Sockets GF/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Pick targets on the plan' }));
-    expect(router.state.location.pathname).toBe(`/projects/${DEMO_PROJECT_ID}/plan`);
+    expect(router.state.location.pathname).toBe('/project/plan');
     expect(await screen.findByTestId('pick-banner')).toHaveTextContent('Sockets GF');
   });
 

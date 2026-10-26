@@ -22,7 +22,6 @@ export function WarningsTab() {
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
   const doc = useEditor((s) => s.data.doc);
-  const projectId = useEditor((s) => s.projectId);
   const hide = useEditor((s) => s.ui.hideConnectivity);
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -32,7 +31,7 @@ export function WarningsTab() {
     .filter(([, list]) => list.length > 0);
 
   function open(w: Warning) {
-    const target = `/projects/${projectId}/${focusElement(store, w.elementRef)}`;
+    const target = `/project/${focusElement(store, w.elementRef)}`;
     if (pathname !== target) void navigate(target);
   }
 

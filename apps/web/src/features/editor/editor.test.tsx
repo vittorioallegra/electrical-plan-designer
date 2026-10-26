@@ -33,29 +33,44 @@ describe('editor shell', () => {
     expect(screen.getByRole('button', { name: 'Download raw JSON' })).toBeInTheDocument();
   });
 
-  // protects=draft resume; fails_when=reopening a project ignores the draft written from it, or opens another project's draft; no_claim=IndexedDB itself (drafts.test.ts)
-  it('resumes the draft opened from the same project only', async () => {
+  // protects=draft resume; fails_when=opening a server project ignores the draft written from it; no_claim=IndexedDB itself (drafts.test.ts)
+  it('resumes the draft opened from the same project', async () => {
     const { drafts, router } = await renderApp('/projects', { exposeTestHandle: true });
     const project = demoProjectFile();
     project.doc.nodes[0]!.label = 'Q1 from draft';
-    const draft = {
+    await drafts.save({
       project,
       assets: new Map(),
+      file: null,
       savedToFile: false,
       savedAt: '2026-10-25T10:00:00Z',
-    };
-    await drafts.save({ ...draft, recordId: 'another-project' });
-    await router.navigate(planPath);
-    await screen.findByTestId('project-name');
-    expect(editorStore().getState().data.doc.nodes[0]!.label).not.toBe('Q1 from draft');
-    expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
-
-    await act(() => router.navigate('/projects'));
-    await drafts.save({ ...draft, recordId: DEMO_PROJECT_ID });
+      recordId: DEMO_PROJECT_ID,
+    });
     await act(() => router.navigate(planPath));
     await screen.findByTestId('project-name');
     expect(editorStore().getState().data.doc.nodes[0]!.label).toBe('Q1 from draft');
     expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
+  });
+
+  // protects=no silent loss of another draft; fails_when=opening a server project replaces a draft with changes not in a file without asking; no_claim=start screen (StartPage.test)
+  it('asks before replacing a draft of another project', async () => {
+    const { drafts, router } = await renderApp('/projects', { exposeTestHandle: true });
+    await drafts.save({
+      project: demoProjectFile(),
+      assets: new Map(),
+      file: null,
+      savedToFile: false,
+      savedAt: '2026-10-25T10:00:00Z',
+    });
+    await act(() => router.navigate(planPath));
+    expect(
+      await screen.findByRole('heading', { name: 'Discard unsaved changes?' }),
+    ).toBeInTheDocument();
+    expect((await drafts.get())?.recordId).toBeUndefined();
+    await userEvent.click(screen.getByRole('button', { name: 'Discard and continue' }));
+    await screen.findByTestId('project-name');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Saved');
+    await waitFor(async () => expect((await drafts.get())?.recordId).toBe(DEMO_PROJECT_ID));
   });
 
   // protects=draft write failure; fails_when=a failed draft write looks stored or offers no retry; no_claim=storage quotas

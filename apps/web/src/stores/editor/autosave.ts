@@ -33,6 +33,9 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight = false;
   let stopped = false;
+  // The draft must also follow the opened file and its saved state, not only the data: true
+  // at start (the draft becomes this project) and after every save to a file.
+  let filePending = true;
 
   const schedule = (delay = debounceMs) => {
     if (stopped) return;
@@ -42,36 +45,45 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
 
   async function run() {
     const s = store.getState();
-    if (inFlight || s.readOnly || s.revision === s.draftRevision) return;
+    if (inFlight || s.readOnly || (s.revision === s.draftRevision && !filePending)) return;
     inFlight = true;
+    filePending = false;
     const revision = s.revision;
     try {
       await options.drafts.save({
         project: s.data,
         assets: usedAssets(s),
+        file: s.file,
         savedToFile: s.fileRevision === revision,
         savedAt: now().toISOString(),
-        recordId: s.projectId,
+        ...(s.recordId ? { recordId: s.recordId } : {}),
       });
       store.setState({ draftRevision: revision, draftFailed: false });
     } catch (e) {
       console.error(e);
+      filePending = true;
       store.setState({ draftFailed: true });
     } finally {
       inFlight = false;
     }
-    // Edits made during the write go in the next one.
-    if (store.getState().revision !== revision && !store.getState().draftFailed) {
+    // Edits (or a save) made during the write go in the next one.
+    const latest = store.getState();
+    if ((latest.revision !== revision || filePending) && !latest.draftFailed) {
       if (stopped) void run();
       else schedule();
     }
   }
 
   const unsubscribe = store.subscribe((state, prev) => {
-    if (state.revision === prev.revision || state.readOnly) return;
-    if (!inFlight) schedule();
+    if (state.readOnly) return;
+    if (state.file !== prev.file || state.fileRevision !== prev.fileRevision) {
+      filePending = true;
+      if (!inFlight) schedule(0);
+    } else if (state.revision !== prev.revision && !inFlight) {
+      schedule();
+    }
   });
-  if (saveStatusOf(store.getState()) === 'unsaved') schedule(0);
+  schedule(0);
 
   // Changes not in the draft yet would be lost with the tab.
   const onBeforeUnload = (e: BeforeUnloadEvent) => {
