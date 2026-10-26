@@ -72,9 +72,9 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
   The library store (`useLibrary`, `apply(recipe)`) is loaded before the first route, writes
   through one file per change and is not undoable. A project holds only `items` and `cablePrices`
   (copies of what it uses, kept by `copyUsedItems` in `applyCommand`); BOM, checks and quotes read
-  those, never the library; a quote price edit writes only them. Services (`recovery`, `fileAccess`,
-  `windowHost`, `workspace`, `library`) come from `useEditorServices()`.
-  TanStack Query only for local async reads (the recovery copy, images), never `useEffect` fetches.
+  those, never the library (only "Update from library" pulls changes in); a quote price edit writes
+  only them. Services (`recovery`, `fileAccess`, `windowHost`, `workspace`, `library`) come from
+  `useEditorServices()`. TanStack Query only for local async reads (the recovery copy, images), never `useEffect` fetches.
 - Routes: `/` start; `/library/<section>` (project stays open); `/project/<view>` (none → `/`);
   every route has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo
   project for `/project/...` paths (`project: null` to skip) and waits for the first navigation.

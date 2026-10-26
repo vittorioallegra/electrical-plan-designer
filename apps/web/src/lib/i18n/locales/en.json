@@ -839,6 +839,37 @@
       "delete": "Delete",
       "deleteTitle": "Delete \"{{name}}\"?",
       "deleteBody": "The preset leaves the library. Boxes already placed in projects are not changed."
+    },
+    "update": {
+      "open": "Update from library",
+      "title": "Update catalog from library",
+      "hint": "The project keeps its own copies of the items it uses. Tick the ones to bring in line with the library. A price typed in the quote shows here as a difference, so it starts unticked.",
+      "upToDate": "The project is up to date with the library.",
+      "differences": "Differences",
+      "item": "Item",
+      "projectPrice": "Project",
+      "libraryPrice": "Library",
+      "notCopied": "Not copied into the project yet",
+      "alsoChanged": "Also changed: {{fields}}",
+      "selectAll": "Select all",
+      "selectNone": "Select none",
+      "take": "Take {{name}} from the library",
+      "apply_one": "Update {{count}} entry",
+      "apply_other": "Update {{count}} entries",
+      "close": "Close",
+      "missing": "No longer in the library",
+      "missingHint": "They stay as they are in the project and keep their warning.",
+      "done_one": "{{count}} entry updated from the library.",
+      "done_other": "{{count}} entries updated from the library.",
+      "failed": "The catalog could not be updated.",
+      "fields": {
+        "name": "name",
+        "code": "code",
+        "category": "category",
+        "unit": "unit",
+        "modules": "modules",
+        "attributes": "attributes"
+      }
     }
   },
   "counts": {

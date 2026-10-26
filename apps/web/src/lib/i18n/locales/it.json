@@ -839,6 +839,37 @@
       "delete": "Elimina",
       "deleteTitle": "Eliminare «{{name}}»?",
       "deleteBody": "Il preset esce dalla libreria. Le scatole già posizionate nei progetti non cambiano."
+    },
+    "update": {
+      "open": "Aggiorna dalla libreria",
+      "title": "Aggiorna il catalogo dalla libreria",
+      "hint": "Il progetto conserva le proprie copie degli articoli che usa. Spunta quelli da allineare alla libreria. Un prezzo digitato nel preventivo compare qui come differenza, quindi parte non spuntato.",
+      "upToDate": "Il progetto è allineato alla libreria.",
+      "differences": "Differenze",
+      "item": "Articolo",
+      "projectPrice": "Progetto",
+      "libraryPrice": "Libreria",
+      "notCopied": "Non ancora copiato nel progetto",
+      "alsoChanged": "Modificati anche: {{fields}}",
+      "selectAll": "Seleziona tutto",
+      "selectNone": "Deseleziona tutto",
+      "take": "Prendi {{name}} dalla libreria",
+      "apply_one": "Aggiorna {{count}} voce",
+      "apply_other": "Aggiorna {{count}} voci",
+      "close": "Chiudi",
+      "missing": "Non più nella libreria",
+      "missingHint": "Restano come sono nel progetto e mantengono il loro avviso.",
+      "done_one": "{{count}} voce aggiornata dalla libreria.",
+      "done_other": "{{count}} voci aggiornate dalla libreria.",
+      "failed": "Non è stato possibile aggiornare il catalogo.",
+      "fields": {
+        "name": "nome",
+        "code": "codice",
+        "category": "categoria",
+        "unit": "unità",
+        "modules": "moduli",
+        "attributes": "attributi"
+      }
     }
   },
   "counts": {

@@ -225,7 +225,7 @@ Approved: yes (2026-10-26)
 - [x] 4. OS integration — `feat: add the native menu, recent files and opening files from the OS`
 - [x] 5. Library storage and pages — `feat: add the library pages with export and import as an .epl file`
 - [x] 6. Projects use the library — `feat: make projects use the library through copies of the items they use`
-- [ ] 7. Update catalog from library
+- [x] 7. Update catalog from library — `feat: add the update of a project's catalog from the library`
 - [ ] 8. Remove the web build, package, CI, docs
 
 ### Verification
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 7 (Update catalog from library) on `feat/desktop-app`.
+Step 8 (Remove the web build, package, CI, docs) on `feat/desktop-app`.

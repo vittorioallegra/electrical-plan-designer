@@ -1,4 +1,4 @@
-import { Download, Redo2, Save, Undo2 } from 'lucide-react';
+import { Download, Library, Redo2, Save, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/Toast';
 import { LanguageSwitch } from '@/components/ui/LanguageSwitch';
 import { BomTab } from '@/features/bom/components/BomTab';
 import { WarningsBadge, WarningsTab } from '@/features/checks/components/WarningsTab';
+import { UpdateFromLibraryDialog } from '@/features/library/components/UpdateFromLibraryDialog';
 import { useProjectPdfExport } from '@/features/exports/hooks/useProjectPdfExport';
 import { CircuitsTab } from '@/features/circuits/components/CircuitsTab';
 import { ProgressStrip } from '@/features/editor/components/ProgressStrip';
@@ -43,6 +44,7 @@ export function ProjectFrame() {
   const canUndo = useEditor((s) => s.past.length > 0 && !s.readOnly);
   const canRedo = useEditor((s) => s.future.length > 0 && !s.readOnly);
   const importInput = useRef<HTMLInputElement>(null);
+  const [updating, setUpdating] = useState(false);
   // 768–1023 px gets the editor with a non-blocking notice, checked once on open.
   const [narrow, setNarrow] = useState(() => window.innerWidth < 1024);
 
@@ -163,6 +165,15 @@ export function ProjectFrame() {
             </NavLink>
           ))}
         </nav>
+        <Button
+          variant="ghost"
+          disabled={readOnly}
+          title={t('library.update.title')}
+          onClick={() => setUpdating(true)}
+        >
+          <Library size={16} />
+          {t('library.update.open')}
+        </Button>
         <NavLink to="/library/company" className="text-text-muted hover:text-text">
           {t('library.open')}
         </NavLink>
@@ -223,6 +234,7 @@ export function ProjectFrame() {
       </div>
       <BottomDrawer />
       {saver.dialog}
+      {updating ? <UpdateFromLibraryDialog onClose={() => setUpdating(false)} /> : null}
     </div>
   );
 }
