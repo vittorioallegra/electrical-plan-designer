@@ -7,13 +7,10 @@ import { describeBomLine } from '@/lib/describeBom';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useCatalog } from '@/hooks/useCatalog';
 
-/** Prices of the open project: its catalog items, built-ins and price overrides. */
+/** Prices of the open project: its own item copies and cable prices. */
 export function usePriceContext(): PriceContext {
-  const { lookup, projectItems, priceOverrides } = useCatalog();
-  return useMemo(
-    () => ({ catalog: lookup, userItems: projectItems, overrides: priceOverrides }),
-    [lookup, projectItems, priceOverrides],
-  );
+  const { lookup, cablePrices } = useCatalog();
+  return useMemo(() => ({ catalog: lookup, cablePrices }), [lookup, cablePrices]);
 }
 
 /** The live quote of the open project, recomputed on every document or price change. */

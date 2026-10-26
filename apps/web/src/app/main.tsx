@@ -49,7 +49,6 @@ const services = {
   windowHost: bridge
     ? createDesktopWindowHost(bridge.window, bridge.menu, bridge.files)
     : createMemoryWindowHost(),
-  workspace: createWorkspace({ recovery, exposeTestHandle: config.testHandle }),
 };
 
 async function start() {
@@ -58,6 +57,7 @@ async function start() {
     ? createDesktopLibraryRepository(bridge.library)
     : createMemoryLibraryRepository();
   const library = await createLibraryStore(libraryRepository);
+  const workspace = createWorkspace({ recovery, library, exposeTestHandle: config.testHandle });
   if (!bridge && config.testHandle)
     window.__epd = {
       ...window.__epd,
@@ -68,7 +68,11 @@ async function start() {
   const router = createBrowserRouter(createRoutes());
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <AppProviders queryClient={queryClient} i18n={i18n} services={{ ...services, library }}>
+      <AppProviders
+        queryClient={queryClient}
+        i18n={i18n}
+        services={{ ...services, library, workspace }}
+      >
         <RouterProvider router={router} />
       </AppProviders>
     </StrictMode>,

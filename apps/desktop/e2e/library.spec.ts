@@ -32,7 +32,7 @@ async function addOwnItem(page: Page, name: string) {
   await expect(page.getByText(name)).toBeVisible();
 }
 
-// protects=AC 10 persistence; fails_when=company data, a "My items" catalog item or the logo set in the library are not in the files under userData/library, or are gone after a restart; no_claim=every library section (unit-tested), projects reading the library (step 6)
+// protects=AC 10 persistence; fails_when=company data, a "My items" catalog item or the logo set in the library are not in the files under userData/library, or are gone after a restart; no_claim=every library section (unit-tested), projects reading the library (unit-tested)
 test('the library survives a restart', async () => {
   const userData = mkdtempSync(join(tmpdir(), 'epd-library-e2e-'));
   const launched: LaunchedApp[] = [];

@@ -12,14 +12,6 @@
       "address": "Via Roma 1",
       "createdAt": "2026-10-26T09:00:00.000Z"
     },
-    "company": {
-      "businessName": "Fixture Electric",
-      "vatNumber": "IT00000000000",
-      "address": "Via Verdi 2",
-      "phone": "+39 000",
-      "email": "office@example.test",
-      "logoAssetId": "logo1"
-    },
     "settings": {
       "mountingHeights": {
         "socket": 0.3,
@@ -76,57 +68,37 @@
         }
       ]
     },
-    "catalogs": [
+    "items": [
       {
-        "id": "cat1",
-        "name": "Brand 2026",
-        "importedAt": "2026-10-26T09:00:00.000Z",
-        "source": "brand-2026.csv",
-        "items": [
-          {
-            "id": "cat1:BR-1",
-            "category": "device",
-            "name": "Brand socket",
-            "code": "BR-1",
-            "unitPrice": 450,
-            "unit": "pcs",
-            "modules": 1,
-            "attributes": {
-              "deviceType": "socket"
-            }
-          },
-          {
-            "id": "cat1:BR-2",
-            "category": "plate",
-            "name": "Brand plate",
-            "code": "BR-2",
-            "unitPrice": 300,
-            "unit": "pcs",
-            "attributes": {},
-            "editedAt": "2026-10-26T09:00:00.000Z"
-          }
-        ]
+        "id": "builtin:conduit_20",
+        "category": "conduit",
+        "name": "catalog.builtin.conduit_20",
+        "unitPrice": 80,
+        "unit": "m",
+        "attributes": {
+          "outerDiameter": 20,
+          "innerDiameter": 14.1
+        }
+      },
+      {
+        "id": "cat1:BR-1",
+        "category": "device",
+        "name": "Brand socket",
+        "code": "BR-1",
+        "unitPrice": 450,
+        "unit": "pcs",
+        "modules": 1,
+        "attributes": {
+          "deviceType": "socket"
+        }
       }
     ],
-    "priceOverrides": {
-      "builtin:conduit_20": {
-        "unitPrice": 80
+    "cablePrices": {
+      "cable:2.5:brown": {
+        "unitPrice": 55,
+        "code": "C25M"
       }
     },
-    "boxPresets": [
-      {
-        "id": "preset1",
-        "name": "Socket",
-        "mounting": "socket",
-        "boxItemId": "builtin:box_503",
-        "contents": [
-          {
-            "itemId": "cat1:BR-1",
-            "qty": 1
-          }
-        ]
-      }
-    ],
     "doc": {
       "schemaVersion": 1,
       "floors": [

@@ -1,9 +1,7 @@
 // Quote math in integer cents. Material lines come from the BOM; labor is typed by hand.
 import type { BomLine } from './bom';
-import { builtinCableId } from './catalog/builtin';
 import type { CatalogLookup } from './catalog/lookup';
-import { isBuiltin, type CatalogItem } from './catalog/types';
-import type { IssuedQuote, PriceOverrides, QuoteLine, QuoteSettings, QuoteTotals } from './types';
+import type { CablePrices, IssuedQuote, QuoteLine, QuoteSettings, QuoteTotals } from './types';
 
 /** What a quote export renders: the live quote or an issued snapshot. */
 export interface QuoteDocument {
@@ -13,47 +11,34 @@ export interface QuoteDocument {
 }
 
 export interface PriceContext {
+  /** The project's items (their copies win over the built-ins). */
   catalog: CatalogLookup;
-  /** The project's catalog items; priced cable items match cable lines by section + color. */
-  userItems: readonly CatalogItem[];
-  overrides: PriceOverrides;
+  /** The project's cable prices, keyed by the BOM line key. */
+  cablePrices: CablePrices;
 }
 
 export interface ResolvedPrice {
   unitPrice: number | null;
   code?: string;
-  source: 'item' | 'override' | 'none';
+  source: 'item' | 'cable' | 'none';
 }
 
-/**
- * Lookup order: catalog item price → project price override → unpriced. A cable line without its
- * own override falls back to the override of the built-in cable of its cross-section, which
- * is the price the catalog page edits.
- */
+/** The price of a BOM line from the project's own copies: an item's, or a cable line's. */
 export function lookupPrice(line: BomLine, ctx: PriceContext): ResolvedPrice {
-  let item: CatalogItem | undefined;
-  if (line.itemId !== undefined) {
-    item = ctx.catalog(line.itemId);
-  } else if (line.cable) {
-    const { crossSection, color } = line.cable;
-    item = ctx.userItems.find(
-      (i) =>
-        i.category === 'cable' &&
-        !i.archived &&
-        i.unitPrice !== undefined &&
-        i.attributes.crossSection === crossSection &&
-        i.attributes.color === color,
-    );
+  if (line.cable) {
+    const price = ctx.cablePrices[line.key];
+    if (price) {
+      return {
+        unitPrice: price.unitPrice,
+        ...(price.code ? { code: price.code } : {}),
+        source: 'cable',
+      };
+    }
+    return { unitPrice: null, source: 'none' };
   }
-  if (item && !isBuiltin(item) && item.unitPrice !== undefined) {
+  const item = line.itemId === undefined ? undefined : ctx.catalog(line.itemId);
+  if (item?.unitPrice !== undefined) {
     return { unitPrice: item.unitPrice, ...(item.code ? { code: item.code } : {}), source: 'item' };
-  }
-  const override =
-    ctx.overrides[line.key] ??
-    (line.cable ? ctx.overrides[builtinCableId(line.cable.crossSection)] : undefined);
-  if (override) {
-    const code = override.code ?? item?.code;
-    return { unitPrice: override.unitPrice, ...(code ? { code } : {}), source: 'override' };
   }
   return { unitPrice: null, ...(item?.code ? { code: item.code } : {}), source: 'none' };
 }

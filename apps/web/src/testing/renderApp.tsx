@@ -37,7 +37,7 @@ export async function renderApp(
   const windowHost = createMemoryWindowHost();
   const libraryRepository = createMemoryLibraryRepository(librarySeed);
   const library = await createLibraryStore(libraryRepository);
-  const workspace = createWorkspace({ recovery, exposeTestHandle });
+  const workspace = createWorkspace({ recovery, library, exposeTestHandle });
   if (project) workspace.getState().open({ data: project });
   const queryClient = createQueryClient();
   const router = createMemoryRouter(createRoutes(), { initialEntries: [path] });

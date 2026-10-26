@@ -340,6 +340,9 @@ export const priceOverridesSchema = z.record(
   z.object({ unitPrice: cents.nonnegative(), code: z.string().optional() }),
 );
 
+/** A project's prices of its cable lines, keyed `cable:<section>:<color>` (same shape as price overrides). */
+export const cablePricesSchema = priceOverridesSchema;
+
 /** A box preset: a box with its contents, applied on placement. */
 export const boxPresetSchema = z.object({
   id,

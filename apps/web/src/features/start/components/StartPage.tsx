@@ -3,20 +3,18 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { newProjectFile, projectFileFromTemplate, type ProjectFile } from '@epd/domain/projectFile';
+import { newProjectFile } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
-import type { OpenedProject, ProjectAssets } from '@/lib/projectFile/epd';
 import { useEditorServices } from '@/stores/editor/EditorContext';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { useProjectOpener } from '@/features/start/hooks/useProjectOpener';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 
-type Creating = { template: OpenedProject | null; templateName?: string };
-
 /**
- * `/`: start a project. New, new from a template file, open a file, restore the recovery copy a
+ * `/`: start a project. New (from the library defaults), open a file, restore the recovery copy a
  * crash left (or discard it). Anything that would replace a project with changes not saved to a
  * file asks first.
  */
@@ -25,16 +23,17 @@ export function StartPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
-  const { recovery, recent, fileAccess, workspace } = useEditorServices();
+  const { recovery, recent, workspace } = useEditorServices();
+  const defaults = useLibrary((s) => s.library.defaults);
   const queryClient = useQueryClient();
   const opener = useProjectOpener();
-  const { current, recovered, guard, refreshRecovery, openProject, read } = opener;
+  const { current, recovered, guard, refreshRecovery, openProject } = opener;
   const recentFiles = useQuery({
     queryKey: queryKeys.recent(),
     queryFn: () => recent.list(),
     staleTime: 0,
   });
-  const [creating, setCreating] = useState<Creating | null>(null);
+  const [creating, setCreating] = useState(false);
   const [discarding, setDiscarding] = useState<string | null>(null);
 
   const dateFormat = new Intl.DateTimeFormat(i18n.language === 'it' ? 'it-IT' : 'en-GB', {
@@ -46,7 +45,7 @@ export function StartPage() {
   const requestedNew = (location.state as { command?: string } | null)?.command === 'new';
   useEffect(() => {
     if (!requestedNew) return;
-    guard(() => setCreating({ template: null }));
+    guard(() => setCreating(true));
     // Forget the request, so a reload or a back navigation does not open the form again.
     void navigate('.', { replace: true, state: null });
     // Only a new navigation (its key) is a request.
@@ -85,28 +84,14 @@ export function StartPage() {
     void queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
   }
 
-  async function pickTemplate() {
-    const picked = await fileAccess.open();
-    const template = picked && read(picked.bytes);
-    if (template) setCreating({ template, templateName: picked.name });
-  }
-
   function create(values: { name: string; clientName: string; address: string }) {
     const input = { ...values, firstFloorName: t('start.firstFloorName') };
-    const now = new Date();
-    const template = creating?.template ?? null;
-    let project: ProjectFile;
-    const assets: ProjectAssets = new Map();
-    if (template) {
-      project = projectFileFromTemplate(template.project, input, now);
-      const logoId = project.company.logoAssetId;
-      const logo = logoId === undefined ? undefined : template.assets.get(logoId);
-      if (logoId !== undefined && logo) assets.set(logoId, logo);
-    } else {
-      project = newProjectFile(input, now);
-    }
-    setCreating(null);
-    openProject({ data: project, assets, status: 'unsaved' });
+    setCreating(false);
+    openProject({
+      data: newProjectFile(input, defaults, new Date()),
+      assets: new Map(),
+      status: 'unsaved',
+    });
   }
 
   // While a project is open the copy is that project's own.
@@ -162,10 +147,9 @@ export function StartPage() {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary" onClick={() => guard(() => setCreating({ template: null }))}>
+        <Button variant="primary" onClick={() => guard(() => setCreating(true))}>
           {t('start.new')}
         </Button>
-        <Button onClick={() => guard(pickTemplate)}>{t('start.fromTemplate')}</Button>
         <Button onClick={() => opener.openFile()}>{t('start.open')}</Button>
         <Button onClick={() => navigate('/library/company')}>{t('library.open')}</Button>
       </div>
@@ -205,12 +189,8 @@ export function StartPage() {
 
       {creating ? (
         <NewProjectDialog
-          title={
-            creating.templateName
-              ? t('start.templateTitle', { name: creating.templateName })
-              : t('start.newTitle')
-          }
-          onClose={() => setCreating(null)}
+          title={t('start.newTitle')}
+          onClose={() => setCreating(false)}
           onSubmit={create}
         />
       ) : null}

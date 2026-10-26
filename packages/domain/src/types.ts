@@ -28,6 +28,7 @@ import type {
   quoteTotalsSchema,
   issuedQuoteSchema,
   projectQuoteSchema,
+  cablePricesSchema,
   priceOverridesSchema,
   boxPresetSchema,
   quoteStatusSchema,
@@ -73,4 +74,5 @@ export type QuoteStatus = z.infer<typeof quoteStatusSchema>;
 export type IssuedQuote = z.infer<typeof issuedQuoteSchema>;
 export type ProjectQuote = z.infer<typeof projectQuoteSchema>;
 export type PriceOverrides = z.infer<typeof priceOverridesSchema>;
+export type CablePrices = z.infer<typeof cablePricesSchema>;
 export type BoxPreset = z.infer<typeof boxPresetSchema>;

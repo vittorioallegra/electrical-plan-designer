@@ -1,6 +1,6 @@
 // Quote PDF: business header, client, numbered lines, labor and totals.
 import type { TFunction } from 'i18next';
-import type { Company } from '@epd/domain/projectFile';
+import type { LibraryCompany } from '@epd/domain/library';
 import { laborAmounts } from '@epd/domain/quote';
 import type { IssuedQuote, ProjectMeta } from '@epd/domain/types';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
@@ -9,7 +9,7 @@ import type { QuoteDocument } from '@epd/domain/quote';
 
 export interface QuotePdfInput {
   quote: QuoteDocument | IssuedQuote;
-  company: Pick<Company, 'businessName' | 'vatNumber' | 'address' | 'phone' | 'email'>;
+  company: LibraryCompany;
   logo?: ImageData;
   meta: Pick<ProjectMeta, 'name' | 'clientName' | 'address'>;
   t: TFunction;

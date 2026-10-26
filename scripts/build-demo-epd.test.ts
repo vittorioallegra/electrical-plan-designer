@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
+import { builtinById } from '@epd/domain/catalog/builtin';
+import { cableKeysOf, referencedItemIds } from '@epd/domain/catalog/copies';
 import { defaultProjectSettings, defaultQuoteSettings } from '@epd/domain/defaults';
-import { loadProjectFile } from '@epd/domain/projectFile';
+import { loadProjectFile, type ProjectFile } from '@epd/domain/projectFile';
 import demo from '../tests/fixtures/demo-project.json';
 import pkg from '../package.json';
 // @ts-expect-error plain JS module without types
@@ -20,5 +22,17 @@ describe('demo project file', () => {
     expect(manifest).toEqual(buildDemoManifest(pkg.version));
     expect(project).toEqual(buildDemoProject(demo));
     expect(loadProjectFile(manifest, project)).toEqual(project);
+  });
+
+  // protects=AC 11 the demo file holds a copy of every item it uses and nothing from catalogs, company or presets; fails_when=a copy differs from its built-in, an used item has no copy, or a copy or cable price is unused; no_claim=prices
+  it('demo-project.epd holds exactly the copies of what the drawing uses', () => {
+    const project = buildDemoProject(demo) as ProjectFile;
+    expect(Object.keys(project).sort()).toEqual(
+      ['cablePrices', 'doc', 'items', 'meta', 'quote', 'settings'].sort(),
+    );
+    expect(new Set(project.items.map((i) => i.id))).toEqual(referencedItemIds(project.doc));
+    for (const item of project.items) expect(item).toEqual(builtinById.get(item.id));
+    const cables = cableKeysOf(project.doc);
+    for (const key of Object.keys(project.cablePrices)) expect(cables.has(key)).toBe(true);
   });
 });

@@ -224,7 +224,7 @@ Approved: yes (2026-10-26)
 - [x] 3. Recovery copy — `feat: keep a recovery copy of the open project in the app data folder`
 - [x] 4. OS integration — `feat: add the native menu, recent files and opening files from the OS`
 - [x] 5. Library storage and pages — `feat: add the library pages with export and import as an .epl file`
-- [ ] 6. Projects use the library
+- [x] 6. Projects use the library — `feat: make projects use the library through copies of the items they use`
 - [ ] 7. Update catalog from library
 - [ ] 8. Remove the web build, package, CI, docs
 
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 6 (Projects use the library) on `feat/desktop-app`.
+Step 7 (Update catalog from library) on `feat/desktop-app`.

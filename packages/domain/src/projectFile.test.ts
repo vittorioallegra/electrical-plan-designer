@@ -5,11 +5,11 @@ import {
   newProjectFile,
   PROJECT_FILE_SCHEMA_VERSION,
   ProjectFileError,
-  projectFileFromTemplate,
   referencedAssetIds,
   serializeProjectFile,
   type ProjectFile,
 } from './projectFile';
+import { defaultLibraryCore } from './library';
 import { CURRENT_SCHEMA_VERSION } from './schema';
 
 const now = new Date('2026-10-26T10:00:00.000Z');
@@ -37,7 +37,8 @@ describe('project file', () => {
   it('loads the frozen v1 fixture', () => {
     const file = loaded();
     expect(file.meta.name).toBe('Fixture house');
-    expect(file.catalogs[0]!.items).toHaveLength(2);
+    expect(file.items.map((i) => i.id)).toEqual(['builtin:conduit_20', 'cat1:BR-1']);
+    expect(file.cablePrices['cable:2.5:brown']).toEqual({ unitPrice: 55, code: 'C25M' });
     expect(file.quote.issued[0]).toMatchObject({ number: 1, status: 'approved', note: 'Signed' });
     expect(file.doc.nodes.length).toBeGreaterThan(0);
   });
@@ -82,12 +83,30 @@ describe('project file', () => {
     expect(codeOf(() => loadProjectFile(manifest, { ...project, settings: {} }))).toBe('invalid');
   });
 
-  // protects=file-level integrity; fails_when=duplicate catalogs, foreign item ids, two approved quotes or a broken doc load; no_claim=asset references
+  // protects=a project saved in the previous shape still opens; fails_when=embedded company, catalogs, overrides or presets make loading fail or leak into the project, or items are rebuilt from them; no_claim=the web build's file reading
+  it('opens a file in the previous shape, ignoring its company, catalogs, prices and presets', () => {
+    const { manifest, project } = fixture();
+    delete project.items;
+    delete project.cablePrices;
+    Object.assign(project, {
+      company: { businessName: 'Old', vatNumber: '', address: '', phone: '', email: '' },
+      catalogs: [{ id: 'c1', name: 'Old', importedAt: '2026-10-01', items: [] }],
+      priceOverrides: { 'builtin:box_503': { unitPrice: 1 } },
+      boxPresets: [{ id: 'p', name: 'P', contents: [] }],
+    });
+    const file = loadProjectFile(manifest, project);
+    expect(file.items).toEqual([]);
+    expect(file.cablePrices).toEqual({});
+    expect(Object.keys(file).sort()).toEqual(
+      ['cablePrices', 'doc', 'items', 'meta', 'quote', 'settings'].sort(),
+    );
+  });
+
+  // protects=file-level integrity; fails_when=duplicate item copies, two approved quotes or a broken doc load; no_claim=asset references
   it('rejects integrity problems', () => {
     const cases: ((p: ProjectFile) => void)[] = [
-      (p) => p.catalogs.push(structuredClone(p.catalogs[0]!)),
-      (p) => (p.catalogs[0]!.items[0]!.id = 'other:BR-1'),
-      (p) => (p.catalogs[0]!.items[1]!.id = p.catalogs[0]!.items[0]!.id),
+      (p) => p.items.push(structuredClone(p.items[0]!)),
+      (p) => (p.items[1]!.id = p.items[0]!.id),
       (p) => p.quote.issued.push({ ...structuredClone(p.quote.issued[0]!), number: 2 }),
       (p) => p.quote.issued.push({ ...structuredClone(p.quote.issued[0]!), status: 'issued' }),
       (p) => (p.doc.segments[0]!.fromNodeId = 'nope'),
@@ -99,14 +118,13 @@ describe('project file', () => {
       expect(codeOf(() => loadProjectFile(manifest, project))).toBe('invalid');
     }
   });
-
 });
 
 describe('assets', () => {
-  // protects=which assets a save keeps; fails_when=a background or the logo is missed, or a floor without background adds one; no_claim=asset bytes
+  // protects=which assets a save keeps; fails_when=a background is missed, or a floor without one adds one; no_claim=asset bytes
   it('lists the assets a project references', () => {
     const file = loaded();
-    expect(referencedAssetIds(file)).toEqual(new Set(['logo1']));
+    expect(referencedAssetIds(file)).toEqual(new Set());
     file.doc.floors[0]!.background = {
       assetId: 'bg1',
       kind: 'image',
@@ -116,16 +134,24 @@ describe('assets', () => {
       rotation: 0,
       opacity: 1,
     };
-    delete file.company.logoAssetId;
     expect(referencedAssetIds(file)).toEqual(new Set(['bg1']));
   });
 });
 
 describe('new projects', () => {
-  // protects=a new project starts from defaults; fails_when=the new file does not validate or carries catalogs or quotes; no_claim=i18n of the floor name
-  it('creates a valid empty project', () => {
+  // protects=a new project starts from the library defaults; fails_when=the new file does not validate, carries items or quotes, misses the defaults or shares them with the library; no_claim=i18n of the floor name
+  it('creates a valid empty project from the library defaults', () => {
     let n = 0;
-    const file = newProjectFile({ name: 'A', firstFloorName: 'Ground' }, now, () => `g${++n}`);
+    const defaults = defaultLibraryCore().defaults;
+    defaults.settings.wastePercent = 15;
+    defaults.quote.vatPercent = 10;
+    defaults.quote.laborLines = [{ kind: 'lump', description: 'Setup', amount: 100 }];
+    const file = newProjectFile(
+      { name: 'A', firstFloorName: 'Ground' },
+      defaults,
+      now,
+      () => `g${++n}`,
+    );
     expect(file.meta).toEqual({
       name: 'A',
       clientName: '',
@@ -133,32 +159,28 @@ describe('new projects', () => {
       createdAt: now.toISOString(),
     });
     expect(file.doc.floors).toEqual([expect.objectContaining({ id: 'g1', name: 'Ground' })]);
-    expect(file.catalogs).toEqual([]);
-    expect(file.quote.issued).toEqual([]);
+    expect(file.settings).toEqual(defaults.settings);
+    expect(file.quote).toEqual({ settings: defaults.quote, issued: [] });
+    expect(file.items).toEqual([]);
+    expect(file.cablePrices).toEqual({});
+    file.settings.wastePercent = 20;
+    file.quote.settings.laborLines.pop();
+    expect(defaults.settings.wastePercent).toBe(15);
+    expect(defaults.quote.laborLines).toHaveLength(1);
     const { manifest, project } = serializeProjectFile(file, '0.1.0', now);
     expect(loadProjectFile(manifest, project)).toEqual(file);
   });
 
-  // protects=AC 14 template copy; fails_when=the drawing, labor lines or quotes are copied, or settings, company, catalogs, overrides, presets are not; no_claim=asset copying
-  it('copies business data, not the drawing or quotes, from a template', () => {
-    const template = loaded();
-    template.settings.wastePercent = 15;
-    template.quote.settings.vatPercent = 10;
-    template.quote.settings.laborLines = [{ kind: 'lump', description: 'x', amount: 1 }];
-    const file = projectFileFromTemplate(template, { name: 'B', firstFloorName: 'Ground' }, now);
-    expect(file.meta.name).toBe('B');
-    expect(file.settings).toEqual(template.settings);
-    expect(file.company).toEqual(template.company);
-    expect(file.catalogs).toEqual(template.catalogs);
-    expect(file.priceOverrides).toEqual(template.priceOverrides);
-    expect(file.boxPresets).toEqual(template.boxPresets);
-    expect(file.quote).toEqual({
-      settings: { ...template.quote.settings, laborLines: [] },
-      issued: [],
-    });
-    expect(file.doc.nodes).toEqual([]);
-    expect(file.doc.floors).toHaveLength(1);
-    file.catalogs[0]!.name = 'changed';
-    expect(template.catalogs[0]!.name).toBe('Brand 2026');
+  // protects=a saved .epd holds no business data; fails_when=a serialized project carries company, logo, catalogs, overrides or presets; no_claim=zip layout
+  it('serializes without company, catalogs, prices or presets', () => {
+    const file = newProjectFile(
+      { name: 'A', firstFloorName: 'Ground' },
+      defaultLibraryCore().defaults,
+      now,
+    );
+    const { project } = serializeProjectFile(file, '0.1.0', now);
+    expect(Object.keys(project).sort()).toEqual(
+      ['cablePrices', 'doc', 'items', 'meta', 'quote', 'settings'].sort(),
+    );
   });
 });

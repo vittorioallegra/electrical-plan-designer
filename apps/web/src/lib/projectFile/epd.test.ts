@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
-import { strToU8, unzipSync, zipSync } from 'fflate';
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { ProjectFileError, type ProjectFile } from '@epd/domain/projectFile';
 import { readEpd, writeEpd, type ProjectAsset } from './epd';
@@ -21,7 +21,6 @@ function withAssets(project: ProjectFile): ProjectFile {
     rotation: 0,
     opacity: 0.4,
   };
-  p.company.logoAssetId = 'logo1';
   return p;
 }
 
@@ -43,31 +42,34 @@ describe('.epd files', () => {
     expect(readEpd(writeEpd(opened.project, opened.assets, options))).toEqual(opened);
   });
 
-  // protects=backgrounds and logo travel inside the file; fails_when=asset bytes or types change, an unreferenced asset is kept, or JSON is not where expected; no_claim=image decoding
+  // protects=AC 11 a saved file has no business data; fails_when=project.json carries company, logo, catalogs, price overrides or presets, or an asset beyond the drawing's; no_claim=item copies (domain tests)
+  it('writes project.json without company, catalogs, prices or presets', () => {
+    const { project } = readEpd(fixture('demo-project.epd'));
+    const files = unzipSync(writeEpd(project, new Map(), options));
+    const json = JSON.parse(strFromU8(files['project.json']!)) as Record<string, unknown>;
+    expect(Object.keys(json).sort()).toEqual(
+      ['cablePrices', 'doc', 'items', 'meta', 'quote', 'settings'].sort(),
+    );
+    expect(Object.keys(files).sort()).toEqual(['manifest.json', 'project.json']);
+  });
+
+  // protects=backgrounds travel inside the file; fails_when=asset bytes or types change, an unreferenced asset is kept, or JSON is not where expected; no_claim=image decoding
   it('stores referenced assets and drops the others', () => {
     const { project } = readEpd(fixture('demo-project.epd'));
     const png: ProjectAsset = { mimeType: 'image/png', bytes: fixture('plan-1000x800.png') };
-    const pdf: ProjectAsset = { mimeType: 'application/pdf', bytes: fixture('plan-2-pages.pdf') };
     const assets = new Map([
       ['bg1', png],
-      ['logo1', pdf],
       ['unused', png],
     ]);
     const bytes = writeEpd(withAssets(project), assets, options);
     expect(Object.keys(unzipSync(bytes)).sort()).toEqual([
       'assets/bg1.png',
-      'assets/logo1.pdf',
       'manifest.json',
       'project.json',
     ]);
     const opened = readEpd(bytes);
     expect(opened.project).toEqual(withAssets(project));
-    expect(opened.assets).toEqual(
-      new Map([
-        ['bg1', png],
-        ['logo1', pdf],
-      ]),
-    );
+    expect(opened.assets).toEqual(new Map([['bg1', png]]));
   });
 
   // protects=a save never writes a file that cannot be opened; fails_when=a missing or unsafe asset id is written; no_claim=error wording
@@ -75,18 +77,9 @@ describe('.epd files', () => {
     const { project } = readEpd(fixture('demo-project.epd'));
     expect(() => writeEpd(withAssets(project), new Map(), options)).toThrow(/missing/);
     const unsafe = withAssets(project);
-    unsafe.company.logoAssetId = '../x';
+    unsafe.doc.floors[0]!.background!.assetId = '../x';
     const png: ProjectAsset = { mimeType: 'image/png', bytes: new Uint8Array([1]) };
-    expect(() =>
-      writeEpd(
-        unsafe,
-        new Map([
-          ['bg1', png],
-          ['../x', png],
-        ]),
-        options,
-      ),
-    ).toThrow(/file name/);
+    expect(() => writeEpd(unsafe, new Map([['../x', png]]), options)).toThrow(/file name/);
   });
 
   // protects=clear errors when opening a wrong file; fails_when=non-zips, zips without manifest, bad JSON, missing assets or newer files open or throw another code; no_claim=messages

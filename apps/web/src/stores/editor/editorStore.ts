@@ -3,6 +3,7 @@
 import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch } from 'immer';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProjectFile } from '@epd/domain/projectFile';
+import { copyUsedItems, referenceSignature, type LibrarySource } from '@epd/domain/catalog/copies';
 import { addIssuedQuote } from '@epd/domain/issuedQuotes';
 import { docIntegrityIssues } from '@epd/domain/schema';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
@@ -118,7 +119,15 @@ export function saveStatusOf(
 
 export type EditorStore = StoreApi<EditorState>;
 
-export function createEditorStore(init: EditorInit): EditorStore {
+export interface EditorDeps {
+  /**
+   * The library the project copies its items and cable prices from when a command changes what
+   * the drawing uses; without it no copies are made.
+   */
+  librarySource?: () => LibrarySource;
+}
+
+export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): EditorStore {
   const firstFloor = [...init.data.doc.floors].sort((a, b) => a.order - b.order)[0];
   return createStore<EditorState>()((set, get) => {
     const changed = (data: EditorData, history: Partial<Pick<EditorState, 'past' | 'future'>>) => {
@@ -161,7 +170,13 @@ export function createEditorStore(init: EditorInit): EditorStore {
         if (s.readOnly) return { ok: false, reason: 'read_only' };
         let result: readonly [EditorData, Patch[], Patch[]];
         try {
-          result = produceWithPatches(s.data, recipe);
+          const signature = referenceSignature(s.data.doc);
+          result = produceWithPatches(s.data, (draft) => {
+            recipe(draft);
+            // Copies change in the same patches as the drawing, so undo and redo restore them.
+            if (deps.librarySource && referenceSignature(draft.doc) !== signature)
+              copyUsedItems(draft, deps.librarySource());
+          });
         } catch (e) {
           if (e instanceof CommandError) return { ok: false, reason: e.message };
           throw e;

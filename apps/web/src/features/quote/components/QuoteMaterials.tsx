@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { setProjectPrice } from '@epd/domain/catalog/copies';
 import type { QuoteResult } from '@epd/domain/quote';
 import type { QuoteLine } from '@epd/domain/types';
-import { useCatalog } from '@/hooks/useCatalog';
 import { useEditorContext } from '@/stores/editor/EditorContext';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { Table } from '@/components/ui/Table';
@@ -9,8 +9,8 @@ import { cn } from '@/lib/cn';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
 
 /**
- * Material lines of the live quote. Unpriced lines, and lines priced by a project override,
- * take a price inline; it is saved as a project price override.
+ * Material lines of the live quote. Every line takes a price inline; it is saved in the project
+ * only (the item's copy or the cable price), never in the library, as one undoable command.
  */
 export function QuoteMaterials({
   quote,
@@ -23,12 +23,11 @@ export function QuoteMaterials({
 }) {
   const { t } = useTranslation();
   const { store } = useEditorContext();
-  const { priceOverrides } = useCatalog();
   const money = (cents: number | null) => (cents === null ? '—' : formatMoney(cents, locale));
 
   function setPrice(key: string, euros: number) {
     store.getState().applyCommand('price', (d) => {
-      d.priceOverrides[key] = { ...d.priceOverrides[key], unitPrice: Math.round(euros * 100) };
+      setProjectPrice(d, key, Math.round(euros * 100));
     });
   }
 
@@ -49,23 +48,17 @@ export function QuoteMaterials({
           key: 'unitPrice',
           header: t('quote.unitPrice'),
           align: 'right',
-          cell: (l) => {
-            // Prices typed here are project overrides of this line: keep them editable.
-            const own = priceOverrides[l.key]?.unitPrice;
-            return l.unitPrice === null || own === l.unitPrice ? (
-              <NumberInput
-                aria-label={t('quote.priceFor', { name: l.description })}
-                className={cn('w-28', l.unitPrice === null && 'border-warning')}
-                value={l.unitPrice === null ? null : l.unitPrice / 100}
-                unit="€"
-                min={0}
-                disabled={readOnly}
-                onValueChange={(v) => setPrice(l.key, v)}
-              />
-            ) : (
-              money(l.unitPrice)
-            );
-          },
+          cell: (l) => (
+            <NumberInput
+              aria-label={t('quote.priceFor', { name: l.description })}
+              className={cn('w-28', l.unitPrice === null && 'border-warning')}
+              value={l.unitPrice === null ? null : l.unitPrice / 100}
+              unit="€"
+              min={0}
+              disabled={readOnly}
+              onValueChange={(v) => setPrice(l.key, v)}
+            />
+          ),
         },
         {
           key: 'total',

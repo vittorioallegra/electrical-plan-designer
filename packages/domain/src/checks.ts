@@ -1,6 +1,7 @@
 // Basic checks: warnings, never blocking. Each carries params for its i18n message.
 import { cableOuterDiameters } from './catalog/builtin';
 import { isPriceOnly } from './catalog/attributes';
+import { itemReferences } from './catalog/copies';
 import type { CatalogLookup } from './catalog/lookup';
 import { bundleDiameter, conduitTooSmall, estimatedOuterDiameter } from './conduitFill';
 import { routeDoc, type RoutingResult } from './routing';
@@ -67,6 +68,8 @@ export function runChecks(
   settings: ProjectSettings,
   catalog: CatalogLookup,
   routing: RoutingResult = routeDoc(doc, settings),
+  /** Whether the library still has an item; a project copy the library lost warns as missing. */
+  inLibrary?: (itemId: string) => boolean,
 ): Warning[] {
   const warnings: Warning[] = [];
   const warn = (id: CheckId, elementRef: ElementRef, params: Warning['params'] = {}) =>
@@ -226,21 +229,11 @@ export function runChecks(
   }
   for (const id of routing.ctx.clampedNodeIds) warn('height_clamped', { kind: 'node', id }, {});
   // Check 10: items gone from the catalog, dropped by a catalog replace, or price only.
-  const missing = (itemId: string | undefined, ref: ElementRef) => {
-    if (itemId === undefined) return;
+  for (const { itemId, ref } of itemReferences(doc)) {
     const item = catalog(itemId);
-    if (!item) warn('missing_item', ref, { itemId });
+    if (!item || inLibrary?.(itemId) === false) warn('missing_item', ref, { itemId });
     else if (item.missing) warn('item_dropped', ref, { itemId, item: item.name });
     else if (isPriceOnly(item)) warn('price_only', ref, { itemId, item: item.name });
-  };
-  for (const n of doc.nodes) {
-    missing(n.boxItemId, { kind: 'node', id: n.id });
-    for (const c of n.contents ?? []) missing(c.itemId, { kind: 'node', id: n.id });
-  }
-  for (const s of doc.segments) missing(s.conduitItemId, { kind: 'segment', id: s.id });
-  for (const panel of doc.panels) {
-    for (const d of panel.devices)
-      missing(d.itemId, { kind: 'panel_device', id: d.id, panelId: panel.id });
   }
   return warnings;
 }

@@ -1,15 +1,15 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import { defaultLibrary, defaultLibraryCore } from '@epd/domain/library';
 import { writeEpd } from '@/lib/projectFile/epd';
 import type { EditorStore } from '@/stores/editor/editorStore';
 import { demoProjectFile } from '@/testing/editor';
 import { renderApp } from '@/testing/renderApp';
 
-/** The demo drawing with one imported catalog, as an `.epd` file. */
+/** The demo drawing as an `.epd` file. */
 function epd(): Uint8Array {
   const project = demoProjectFile();
-  project.catalogs = [{ id: 'c1', name: 'Vimar 2026', importedAt: '2026-10-01', items: [] }];
   return writeEpd(project, new Map(), { appVersion: 'test', now: new Date('2026-10-26') });
 }
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
@@ -213,23 +213,27 @@ describe('start screen', () => {
     expect(await fileAccess.recent.list()).toEqual([]);
   });
 
-  // protects=new from template; fails_when=a template's catalogs and settings are not copied, or its drawing and quotes are; no_claim=logo asset (no logo in the demo file)
-  it('creates a project from a template file', async () => {
-    const { fileAccess } = await start();
-    fileAccess.files.set('demo.epd', epd());
-    fileAccess.nextOpen = 'demo.epd';
-    await userEvent.click(screen.getByRole('button', { name: 'New from template…' }));
-    expect(
-      await screen.findByRole('dialog', { name: 'New project from demo.epd' }),
-    ).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText('Project name'), 'From template');
+  // protects=new project from the library defaults, no template; fails_when=a new project does not copy the library's settings and quote rates, there is still a template option, or the project carries library data; no_claim=the library pages
+  it('creates a project from the library defaults and offers no template', async () => {
+    const defaults = defaultLibraryCore().defaults;
+    defaults.settings.wastePercent = 15;
+    defaults.quote.vatPercent = 10;
+    await renderApp('/', {
+      exposeTestHandle: true,
+      library: { library: { ...defaultLibrary(), defaults } },
+    });
+    await screen.findByRole('heading', { name: 'Start' });
+    expect(screen.queryByRole('button', { name: /template/i })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'New project' }));
+    await userEvent.type(screen.getByLabelText('Project name'), 'From defaults');
     await userEvent.click(screen.getByRole('button', { name: 'Create' }));
     await screen.findByTestId('project-name');
     const { data } = editorStore().getState();
-    expect(data.meta.name).toBe('From template');
-    expect(data.catalogs).toHaveLength(1);
+    expect(data.meta.name).toBe('From defaults');
+    expect(data.settings.wastePercent).toBe(15);
+    expect(data.quote.settings.vatPercent).toBe(10);
+    expect(data.items).toEqual([]);
     expect(data.doc.nodes).toEqual([]);
-    expect(data.quote.issued).toEqual([]);
   });
 
   // protects=project routes need an open project; fails_when=/project/... without an open project shows a broken editor; no_claim=—

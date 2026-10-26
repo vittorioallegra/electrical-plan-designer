@@ -2,16 +2,16 @@
 // (manifest.json + project.json + assets/). This module owns the JSON parts; the zip and the
 // asset bytes live in the app.
 import { z } from 'zod';
-import { projectCatalogSchema } from './catalog/schema';
-import { defaultProjectSettings, defaultQuoteSettings, newProjectDoc } from './defaults';
+import { catalogItemSchema } from './catalog/schema';
+import { newProjectDoc } from './defaults';
 import { newId, type IdGenerator } from './ids';
 import { migrateDoc } from './load';
+import type { LibraryCore } from './library';
 import { ProjectFileError } from './projectFile/errors';
 import { migrateProjectFile, PROJECT_FILE_SCHEMA_VERSION } from './projectFile/migrations';
 import {
-  boxPresetSchema,
+  cablePricesSchema,
   CURRENT_SCHEMA_VERSION,
-  priceOverridesSchema,
   projectDocSchema,
   projectQuoteSchema,
   projectSettingsSchema,
@@ -36,40 +36,28 @@ export const projectFileMetaSchema = z.object({
   createdAt: z.string(),
 });
 
-/** The business shown on quotes; per project, seeded from defaults or a template. */
-export const companySchema = z.object({
-  businessName: z.string(),
-  vatNumber: z.string(),
-  address: z.string(),
-  phone: z.string(),
-  email: z.string(),
-  /** Id of the logo in the file's `assets/`. */
-  logoAssetId: z.string().min(1).optional(),
-});
-
 export const projectFileSchema = z
   .object({
     meta: projectFileMetaSchema,
-    company: companySchema,
     settings: projectSettingsSchema,
     quote: projectQuoteSchema,
-    catalogs: z.array(projectCatalogSchema),
-    priceOverrides: priceOverridesSchema,
-    boxPresets: z.array(boxPresetSchema),
+    /** Copies of the catalog items the drawing uses, with their prices; kept by `copyUsedItems`. */
+    items: z.array(catalogItemSchema).default([]),
+    /** Prices of the cable lines, keyed `cable:<section>:<color>`. */
+    cablePrices: cablePricesSchema.default({}),
     doc: projectDocSchema,
   })
   .superRefine((file, ctx) => {
     const ids = new Set<string>();
-    file.catalogs.forEach((c, i) => {
-      if (ids.has(c.id))
-        ctx.addIssue({ code: 'custom', path: ['catalogs', i, 'id'], message: 'duplicate id' });
-      ids.add(c.id);
+    file.items.forEach((item, i) => {
+      if (ids.has(item.id))
+        ctx.addIssue({ code: 'custom', path: ['items', i, 'id'], message: 'duplicate id' });
+      ids.add(item.id);
     });
   });
 
 export type ProjectFileManifest = z.infer<typeof projectFileManifestSchema>;
 export type ProjectFileMeta = z.infer<typeof projectFileMetaSchema>;
-export type Company = z.infer<typeof companySchema>;
 export type ProjectFile = z.infer<typeof projectFileSchema>;
 
 /** The two JSON documents of an `.epd` file. */
@@ -137,18 +125,13 @@ export function serializeProjectFile(
   };
 }
 
-/** Assets the project points at: floor backgrounds and the company logo. */
-export function referencedAssetIds(project: Pick<ProjectFile, 'company' | 'doc'>): Set<string> {
+/** Assets the project points at: floor backgrounds. */
+export function referencedAssetIds(project: Pick<ProjectFile, 'doc'>): Set<string> {
   const ids = new Set<string>();
   for (const floor of project.doc.floors) {
     if (floor.background) ids.add(floor.background.assetId);
   }
-  if (project.company.logoAssetId !== undefined) ids.add(project.company.logoAssetId);
   return ids;
-}
-
-export function defaultCompany(): Company {
-  return { businessName: '', vatNumber: '', address: '', phone: '', email: '' };
 }
 
 export interface NewProjectInput {
@@ -159,54 +142,28 @@ export interface NewProjectInput {
   firstFloorName: string;
 }
 
-function newMeta(input: NewProjectInput, now: Date): ProjectFileMeta {
-  return {
-    name: input.name,
-    clientName: input.clientName ?? '',
-    address: input.address ?? '',
-    createdAt: now.toISOString(),
-  };
-}
-
-/** A new project from the app defaults: one empty floor, no catalogs, no quotes. */
+/**
+ * A new project: one empty floor, no items, no quotes; the settings and quote rates are a copy
+ * of the library defaults (the project edits its own from then on).
+ */
 export function newProjectFile(
   input: NewProjectInput,
+  defaults: LibraryCore['defaults'],
   now: Date,
   genId: IdGenerator = newId,
 ): ProjectFile {
-  const settings = defaultProjectSettings();
+  const { settings, quote } = structuredClone(defaults);
   return {
-    meta: newMeta(input, now),
-    company: defaultCompany(),
+    meta: {
+      name: input.name,
+      clientName: input.clientName ?? '',
+      address: input.address ?? '',
+      createdAt: now.toISOString(),
+    },
     settings,
-    quote: { settings: defaultQuoteSettings(), issued: [] },
-    catalogs: [],
-    priceOverrides: {},
-    boxPresets: [],
+    quote: { settings: quote, issued: [] },
+    items: [],
+    cablePrices: {},
     doc: newProjectDoc(input.firstFloorName, settings, genId),
-  };
-}
-
-/**
- * A new project that copies a template's settings, company data (the logo asset must be
- * copied along), catalogs, price overrides, box presets and quote rates. The drawing, the
- * labor lines and the issued quotes are not copied.
- */
-export function projectFileFromTemplate(
-  template: ProjectFile,
-  input: NewProjectInput,
-  now: Date,
-  genId: IdGenerator = newId,
-): ProjectFile {
-  const t = structuredClone(template);
-  return {
-    meta: newMeta(input, now),
-    company: t.company,
-    settings: t.settings,
-    quote: { settings: { ...t.quote.settings, laborLines: [] }, issued: [] },
-    catalogs: t.catalogs,
-    priceOverrides: t.priceOverrides,
-    boxPresets: t.boxPresets,
-    doc: newProjectDoc(input.firstFloorName, t.settings, genId),
   };
 }

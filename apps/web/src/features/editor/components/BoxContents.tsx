@@ -1,14 +1,13 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { newId } from '@epd/domain/ids';
 import type { PlanNode } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { useToast } from '@/components/ui/Toast';
 import { applyPresetTo } from '@/features/editor/utils/commands';
 import { useCatalog } from '@/hooks/useCatalog';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
 
@@ -17,14 +16,13 @@ export function BoxContents({ node }: { node: PlanNode }) {
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const readOnly = useEditor((s) => s.readOnly);
-  const { lookup, boxPresets } = useCatalog();
+  const { lookup } = useCatalog();
+  const boxPresets = useLibrary((s) => s.library.boxPresets);
   const itemName = useItemName();
-  const toast = useToast();
   const devices = useItemsOf('device');
   const covers = useItemsOf('blanking_cover');
   const plates = useItemsOf('plate');
   const [adding, setAdding] = useState('');
-  const [presetName, setPresetName] = useState<string | null>(null);
 
   const contents = node.contents ?? [];
   const box = node.boxItemId ? lookup(node.boxItemId) : undefined;
@@ -47,21 +45,6 @@ export function BoxContents({ node }: { node: PlanNode }) {
       else if (line) line.qty = qty;
       else n.contents = [...list, { itemId, qty }];
     });
-
-  function savePreset(name: string) {
-    const preset = {
-      id: newId(),
-      name,
-      ...(node.mounting ? { mounting: node.mounting } : {}),
-      ...(node.boxItemId ? { boxItemId: node.boxItemId } : {}),
-      contents: structuredClone(contents),
-    };
-    const result = store.getState().applyCommand('box preset', (d) => {
-      d.boxPresets.push(preset);
-    });
-    if (result.ok) toast(t('contents.presetSaved', { name }), 'success');
-    else toast(t('contents.presetFailed'), 'error');
-  }
 
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-2" data-testid="box-contents">
@@ -146,9 +129,9 @@ export function BoxContents({ node }: { node: PlanNode }) {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-1 border-t border-border pt-2">
-        <span>{t('contents.presets')}</span>
-        {boxPresets.length > 0 ? (
+      {boxPresets.length > 0 ? (
+        <div className="flex flex-col gap-1 border-t border-border pt-2">
+          <span>{t('contents.presets')}</span>
           <select
             aria-label={t('contents.applyPreset')}
             className="h-[var(--control-height)] rounded border border-border px-1"
@@ -166,33 +149,8 @@ export function BoxContents({ node }: { node: PlanNode }) {
               </option>
             ))}
           </select>
-        ) : null}
-        {presetName === null ? (
-          <Button disabled={readOnly} onClick={() => setPresetName('')}>
-            {t('contents.savePreset')}
-          </Button>
-        ) : (
-          <form
-            className="flex gap-1"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (presetName.trim()) savePreset(presetName.trim());
-              setPresetName(null);
-            }}
-          >
-            <input
-              aria-label={t('contents.presetName')}
-              autoFocus
-              className="h-[var(--control-height)] min-w-0 flex-1 rounded border border-border px-2"
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-            />
-            <Button type="submit" variant="primary">
-              {t('common.save')}
-            </Button>
-          </form>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

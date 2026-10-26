@@ -1,5 +1,5 @@
 // Generates tests/fixtures/demo-project.epd from the demo drawing (tests/fixtures/demo-project.json)
-// and the demo business data below. Run: pnpm demo:epd
+// and the demo data below (the copies of the built-in items the drawing uses). Run: pnpm demo:epd
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { strToU8, zipSync } from 'fflate';
@@ -23,68 +23,70 @@ export const demoMeta = {
   address: 'Via Roma 1, Milano',
   createdAt: '2026-10-26T00:00:00.000Z',
 };
-export const demoCompany = {
-  businessName: 'Demo Electric',
-  vatNumber: '',
-  address: '',
-  phone: '+39 000 0000000',
-  email: '',
-};
-
-/** [category, name, code, price (cents), unit, modules, attributes] */
-export const demoCatalogRows = [
-  ['device', 'Schuko socket (brand)', 'SCH-01', 690, 'pcs', 2, { deviceType: 'schuko' }],
+/**
+ * The built-in items the demo drawing uses, as the project's copies [slug, category, unit,
+ * attributes, modules]; a unit test checks them against the built-in catalog and the drawing.
+ */
+export const demoItemRows = [
+  ['blanking_cover', 'blanking_cover', 'pcs', {}, 1],
+  ['box_503', 'box', 'pcs', {}, 3],
+  ['conduit_16', 'conduit', 'm', { outerDiameter: 16, innerDiameter: 10.7 }, null],
+  ['conduit_20', 'conduit', 'm', { outerDiameter: 20, innerDiameter: 14.1 }, null],
+  ['conduit_25', 'conduit', 'm', { outerDiameter: 25, innerDiameter: 18.3 }, null],
+  ['enclosure_12m', 'enclosure', 'pcs', { rails: 1, modulesPerRail: 12 }, 12],
   [
-    'cable',
-    'H07V-K 2.5 mm² brown',
-    'C25-BR',
-    48,
-    'm',
-    null,
-    { crossSection: 2.5, color: 'brown', outerDiameter: 3.6 },
+    'isolator_2p_40a',
+    'panel_device',
+    'pcs',
+    { panelDeviceType: 'isolator', poles: '2P', ratingA: 40 },
+    2,
+  ],
+  ['junction_box_118x96', 'junction_box', 'pcs', {}, null],
+  ['junction_box_92x92', 'junction_box', 'pcs', {}, null],
+  [
+    'mcb_1pn_c10',
+    'panel_device',
+    'pcs',
+    { panelDeviceType: 'mcb', poles: '1P+N', ratingA: 10, curve: 'C' },
+    1,
   ],
   [
-    'conduit',
-    'Corrugated 20 mm (brand)',
-    'TC20',
-    35,
-    'm',
-    null,
-    { outerDiameter: 20, innerDiameter: 14.1 },
+    'mcb_1pn_c16',
+    'panel_device',
+    'pcs',
+    { panelDeviceType: 'mcb', poles: '1P+N', ratingA: 16, curve: 'C' },
+    1,
   ],
+  ['plate_3m', 'plate', 'pcs', {}, 3],
+  [
+    'rcd_2p_40a_30ma_a',
+    'panel_device',
+    'pcs',
+    { panelDeviceType: 'rcd', poles: '2P', ratingA: 40, sensitivityMa: 30, rcdType: 'A' },
+    2,
+  ],
+  ['socket_10_16', 'device', 'pcs', { deviceType: 'socket' }, 1],
+  ['socket_schuko', 'device', 'pcs', { deviceType: 'schuko' }, 2],
+  ['switch', 'device', 'pcs', { deviceType: 'switch' }, 1],
 ];
 
-export const DEMO_CATALOG_ID = 'demo';
 export const DEMO_SAVED_AT = '2026-10-26T00:00:00.000Z';
 
-/** The demo ProjectFile (project.json) around the given drawing. */
+/** The demo ProjectFile (project.json) around the given drawing: no prices, so its quote is open. */
 export function buildDemoProject(doc) {
   return {
     meta: demoMeta,
-    company: demoCompany,
     settings: demoSettings,
     quote: demoQuote,
-    catalogs: [
-      {
-        id: DEMO_CATALOG_ID,
-        name: 'Demo catalog',
-        importedAt: DEMO_SAVED_AT,
-        items: demoCatalogRows.map(
-          ([category, name, code, unitPrice, unit, modules, attributes]) => ({
-            id: `${DEMO_CATALOG_ID}:${code}`,
-            category,
-            name,
-            code,
-            unitPrice,
-            unit,
-            ...(modules === null ? {} : { modules }),
-            attributes,
-          }),
-        ),
-      },
-    ],
-    priceOverrides: {},
-    boxPresets: [],
+    items: demoItemRows.map(([slug, category, unit, attributes, modules]) => ({
+      id: `builtin:${slug}`,
+      category,
+      name: `catalog.builtin.${slug}`,
+      unit,
+      ...(modules === null ? {} : { modules }),
+      attributes,
+    })),
+    cablePrices: {},
     doc,
   };
 }

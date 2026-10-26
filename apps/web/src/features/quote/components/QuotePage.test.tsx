@@ -1,11 +1,20 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { builtinById } from '@epd/domain/catalog/builtin';
+import { defaultLibrary } from '@epd/domain/library';
+import { pdfText } from '@/testing/pdfText';
+import { demoProjectFile } from '@/testing/editor';
 import { renderApp } from '@/testing/renderApp';
 
 const quotePath = '/project/quote';
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
+
+const priceOf = (itemId: string) =>
+  editorStore()
+    .getState()
+    .data.items.find((i) => i.id === itemId)?.unitPrice;
 
 async function typeNumber(input: HTMLElement, value: string) {
   await userEvent.clear(input);
@@ -13,7 +22,7 @@ async function typeNumber(input: HTMLElement, value: string) {
 }
 
 describe('quote page', () => {
-  // protects=inline prices for unpriced lines (stored as project price overrides); fails_when=the price is not applied to the line, the totals or the price list; no_claim=price lookup order (domain tests)
+  // protects=inline prices for unpriced lines (stored on the project's item copy); fails_when=the price is not applied to the line, the totals or the price list; no_claim=how prices resolve (domain tests)
   it('prices an unpriced line inline and updates the totals', async () => {
     await renderApp(quotePath, { exposeTestHandle: true });
     expect(await screen.findByText(/lines have no price/)).toBeInTheDocument();
@@ -25,21 +34,65 @@ describe('quote page', () => {
     expect(row).toHaveTextContent('€6.00');
     // €6.00 + 22% VAT
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€7.32');
-    expect(editorStore().getState().data.priceOverrides['builtin:box_503']).toEqual({
-      unitPrice: 150,
-    });
+    expect(priceOf('builtin:box_503')).toBe(150);
   });
 
-  // protects=correcting an inline price; fails_when=a price typed on the quote page can no longer be changed there; no_claim=prices of user catalog items (edited in the catalog)
+  // protects=correcting an inline price; fails_when=a price typed on the quote page can no longer be changed there; no_claim=prices in the library
   it('keeps an inline price editable after it is set', async () => {
     await renderApp(quotePath, { exposeTestHandle: true });
     await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '1.5');
     await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '2');
     const row = (await screen.findByText('Wall box 503 (3 modules)')).closest('tr')!;
     expect(row).toHaveTextContent('€8.00');
-    expect(editorStore().getState().data.priceOverrides['builtin:box_503']).toEqual({
-      unitPrice: 200,
+    expect(priceOf('builtin:box_503')).toBe(200);
+  });
+
+  // protects=AC 18 quote price edits stay in the project and can be undone; fails_when=a typed price reaches the library, a library price change reaches the project's quote, or undo does not restore the price; no_claim=the update-from-library dialog
+  it('changes only the project when a price is typed, and undo restores it', async () => {
+    const { library } = await renderApp(quotePath, { exposeTestHandle: true });
+    const libraryBefore = library.getState().library;
+    await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '1.5');
+    expect(screen.getByTestId('quote-total')).toHaveTextContent('€7.32');
+    expect(library.getState().library).toBe(libraryBefore);
+
+    // A later library price does not reprice the project.
+    act(() =>
+      library.getState().apply((l) => {
+        l.priceOverrides['builtin:box_503'] = { unitPrice: 9900 };
+      }),
+    );
+    expect(screen.getByTestId('quote-total')).toHaveTextContent('€7.32');
+    expect(priceOf('builtin:box_503')).toBe(150);
+
+    act(() => editorStore().getState().undo());
+    expect(priceOf('builtin:box_503')).toBeUndefined();
+    expect(await screen.findByTestId('quote-total')).toHaveTextContent('€0.00');
+  });
+
+  // protects=AC 13 a project prices from its own copies; fails_when=opening it with an empty library, or after the built-in catalog changes, shows other totals than the copies give; no_claim=check 10 warnings
+  it('prices from the project copies with an empty library', async () => {
+    const project = demoProjectFile();
+    project.items = [{ ...builtinById.get('builtin:box_503')!, unitPrice: 150 }];
+    await renderApp(quotePath, { project });
+    expect(await screen.findByTestId('quote-total')).toHaveTextContent('€7.32');
+    expect(screen.getByLabelText('Price of Wall box 503 (3 modules)')).toHaveValue('1.5');
+  });
+
+  // protects=AC 10 company data on quotes comes from the library; fails_when=the exported quote PDF lacks the library's company or the project file carries company data; no_claim=layout and logo drawing (quotePdf.test)
+  it('prints the library company on the exported quote PDF', async () => {
+    const { fileAccess } = await renderApp(quotePath, {
+      library: {
+        library: {
+          ...defaultLibrary(),
+          company: { ...defaultLibrary().company, businessName: 'Elettricità Rossi' },
+        },
+      },
     });
+    await userEvent.click((await screen.findAllByRole('button', { name: 'PDF' }))[0]!);
+    await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house-quote.pdf']));
+    const bytes = fileAccess.files.get('Demo-house-quote.pdf')!;
+    const { text } = await pdfText(bytes.buffer as ArrayBuffer);
+    expect(text.join(' ')).toContain('Elettricità Rossi');
   });
 
   // protects=labor lines, VAT and issuing (AC 15b/15c in the UI); fails_when=labor or VAT do not reach the totals, or an issued quote changes with later edits; no_claim=PDF/CSV content

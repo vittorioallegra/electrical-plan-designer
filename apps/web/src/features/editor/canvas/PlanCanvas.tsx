@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Stage } from 'react-konva';
 import { createLengthContext } from '@epd/domain/lengths';
 import type { PlanNode, Point } from '@epd/domain/types';
-import { useCatalog } from '@/hooks/useCatalog';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { useCanvasColors } from './canvasColors';
@@ -51,7 +51,7 @@ export function PlanCanvas({
   const settings = useEditor((s) => s.data.settings);
   const floor = doc.floors.find((f) => f.id === floorId);
   const { image } = useBackgroundImage(floor?.background?.assetId);
-  const { boxPresets } = useCatalog();
+  const boxPresets = useLibrary((s) => s.library.boxPresets);
   const presetId = useEditor((s) => s.ui.presetId);
   const pick = useEditor((s) => s.ui.pick);
   const activeOwner = useEditor((s) => s.ui.activeOwner);

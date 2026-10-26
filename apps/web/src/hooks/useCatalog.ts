@@ -1,43 +1,27 @@
 import { useMemo } from 'react';
-import { builtinCatalog } from '@epd/domain/catalog/builtin';
-import {
-  createCatalogLookup,
-  projectCatalogItems,
-  type CatalogLookup,
-} from '@epd/domain/catalog/lookup';
-import type { CatalogItem, ProjectCatalog } from '@epd/domain/catalog/types';
-import type { Company } from '@epd/domain/projectFile';
-import type { BoxPreset, PriceOverrides } from '@epd/domain/types';
+import { createCatalogLookup, type CatalogLookup } from '@epd/domain/catalog/lookup';
+import type { CatalogItem } from '@epd/domain/catalog/types';
+import type { CablePrices } from '@epd/domain/types';
 import { useEditor } from '@/stores/editor/EditorContext';
 
 export interface CatalogState {
-  /** Built-ins + every item of the project's catalogs (archived and missing included). */
+  /** The project's copies of the items it uses. */
   items: CatalogItem[];
-  /** Items of the project's catalogs. */
-  projectItems: CatalogItem[];
-  catalogs: ProjectCatalog[];
+  /** Copies first, built-ins for ids not copied yet: never the library. */
   lookup: CatalogLookup;
-  priceOverrides: PriceOverrides;
-  boxPresets: BoxPreset[];
-  company: Company;
+  cablePrices: CablePrices;
 }
 
-/** Catalogs, prices, box presets and company of the open project. */
+/**
+ * The pricing view of the open project: its own copies of items and cable prices. BOM, checks,
+ * quotes and panel helpers read this, so they never depend on the library. Pickers use
+ * `useItemsOf`, which shows the library.
+ */
 export function useCatalog(): CatalogState {
-  const catalogs = useEditor((s) => s.data.catalogs);
-  const priceOverrides = useEditor((s) => s.data.priceOverrides);
-  const boxPresets = useEditor((s) => s.data.boxPresets);
-  const company = useEditor((s) => s.data.company);
-  return useMemo(() => {
-    const projectItems = projectCatalogItems(catalogs);
-    return {
-      items: [...builtinCatalog, ...projectItems],
-      projectItems,
-      catalogs,
-      lookup: createCatalogLookup(projectItems),
-      priceOverrides,
-      boxPresets,
-      company,
-    };
-  }, [catalogs, priceOverrides, boxPresets, company]);
+  const items = useEditor((s) => s.data.items);
+  const cablePrices = useEditor((s) => s.data.cablePrices);
+  return useMemo(
+    () => ({ items, lookup: createCatalogLookup(items), cablePrices }),
+    [items, cablePrices],
+  );
 }

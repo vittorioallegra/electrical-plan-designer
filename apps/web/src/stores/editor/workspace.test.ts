@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMemoryLibraryRepository } from '@/lib/repositories/library';
 import { createMemoryRecoveryRepository } from '@/lib/repositories/recovery';
 import { demoProjectFile } from '@/testing/editor';
+import { createLibraryStore } from '@/stores/library/libraryStore';
 import { createWorkspace } from './workspace';
 
 beforeEach(() => vi.useFakeTimers());
@@ -10,7 +12,8 @@ describe('workspace', () => {
   // protects=one open project per window; fails_when=opening a project keeps the previous one's autosave running or the recovery copy ends up as the previous project; no_claim=routes
   it('replaces the open project and its autosave', async () => {
     const recovery = createMemoryRecoveryRepository();
-    const workspace = createWorkspace({ recovery, exposeTestHandle: true });
+    const library = await createLibraryStore(createMemoryLibraryRepository());
+    const workspace = createWorkspace({ recovery, library, exposeTestHandle: true });
     const first = workspace.getState().open({ data: demoProjectFile() });
     first.store.getState().applyCommand('a', (d) => void (d.meta.name = 'First'));
     const second = workspace.getState().open({

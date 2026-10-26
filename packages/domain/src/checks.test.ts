@@ -142,6 +142,23 @@ describe('check 10: catalog items after a replace or a price-list import', () =>
     expect(run(noModules).map((w) => w.id)).toEqual(['price_only']);
   });
 
+  // protects=check 10 against the library; fails_when=a project copy the library lost is not flagged as missing, a built-in is, or the predicate changes anything when absent; no_claim=BOM and totals
+  it('flags a copy the library no longer has as missing, never a built-in', () => {
+    const item = catalogItem({});
+    const d = withChange((x) => x.nodes[2]!.contents!.push({ itemId: item.id, qty: 1 }));
+    const lookup = createCatalogLookup([item]);
+    const inLibrary = (id: string) => id.startsWith('builtin:');
+    const missing = (predicate?: (id: string) => boolean) =>
+      runChecks(d, settings, lookup, undefined, predicate).filter((w) => w.id === 'missing_item');
+    expect(missing()).toEqual([]);
+    expect(missing(inLibrary)).toEqual([
+      expect.objectContaining({
+        elementRef: { kind: 'node', id: d.nodes[2]!.id },
+        params: { itemId: 'c1:D1' },
+      }),
+    ]);
+  });
+
   // protects=price-only rule; fails_when=a category is flagged for attributes it does not need, or a conduit or enclosure without its sizes passes; no_claim=—
   it('knows which attributes each category needs', () => {
     expect(isPriceOnly(catalogItem({ category: 'plate', modules: undefined }))).toBe(false);

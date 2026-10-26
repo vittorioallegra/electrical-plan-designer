@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeBom, type BomLine } from './bom';
+import { builtinById } from './catalog/builtin';
 import { createCatalogLookup } from './catalog/lookup';
 import type { CatalogItem } from './catalog/types';
 import { defaultProjectSettings, defaultQuoteSettings } from './defaults';
@@ -19,10 +20,10 @@ const userSocket: CatalogItem = {
 };
 
 function ctx(
-  overrides: PriceContext['overrides'] = {},
-  userItems: CatalogItem[] = [],
+  cablePrices: PriceContext['cablePrices'] = {},
+  items: CatalogItem[] = [],
 ): PriceContext {
-  return { catalog: createCatalogLookup(userItems), userItems, overrides };
+  return { catalog: createCatalogLookup(items), cablePrices };
 }
 
 const describeLine = (l: BomLine) => l.key;
@@ -64,28 +65,39 @@ describe('quote math', () => {
     expect(totals.total).toBe(0);
   });
 
-  // protects=price lookup order; fails_when=a user item price loses to an override; no_claim=—
-  it('looks up user item price, then override, then unpriced', () => {
+  // protects=pricing from the project's copies; fails_when=a copy's price is ignored, a built-in copy loses to the built-in, or a missing price counts as zero; no_claim=how copies are made
+  it('prices a line from the project copy, or leaves it unpriced', () => {
     const line: BomLine = { key: 'u1', category: 'device', itemId: 'u1', quantity: 2, unit: 'pcs' };
-    expect(lookupPrice(line, ctx({ u1: { unitPrice: 999 } }, [userSocket]))).toEqual({
+    expect(lookupPrice(line, ctx({}, [userSocket]))).toEqual({
       unitPrice: 450,
       code: 'BR-123',
       source: 'item',
     });
     const { unitPrice: _unitPrice, ...noPrice } = userSocket;
-    expect(lookupPrice(line, ctx({ u1: { unitPrice: 999 } }, [noPrice])).source).toBe('override');
-    expect(lookupPrice(line, ctx({}, [noPrice])).source).toBe('none');
+    expect(lookupPrice(line, ctx({}, [noPrice]))).toEqual({
+      unitPrice: null,
+      code: 'BR-123',
+      source: 'none',
+    });
+    const box: BomLine = {
+      key: 'builtin:box_503',
+      category: 'box',
+      itemId: 'builtin:box_503',
+      quantity: 1,
+      unit: 'pcs',
+    };
+    const copy: CatalogItem = { ...builtinById.get('builtin:box_503')!, unitPrice: 120 };
+    expect(lookupPrice(box, ctx({}, [copy])).unitPrice).toBe(120);
+    expect(lookupPrice(box, ctx()).unitPrice).toBeNull();
   });
 
-  // protects=pricing built-ins and cable lines; fails_when=an override does not price a built-in or a cable line; no_claim=—
-  it('an override prices a built-in line and a cable line', () => {
+  // protects=quote from copies alone; fails_when=a BOM line of the demo drawing is priced from anything but the project's items and cable prices; no_claim=rounding of totals
+  it('prices the BOM from item copies and cable prices only', () => {
     const bom = computeBom(ac4Doc(), defaultProjectSettings(), createCatalogLookup());
+    const box: CatalogItem = { ...builtinById.get('builtin:box_503')!, unitPrice: 120 };
     const { lines } = computeQuote(
       bom,
-      ctx({
-        'builtin:box_503': { unitPrice: 120 },
-        'cable:2.5:brown': { unitPrice: 55, code: 'C25M' },
-      }),
+      ctx({ 'cable:2.5:brown': { unitPrice: 55, code: 'C25M' } }, [box]),
       defaultQuoteSettings(),
       describeLine,
     );
@@ -96,43 +108,7 @@ describe('quote math', () => {
       unitPrice: 55,
       total: 715,
     });
-  });
-
-  // protects=user cable items price cable lines; fails_when=a matching user cable item is ignored; no_claim=—
-  it('a priced user cable item prices the matching cable line', () => {
-    const cable: CatalogItem = {
-      id: 'u-cable',
-      category: 'cable',
-      name: 'Brown 2.5',
-      unitPrice: 60,
-      unit: 'm',
-      attributes: { crossSection: 2.5, color: 'brown', outerDiameter: 3.6 },
-    };
-    const line: BomLine = {
-      key: 'cable:2.5:brown',
-      category: 'cable',
-      cable: { crossSection: 2.5, color: 'brown' },
-      quantity: 13,
-      unit: 'm',
-    };
-    expect(lookupPrice(line, ctx({}, [cable])).unitPrice).toBe(60);
-  });
-
-  // protects=catalog price of a built-in cable; fails_when=a price set on the built-in 2.5 mm² cable leaves its cable lines unpriced; no_claim=catalog page UI
-  it('a built-in cable price prices every color of its section, below a line override', () => {
-    const bom = computeBom(ac4Doc(), defaultProjectSettings(), createCatalogLookup());
-    const { lines } = computeQuote(
-      bom,
-      ctx({
-        'builtin:cable_h07vk_2_5': { unitPrice: 40 },
-        'cable:2.5:brown': { unitPrice: 55 },
-      }),
-      defaultQuoteSettings(),
-      describeLine,
-    );
-    expect(lines.find((l) => l.key === 'cable:2.5:blue')?.unitPrice).toBe(40);
-    expect(lines.find((l) => l.key === 'cable:2.5:yellow_green')?.unitPrice).toBe(40);
-    expect(lines.find((l) => l.key === 'cable:2.5:brown')?.unitPrice).toBe(55);
+    expect(lines.find((l) => l.key === 'cable:2.5:blue')?.unitPrice).toBeNull();
   });
 });
 
@@ -140,11 +116,11 @@ describe('issued quotes', () => {
   // protects=frozen snapshots; fails_when=a price edit after issuing changes the issued quote or the snapshot is not pending; no_claim=storage
   it('an issued snapshot is unchanged after a price edit', () => {
     const bom = computeBom(ac4Doc(), defaultProjectSettings(), createCatalogLookup());
-    const overrides = { 'builtin:box_503': { unitPrice: 120 } };
+    const box: CatalogItem = { ...builtinById.get('builtin:box_503')!, unitPrice: 120 };
     const settings = defaultQuoteSettings();
     const issued = issueQuote(
       bom,
-      ctx(overrides),
+      ctx({}, [box]),
       settings,
       describeLine,
       7,
@@ -152,7 +128,7 @@ describe('issued quotes', () => {
       'en',
     );
     const before = structuredClone(issued);
-    overrides['builtin:box_503'].unitPrice = 999;
+    box.unitPrice = 999;
     settings.vatPercent = 10;
     expect(issued).toEqual(before);
     expect(issued).toMatchObject({ status: 'issued', note: '' });

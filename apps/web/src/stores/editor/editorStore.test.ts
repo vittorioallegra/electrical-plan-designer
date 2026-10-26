@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { IssuedQuote } from '@epd/domain/types';
 import { CommandError, saveStatusOf } from './editorStore';
+import { createLibrarySource } from '@epd/domain/catalog/copies';
+import { defaultLibrary } from '@epd/domain/library';
 import { demoStore } from '@/testing/editor';
 
 describe('editor store', () => {
@@ -22,6 +24,47 @@ describe('editor store', () => {
     expect(store.getState().data.doc.nodes[0]!.label).toBe('Main panel');
     expect(store.getState().data.settings.terminationSlack).toBe(0.2);
     expect(store.getState().future).toHaveLength(1);
+  });
+
+  // protects=AC 11/12 copies follow commands and undo; fails_when=a placed item is not copied with the library price, an unrelated command copies or rewrites anything, a library price change reprices a copy, or undo and redo do not restore the copies; no_claim=the quote price cell
+  it('copies the items a command brings, with undo and redo', () => {
+    const library = {
+      ...defaultLibrary(),
+      priceOverrides: { 'builtin:dimmer': { unitPrice: 300 } },
+    };
+    let source = createLibrarySource(library);
+    const { store } = demoStore({}, { librarySource: () => source });
+    const placeSwitch = () =>
+      store.getState().applyCommand('add', (d) => {
+        d.doc.nodes
+          .find((n) => n.id === 'n_s2')!
+          .contents!.push({ itemId: 'builtin:dimmer', qty: 1 });
+      });
+    // Not a reference change: nothing is copied (an older file keeps its empty copies).
+    store.getState().applyCommand('rename', (d) => {
+      d.doc.nodes[0]!.label = 'Main panel';
+    });
+    expect(store.getState().data.items).toEqual([]);
+
+    placeSwitch();
+    const copy = store.getState().data.items.find((i) => i.id === 'builtin:dimmer');
+    expect(copy?.unitPrice).toBe(300);
+    // Later library prices do not touch the copy.
+    source = createLibrarySource({
+      ...library,
+      priceOverrides: { 'builtin:dimmer': { unitPrice: 999 } },
+    });
+    store.getState().applyCommand('rename again', (d) => {
+      d.doc.nodes[0]!.label = 'Panel';
+    });
+    expect(store.getState().data.items.find((i) => i.id === 'builtin:dimmer')).toEqual(copy);
+
+    store.getState().undo();
+    store.getState().undo();
+    expect(store.getState().data.items).toEqual([]);
+    store.getState().redo();
+    store.getState().redo();
+    expect(store.getState().data.items.find((i) => i.id === 'builtin:dimmer')).toEqual(copy);
   });
 
   // protects=command guards; fails_when=a command breaking doc integrity is applied; no_claim=UI message

@@ -2,13 +2,18 @@ import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { defaultLibrary } from '@epd/domain/library';
+import type { LibraryData } from '@/lib/repositories/types';
 import { renderApp } from '@/testing/renderApp';
 
 const planPath = '/project/plan';
 const store = () => (window as unknown as { __epd?: { store: EditorStore } }).__epd;
 
-async function openBox(nodeId: string) {
-  const app = await renderApp(planPath, { exposeTestHandle: true });
+async function openBox(nodeId: string, library?: LibraryData['library']) {
+  const app = await renderApp(planPath, {
+    exposeTestHandle: true,
+    ...(library ? { library: { library } } : {}),
+  });
   await screen.findByTestId('project-name');
   act(() =>
     store()!
@@ -39,12 +44,24 @@ describe('box contents', () => {
     ]);
   });
 
-  // protects=box presets; fails_when=a saved preset is not stored in the project or not applied; no_claim=placement on canvas
-  it('saves the contents as a preset and applies it to another box', async () => {
-    await openBox('n_s1');
-    await userEvent.click(screen.getByRole('button', { name: 'Save as preset' }));
-    await userEvent.type(screen.getByLabelText('Preset name'), 'Schuko 503{Enter}');
-    expect(store()!.store.getState().data.boxPresets).toHaveLength(1);
+  // protects=library presets apply to a box and stay out of the project; fails_when=the preset is not offered, not applied, the box offers to save one, or applying it does not copy the items it brings; no_claim=placement on canvas
+  it('applies a library preset to another box, copying its items into the project', async () => {
+    await openBox('n_s1', {
+      ...defaultLibrary(),
+      boxPresets: [
+        {
+          id: 'p1',
+          name: 'Schuko 503',
+          boxItemId: 'builtin:box_503',
+          contents: [
+            { itemId: 'builtin:socket_schuko', qty: 1 },
+            { itemId: 'builtin:blanking_cover', qty: 2 },
+            { itemId: 'builtin:plate_3m', qty: 1 },
+          ],
+        },
+      ],
+    });
+    expect(screen.queryByRole('button', { name: 'Save as preset' })).toBeNull();
 
     act(() =>
       store()!
@@ -52,13 +69,15 @@ describe('box contents', () => {
         .setUi({ selection: ['n_s2'] }),
     );
     await userEvent.selectOptions(await screen.findByLabelText('Apply a preset…'), 'Schuko 503');
-    const s2 = store()!
-      .store.getState()
-      .data.doc.nodes.find((n) => n.id === 'n_s2')!;
-    expect(s2.contents?.map((c) => c.itemId)).toEqual([
+    const { data } = store()!.store.getState();
+    expect(data.doc.nodes.find((n) => n.id === 'n_s2')!.contents?.map((c) => c.itemId)).toEqual([
       'builtin:socket_schuko',
       'builtin:blanking_cover',
       'builtin:plate_3m',
     ]);
+    expect(data.items.map((i) => i.id)).toEqual(
+      expect.arrayContaining(['builtin:socket_schuko', 'builtin:plate_3m']),
+    );
+    expect('boxPresets' in data).toBe(false);
   });
 });

@@ -10,7 +10,7 @@ import {
   start,
 } from './helpers';
 
-// protects=AC 1 save and reopen; fails_when=a project saved to its file and reopened differs in drawing, settings, company, catalogs or quotes, or the draft is not offered after a reload; no_claim=the File System Access permission prompts (fake file access)
+// protects=AC 1 save and reopen; fails_when=a project saved to its file and reopened differs in drawing, settings, item copies or quotes, or the draft is not offered after a reload; no_claim=the File System Access permission prompts (fake file access)
 test('open the demo file, edit, save it in place and reopen it', async ({ page }) => {
   await start(page);
   await offerFixture(page, 'demo-project.epd');
@@ -30,8 +30,10 @@ test('open the demo file, edit, save it in place and reopen it', async ({ page }
   const open = await editorState(page, (s) => s.data);
   expect(saved).toEqual(open);
   expect(saved.doc.floors).toHaveLength(floors + 1);
-  expect(saved.catalogs.length).toBeGreaterThan(0);
-  expect(saved.company.businessName).not.toBe('');
+  expect(saved.items.length).toBeGreaterThan(0);
+  expect(Object.keys(saved).sort()).toEqual(
+    ['cablePrices', 'doc', 'items', 'meta', 'quote', 'settings'].sort(),
+  );
 
   // A reload closes the project (the fake files start empty); reopening the saved file gives
   // the same project.

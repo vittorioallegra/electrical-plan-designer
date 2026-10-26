@@ -1,5 +1,7 @@
 // The project open in the window: at most one, with its editor store and autosave.
 import { createStore, type StoreApi } from 'zustand/vanilla';
+import { createLibrarySource, type LibrarySource } from '@epd/domain/catalog/copies';
+import type { Library } from '@epd/domain/library';
 import type { MemoryFileAccess } from '@/lib/repositories/fileAccess';
 import type { MemoryLibraryRepository } from '@/lib/repositories/library';
 import type { LibraryStore } from '@/stores/library/libraryStore';
@@ -39,18 +41,29 @@ declare global {
 
 export function createWorkspace({
   recovery,
+  library,
   exposeTestHandle = false,
 }: {
   recovery: RecoveryRepository;
+  /** The library projects copy their items and prices from. */
+  library: LibraryStore;
   /** Expose `window.__epd` (dev and E2E builds only). */
   exposeTestHandle?: boolean;
 }): Workspace {
   let opened = 0;
+  // The source is rebuilt only when the library changed.
+  let cached: { library: Library; source: LibrarySource } | null = null;
+  const librarySource = () => {
+    const current = library.getState().library;
+    if (cached?.library !== current)
+      cached = { library: current, source: createLibrarySource(current) };
+    return cached.source;
+  };
   return createStore<WorkspaceState>()((set, get) => ({
     current: null,
     open(init) {
       get().close();
-      const store = createEditorStore(init);
+      const store = createEditorStore(init, { librarySource });
       const project = { id: ++opened, store, autosave: startAutosave(store, { recovery }) };
       if (exposeTestHandle) window.__epd = { ...window.__epd, store };
       set({ current: project });

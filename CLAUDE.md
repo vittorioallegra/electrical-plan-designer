@@ -48,15 +48,14 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
 - `src/features/<name>/` — start, editor, panel, circuits, library (company, catalog, presets,
   defaults), bom, checks, quote, exports, settings; sub-folders `components/ hooks/ utils/`
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`, forms shared by project
-  and library pages), `src/hooks/` (shared; `useCatalog` = open project's catalogs), `src/config/`
+  and library pages), `src/hooks/` (shared; `useCatalog` = project copies, `useItemsOf` = pickers), `src/config/`
 - `src/lib/` — `repositories/` (`types.ts`; `recovery.ts`, `fileAccess.ts` (open, save in place,
   saveAs, exportFile), `library.ts`, `windowHost.ts`; over `window.epd` or an in-memory fake),
   `i18n/` (`locales/en.json` base, `it.json`), `projectFile/` (`.epd` zip, `fflate`),
   `libraryFile/` (`.epl` zip), formatting helpers
 - `src/stores/editor/` — `workspace.ts` (the window's one open project), editor store
   (`ProjectFile` and assets, zustand + immer patches), undo/redo, autosave to the recovery copy
-  (cleared once the file has every change or on "Don't save"); `src/stores/library/` — the app
-  library (company, catalogs, prices, presets, defaults), outside any project
+  (cleared once the file has every change or on "Don't save"); `src/stores/library/` — the app library
 - `src/testing/` (`renderApp`, `editor`, `pdfText`, setup), `scripts/` (build-demo-epd),
   `tests/fixtures/` (shared; e2e `fixture(name)`), `tests/lint/` (lint rule tests)
 
@@ -71,11 +70,13 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
 - Data: the open project lives in the workspace's editor store; every change goes through
   `applyCommand` (undoable; issuing a quote is the one exception) and autosave writes the recovery copy.
   The library store (`useLibrary`, `apply(recipe)`) is loaded before the first route, writes
-  through one file per change and is not undoable. Services (`recovery`, `fileAccess`,
+  through one file per change and is not undoable. A project holds only `items` and `cablePrices`
+  (copies of what it uses, kept by `copyUsedItems` in `applyCommand`); BOM, checks and quotes read
+  those, never the library; a quote price edit writes only them. Services (`recovery`, `fileAccess`,
   `windowHost`, `workspace`, `library`) come from `useEditorServices()`.
   TanStack Query only for local async reads (the recovery copy, images), never `useEffect` fetches.
-- Routes: `/` start; `/library/<section>` (project stays open); `/project/<view>` (none → `/`); every route
-  has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo
+- Routes: `/` start; `/library/<section>` (project stays open); `/project/<view>` (none → `/`);
+  every route has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo
   project for `/project/...` paths (`project: null` to skip) and waits for the first navigation.
 - Tests sit next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
 - File formats: `.epd` has two versions, `manifest.schemaVersion` (project.json,

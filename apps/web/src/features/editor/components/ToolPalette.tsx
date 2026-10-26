@@ -5,7 +5,7 @@ import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { Tool } from '@/stores/editor/editorStore';
 import { cn } from '@/lib/cn';
 import { ElectricalSymbol } from '@/components/symbols/ElectricalSymbol';
-import { useCatalog } from '@/hooks/useCatalog';
+import { useLibrary } from '@/stores/library/useLibrary';
 
 const tools: { tool: Tool; icon: ReactNode; key: string; shortcut: string }[] = [
   { tool: 'select', icon: <MousePointer2 size={16} />, key: 'tools.select', shortcut: 'V' },
@@ -52,7 +52,7 @@ export function ToolPalette() {
   );
   const hasPanel = useEditor((s) => s.data.doc.panels.length > 0);
   const presetId = useEditor((s) => s.ui.presetId);
-  const { boxPresets: presets } = useCatalog();
+  const presets = useLibrary((s) => s.library.boxPresets);
   return (
     <div role="toolbar" aria-label={t('editor.tools')} className="flex flex-col gap-0.5">
       {active === 'terminal_box' && presets.length > 0 ? (

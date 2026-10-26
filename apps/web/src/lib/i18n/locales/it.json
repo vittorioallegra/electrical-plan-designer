@@ -469,10 +469,7 @@
     "add": "Aggiungi",
     "presets": "Preset scatole",
     "applyPreset": "Applica un preset…",
-    "savePreset": "Salva come preset",
     "presetName": "Nome del preset",
-    "presetSaved": "Preset \"{{name}}\" salvato.",
-    "presetFailed": "Impossibile salvare il preset.",
     "placeWith": "Posiziona scatole come",
     "plainBox": "Scatola vuota"
   },
@@ -747,10 +744,8 @@
   "start": {
     "title": "Inizio",
     "new": "Nuovo progetto",
-    "fromTemplate": "Nuovo da modello…",
     "open": "Apri file…",
     "newTitle": "Nuovo progetto",
-    "templateTitle": "Nuovo progetto da {{name}}",
     "name": "Nome del progetto",
     "client": "Cliente",
     "address": "Indirizzo",

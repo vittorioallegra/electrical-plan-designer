@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import type { IssuedQuote } from '@epd/domain/types';
 import { useEditor } from '@/stores/editor/EditorContext';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { fileSafe } from '@/lib/download';
 import { exportFilters, useExportFile } from '@/hooks/useExportFile';
-import { assetBlob } from '@/lib/projectFile/epd';
 import type { Locale } from '@/lib/format';
-import { useCatalog } from '@/hooks/useCatalog';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildQuotePdf } from '@/features/exports/utils/quotePdf';
 import type { QuoteDocument } from '@epd/domain/quote';
@@ -16,9 +15,9 @@ const localeOf = (language: string): Locale => (language === 'it' ? 'it' : 'en')
 /** Saves the live quote (current language) or an issued one (its own language). */
 export function useQuoteExport() {
   const { i18n } = useTranslation();
-  const { company } = useCatalog();
+  const company = useLibrary((s) => s.library.company);
+  const libraryLogo = useLibrary((s) => s.logo);
   const exportFile = useExportFile();
-  const assets = useEditor((s) => s.assets);
   const meta = useEditor((s) => s.data.meta);
 
   function target(quote: QuoteDocument | IssuedQuote) {
@@ -40,12 +39,16 @@ export function useQuoteExport() {
         exportFilters.csv,
       );
     },
-    /** Throws when the PDF cannot be built; a missing logo is skipped. */
+    /** Throws when the PDF cannot be built; a logo that cannot be read is skipped. */
     async pdf(quote: QuoteDocument | IssuedQuote) {
       const { t, locale, base } = target(quote);
       let logo: ImageData | undefined;
-      const logoAsset = company.logoAssetId ? assets.get(company.logoAssetId) : undefined;
-      if (logoAsset) logo = await blobToImage(assetBlob(logoAsset)).catch(() => undefined);
+      if (libraryLogo) {
+        const blob = new Blob([libraryLogo.bytes as Uint8Array<ArrayBuffer>], {
+          type: libraryLogo.mimeType,
+        });
+        logo = await blobToImage(blob).catch(() => undefined);
+      }
       const pdf = buildQuotePdf({
         quote,
         company,

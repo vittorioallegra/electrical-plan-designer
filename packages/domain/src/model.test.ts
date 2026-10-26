@@ -137,7 +137,6 @@ describe('schema versions', () => {
     expect(() => migrateDoc({ ...doc, schemaVersion: 0 })).toThrow(DocLoadError);
     expect(() => migrateDoc({ ...doc, schemaVersion: 'x' })).toThrow(DocLoadError);
   });
-
 });
 
 describe('built-in catalog', () => {

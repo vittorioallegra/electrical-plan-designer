@@ -469,10 +469,7 @@
     "add": "Add",
     "presets": "Box presets",
     "applyPreset": "Apply a preset…",
-    "savePreset": "Save as preset",
     "presetName": "Preset name",
-    "presetSaved": "Preset \"{{name}}\" saved.",
-    "presetFailed": "Could not save the preset.",
     "placeWith": "Place boxes as",
     "plainBox": "Plain box"
   },
@@ -747,10 +744,8 @@
   "start": {
     "title": "Start",
     "new": "New project",
-    "fromTemplate": "New from template…",
     "open": "Open file…",
     "newTitle": "New project",
-    "templateTitle": "New project from {{name}}",
     "name": "Project name",
     "client": "Client",
     "address": "Address",

@@ -5,6 +5,7 @@ import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { assetBlob } from '@/lib/projectFile/epd';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useCatalog } from '@/hooks/useCatalog';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 
@@ -12,7 +13,8 @@ import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 export function useProjectPdfExport(): () => Promise<void> {
   const { t, i18n } = useTranslation();
   const { store } = useEditorContext();
-  const { lookup, company } = useCatalog();
+  const { lookup } = useCatalog();
+  const businessName = useLibrary((s) => s.library.company.businessName);
   const analysis = useAnalysis();
   const exportFile = useExportFile();
   return async () => {
@@ -31,7 +33,7 @@ export function useProjectPdfExport(): () => Promise<void> {
       analysis,
       lookup,
       backgrounds,
-      businessName: company.businessName,
+      businessName,
       t,
       locale: i18n.language === 'it' ? 'it' : 'en',
       now: new Date(),
