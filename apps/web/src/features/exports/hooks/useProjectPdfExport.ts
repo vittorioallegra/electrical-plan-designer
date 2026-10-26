@@ -19,7 +19,7 @@ export function useProjectPdfExport(): () => Promise<void> {
     const backgrounds = new Map<string, ImageData>();
     for (const floor of data.doc.floors) {
       if (!floor.background) continue;
-      const blob = await files.download('backgrounds', floor.background.storagePath);
+      const blob = await files.download('backgrounds', floor.background.assetId);
       backgrounds.set(floor.id, await blobToImage(blob));
     }
     const pdf = buildProjectPdf({

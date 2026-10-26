@@ -22,8 +22,23 @@ export interface LoadedDoc {
 
 type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
 
-/** migrations[n] upgrades a doc from schemaVersion n to n + 1. None yet for v1. */
-const migrations: Record<number, Migration> = {};
+/** v1 → v2: floor backgrounds name their file by asset id instead of storage path. */
+function backgroundAssetIds(doc: Record<string, unknown>): Record<string, unknown> {
+  const floors = Array.isArray(doc.floors) ? (doc.floors as unknown[]) : [];
+  return {
+    ...doc,
+    floors: floors.map((floor) => {
+      const f = floor as Record<string, unknown> | null;
+      const bg = f?.background as Record<string, unknown> | undefined;
+      if (!bg || typeof bg !== 'object' || !('storagePath' in bg)) return floor;
+      const { storagePath, ...rest } = bg;
+      return { ...f, background: { ...rest, assetId: storagePath } };
+    }),
+  };
+}
+
+/** migrations[n] upgrades a doc from schemaVersion n to n + 1. */
+const migrations: Record<number, Migration> = { 1: backgroundAssetIds };
 
 export function migrateDoc(raw: Record<string, unknown>): Record<string, unknown> {
   let doc = raw;

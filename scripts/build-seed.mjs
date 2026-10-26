@@ -1,7 +1,14 @@
 // Generates supabase/seed.sql: a local dev user, the demo project from the shared fixture,
-// and a few priced user catalog items. Run: node scripts/build-seed.mjs
+// and the demo catalog as priced user items (data shared with build-demo-epd.mjs). Run: node scripts/build-seed.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import {
+  demoCatalogRows,
+  demoCompany,
+  demoMeta,
+  demoQuote,
+  demoSettings,
+} from './build-demo-epd.mjs';
 
 export const DEV_USER = {
   id: '00000000-0000-4000-8000-000000000001',
@@ -10,48 +17,14 @@ export const DEV_USER = {
 };
 export const DEMO_PROJECT_ID = '00000000-0000-4000-8000-0000000000aa';
 
-// Mirrors defaultProjectSettings() / defaultQuoteSettings(); a unit test keeps them equal.
-export const seedSettings = {
-  mountingHeights: { socket: 0.3, switch: 1.1, junctionBox: 0.25, panel: 1.5 },
-  defaultFloorHeight: 2.7,
-  defaultRunElevation: 'floor',
-  terminationSlack: 0.2,
-  wastePercent: 10,
-  conduitFillFactor: 1.3,
-};
-export const seedQuote = {
-  settings: { materialAdjustmentPercent: 0, vatPercent: 22, laborLines: [] },
-  issued: [],
-};
-
-const userItems = [
-  ['device', 'Schuko socket (brand)', 'SCH-01', 690, 'pcs', 2, { deviceType: 'schuko' }],
-  [
-    'cable',
-    'H07V-K 2.5 mm² brown',
-    'C25-BR',
-    48,
-    'm',
-    null,
-    { crossSection: 2.5, color: 'brown', outerDiameter: 3.6 },
-  ],
-  [
-    'conduit',
-    'Corrugated 20 mm (brand)',
-    'TC20',
-    35,
-    'm',
-    null,
-    { outerDiameter: 20, innerDiameter: 14.1 },
-  ],
-];
+export { demoSettings as seedSettings, demoQuote as seedQuote } from './build-demo-epd.mjs';
 
 const lit = (value) => `'${String(value).replaceAll("'", "''")}'`;
 const json = (value) => `${lit(JSON.stringify(value))}::jsonb`;
 
 export function buildSeed(doc) {
   const u = DEV_USER;
-  const items = userItems
+  const items = demoCatalogRows
     .map(
       ([category, name, code, price, unit, modules, attributes]) =>
         `  (${lit(u.id)}, ${lit(category)}, ${lit(name)}, ${lit(code)}, ${price}, ${lit(unit)}, ${modules ?? 'null'}, ${json(attributes)})`,
@@ -76,14 +49,14 @@ values (
   ${json({ sub: u.id, email: u.email, email_verified: true })}, now(), now(), now()
 );
 
-update public.profiles set business_name = 'Demo Electric', phone = '+39 000 0000000'
+update public.profiles set business_name = ${lit(demoCompany.businessName)}, phone = ${lit(demoCompany.phone)}
 where user_id = ${lit(u.id)};
 
 insert into public.projects (id, owner_id, name, client_name, address, settings, quote, doc)
 values (
-  ${lit(DEMO_PROJECT_ID)}, ${lit(u.id)}, 'Demo house', 'Demo client', 'Via Roma 1, Milano',
-  ${json(seedSettings)},
-  ${json(seedQuote)},
+  ${lit(DEMO_PROJECT_ID)}, ${lit(u.id)}, ${lit(demoMeta.name)}, ${lit(demoMeta.clientName)}, ${lit(demoMeta.address)},
+  ${json(demoSettings)},
+  ${json(demoQuote)},
   ${json(doc)}
 );
 

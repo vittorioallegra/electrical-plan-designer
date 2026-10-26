@@ -51,6 +51,7 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
   ) {
     const s = store.getState();
     const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
+    // The storage path doubles as the background's asset id.
     const path = `${session.userId}/${s.projectId}/${newId()}.${ext}`;
     const attempt = async () => {
       setStep({ kind: 'uploading' });
@@ -68,7 +69,7 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
         const floor = d.doc.floors.find((f) => f.id === floorId);
         if (!floor) return;
         floor.background = {
-          storagePath: path,
+          assetId: path,
           kind,
           ...(page ? { page } : {}),
           widthPx: image.naturalWidth || image.width,

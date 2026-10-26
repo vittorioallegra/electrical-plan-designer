@@ -6,6 +6,7 @@ import {
   PROJECT_FILE_SCHEMA_VERSION,
   ProjectFileError,
   projectFileFromTemplate,
+  referencedAssetIds,
   serializeProjectFile,
   type ProjectFile,
 } from './projectFile';
@@ -110,6 +111,25 @@ describe('project file', () => {
       status: 'issued',
       note: '',
     });
+  });
+});
+
+describe('assets', () => {
+  // protects=which assets a save keeps; fails_when=a background or the logo is missed, or a floor without background adds one; no_claim=asset bytes
+  it('lists the assets a project references', () => {
+    const file = loaded();
+    expect(referencedAssetIds(file)).toEqual(new Set(['logo1']));
+    file.doc.floors[0]!.background = {
+      assetId: 'bg1',
+      kind: 'image',
+      widthPx: 10,
+      heightPx: 10,
+      offset: { x: 0, y: 0 },
+      rotation: 0,
+      opacity: 1,
+    };
+    delete file.company.logoAssetId;
+    expect(referencedAssetIds(file)).toEqual(new Set(['bg1']));
   });
 });
 

@@ -50,7 +50,7 @@ export function PlanCanvas({
   const doc = useEditor((s) => s.data.doc);
   const settings = useEditor((s) => s.data.settings);
   const floor = doc.floors.find((f) => f.id === floorId);
-  const { image } = useBackgroundImage(floor?.background?.storagePath);
+  const { image } = useBackgroundImage(floor?.background?.assetId);
   const { profile } = useCatalog();
   const presetId = useEditor((s) => s.ui.presetId);
   const pick = useEditor((s) => s.ui.pick);

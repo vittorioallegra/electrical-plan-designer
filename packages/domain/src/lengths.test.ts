@@ -30,7 +30,7 @@ describe('geometry', () => {
   // protects=AC 2 calibration; fails_when=a calibrated 4.20 m distance measures off by > 1 cm; no_claim=UI clicks
   it('maps a calibrated background so the two points are 4.20 m apart', () => {
     const background: Background = {
-      storagePath: 'u/p/bg.png',
+      assetId: 'u/p/bg.png',
       kind: 'image',
       widthPx: 2000,
       heightPx: 1500,

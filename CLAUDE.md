@@ -25,6 +25,8 @@ missing), pnpm 12.
 - `pnpm db:start | db:stop | db:reset | db:types`, `pnpm env:local`
 - `pnpm db:seed` — regenerate `supabase/seed.sql` from `tests/fixtures/demo-project.json`
   (a unit test fails when they drift), then `pnpm db:reset`
+- `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (drawing from
+  `demo-project.json`, business data in `scripts/build-demo-epd.mjs`; a unit test checks drift)
 
 Local seed login (local stack only): `dev@example.test` / `devpassword` ("Demo house").
 Schema changes: new file in `supabase/migrations/`, then `pnpm db:reset && pnpm db:types`.
@@ -46,7 +48,8 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
 - `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, catalog, profile, record)
 - `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks), `src/config/env.ts`
 - `src/lib/` — `repositories/` (interfaces, Supabase + in-memory; the only Supabase code),
-  `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `query-client.ts`, formatting helpers
+  `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `projectFile/` (`.epd` zip read/write,
+  `fflate`), `query-client.ts`, formatting helpers
 - `src/stores/editor/` — editor store (zustand + immer patches), undo/redo, autosave
 - `src/testing/` — `setup.ts`, `renderApp.tsx`, `editor.ts`, `pdfText.ts`
 - `supabase/` (config, migrations, seed), `scripts/` (check-env, env-local, build-seed),

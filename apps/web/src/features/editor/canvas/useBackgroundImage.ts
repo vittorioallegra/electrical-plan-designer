@@ -16,27 +16,27 @@ function decode(blob: Blob): Promise<HTMLImageElement> {
 }
 
 /** Seeds the cache right after an upload, so the new background shows without a download. */
-export function usePrimeBackgroundImage(): (path: string, image: HTMLImageElement) => void {
+export function usePrimeBackgroundImage(): (assetId: string, image: HTMLImageElement) => void {
   const { userId } = useSession();
   const queryClient = useQueryClient();
   return useCallback(
-    (path, image) => queryClient.setQueryData(queryKeys.backgroundImage(userId, path), image),
+    (assetId, image) => queryClient.setQueryData(queryKeys.backgroundImage(userId, assetId), image),
     [queryClient, userId],
   );
 }
 
-export function useBackgroundImage(path: string | undefined): {
+export function useBackgroundImage(assetId: string | undefined): {
   image: HTMLImageElement | null;
   failed: boolean;
 } {
   const { userId } = useSession();
   const { files } = useRepositories();
   const query = useQuery({
-    queryKey: queryKeys.backgroundImage(userId, path ?? ''),
-    queryFn: () => files.download('backgrounds', path!).then(decode),
-    enabled: Boolean(path),
+    queryKey: queryKeys.backgroundImage(userId, assetId ?? ''),
+    queryFn: () => files.download('backgrounds', assetId!).then(decode),
+    enabled: Boolean(assetId),
     staleTime: Infinity,
   });
-  if (!path) return { image: null, failed: false };
+  if (!assetId) return { image: null, failed: false };
   return { image: query.data ?? null, failed: query.isError };
 }

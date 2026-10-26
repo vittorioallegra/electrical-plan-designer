@@ -130,11 +130,33 @@ describe('schema versions', () => {
   });
 
   // protects=migration pipeline; fails_when=a current doc is altered or a bad version accepted; no_claim=future migrations
-  it('migrateDoc is the identity for v1 and rejects bad versions', () => {
+  it('migrateDoc is the identity for the current version and rejects bad versions', () => {
     const doc = clone(demoDoc) as unknown as Record<string, unknown>;
+    expect(doc.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(migrateDoc(doc)).toEqual(demo);
     expect(() => migrateDoc({ ...doc, schemaVersion: 0 })).toThrow(DocLoadError);
     expect(() => migrateDoc({ ...doc, schemaVersion: 'x' })).toThrow(DocLoadError);
+  });
+
+  // protects=v1 docs with backgrounds still open; fails_when=storagePath is not renamed to assetId or other floor fields change; no_claim=the asset bytes
+  it('migrates v1 background storage paths to asset ids', () => {
+    const background = {
+      storagePath: 'user/project/f0.png',
+      kind: 'image',
+      widthPx: 100,
+      heightPx: 80,
+      offset: { x: 0, y: 0 },
+      rotation: 0,
+      opacity: 0.5,
+    };
+    const v1 = clone(demoDoc) as unknown as { schemaVersion: number; floors: object[] };
+    v1.schemaVersion = 1;
+    v1.floors[0] = { ...v1.floors[0], background };
+    const { doc } = loadDoc(v1);
+    const { storagePath, ...rest } = background;
+    expect(doc.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(doc.floors[0]!.background).toEqual({ ...rest, assetId: storagePath });
+    expect(doc.floors.slice(1)).toEqual(demoDoc.floors.slice(1));
   });
 });
 

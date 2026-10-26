@@ -137,6 +137,16 @@ export function serializeProjectFile(
   };
 }
 
+/** Assets the project points at: floor backgrounds and the company logo. */
+export function referencedAssetIds(project: Pick<ProjectFile, 'company' | 'doc'>): Set<string> {
+  const ids = new Set<string>();
+  for (const floor of project.doc.floors) {
+    if (floor.background) ids.add(floor.background.assetId);
+  }
+  if (project.company.logoAssetId !== undefined) ids.add(project.company.logoAssetId);
+  return ids;
+}
+
 export function defaultCompany(): Company {
   return { businessName: '', vatNumber: '', address: '', phone: '', email: '' };
 }

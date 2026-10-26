@@ -17,7 +17,7 @@ const PNG_1PX =
 function demoInput() {
   const doc = structuredClone(demo) as unknown as ProjectDoc;
   doc.floors[0]!.background = {
-    storagePath: 'user/project/f0.png',
+    assetId: 'user/project/f0.png',
     kind: 'image',
     widthPx: 1000,
     heightPx: 600,

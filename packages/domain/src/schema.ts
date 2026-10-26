@@ -1,7 +1,7 @@
 // Zod schema of the project document (projects.doc) and the per-project settings.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 const id = z.string().min(1);
 const finite = z.number().finite();
@@ -61,7 +61,8 @@ export const calibrationSchema = z.object({
 });
 
 export const backgroundSchema = z.object({
-  storagePath: z.string().min(1),
+  /** Id of the background file among the project's assets. */
+  assetId: z.string().min(1),
   kind: z.enum(['pdf', 'image']),
   page: z.number().int().positive().optional(),
   widthPx: positive,

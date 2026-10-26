@@ -87,7 +87,7 @@ describe('background transform', () => {
   // protects=calibration clicks; fails_when=world→background is not the inverse; no_claim=—
   it('worldToBackground inverts backgroundToWorld', () => {
     const bg: Background = {
-      storagePath: 'x',
+      assetId: 'x',
       kind: 'image',
       widthPx: 1000,
       heightPx: 800,
