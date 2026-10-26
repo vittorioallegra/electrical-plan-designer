@@ -219,7 +219,7 @@ Architecture: agreed
 Approved: yes (2026-10-26)
 
 ### Steps
-- [ ] 1. Desktop shell
+- [x] 1. Desktop shell — `feat: add the Electron desktop shell`
 - [ ] 2. Files in place
 - [ ] 3. Recovery copy
 - [ ] 4. OS integration
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 1 (desktop shell) on `feat/desktop-app`.
+Step 2 (files in place) on `feat/desktop-app`.

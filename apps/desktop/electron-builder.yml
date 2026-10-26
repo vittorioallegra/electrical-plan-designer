@@ -1,0 +1,16 @@
+appId: app.epd.electrical-plan-designer
+productName: Electrical Plan Designer
+directories:
+  output: release
+  buildResources: build
+# Main and preload are bundled into out/: nothing from node_modules is packaged.
+files:
+  - package.json
+  - out/**
+npmRebuild: false
+mac:
+  # Unsigned for now; signing is added later as a build step only.
+  identity: null
+  target: [{ target: dir, arch: [arm64, x64] }]
+win:
+  target: [{ target: dir, arch: [x64] }]

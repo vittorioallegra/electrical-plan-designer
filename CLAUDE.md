@@ -20,7 +20,12 @@ missing), pnpm 12. No Docker, backend or env vars needed.
   `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot` (one test: `-t "riser"`)
 - `pnpm test:e2e` — Playwright (`apps/web/e2e`): dev server on :5174 in `e2e` mode, plus a
   production build on :5175 for `offline.spec.ts`; quiet: `pnpm test:e2e --reporter=dot`
-- `pnpm verify` — typecheck, lint, test, test:e2e (the gate; no CI yet)
+- `pnpm desktop:dev` — Electron shell on the Vite dev server (:5173, so stop `pnpm dev` first)
+- `pnpm desktop:build` — typecheck, then the unpacked desktop app for this OS in `apps/desktop/release`
+  (unsigned)
+- `pnpm test:e2e:desktop` — builds `apps/desktop/out`, then Playwright drives the real Electron
+  app (`apps/desktop/e2e`, `_electron.launch`, temp `userData`); quiet: add `--reporter=dot`
+- `pnpm verify` — typecheck, lint, test, test:e2e, test:e2e:desktop (the gate; no CI yet)
 - `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (drawing from
   `demo-project.json`, business data in `scripts/build-demo-epd.mjs`; a unit test checks drift)
 
@@ -31,6 +36,11 @@ one ESLint config, `vitest.config.ts` (projects), `tsconfig.base.json`, `.env*` 
 `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright configs, `e2e/`, `public/`
 with icons and the static-host `_headers`/`_redirects`).
 
+- `apps/desktop/` — `@epd/desktop`: Electron shell. `src/main` (window, `app://` scheme serving
+  the built renderer, CSP), `src/preload` (exposes `window.epd`), `e2e/`; electron-vite builds
+  main, preload and the renderer (apps/web source, no PWA, base `/`); electron-builder packs
+- `packages/bridge/` — `@epd/bridge`: IPC contract (`EpdBridge`, channel names), types only;
+  imported by desktop main/preload and the web app, imports nothing from the apps
 - `packages/domain/` — `@epd/domain`: pure TS (model, geometry, lengths, routing, BOM, checks,
   quotes, catalogs with CSV/`.epc` import, `.epd` project file schema and migrations);
   source-only, imported as `@epd/domain/<module>`, no barrel

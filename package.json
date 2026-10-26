@@ -10,15 +10,18 @@
   "scripts": {
     "setup": "pnpm install && pnpm --filter @epd/web exec playwright install chromium",
     "dev": "pnpm --filter @epd/web dev",
+    "desktop:dev": "pnpm --filter @epd/desktop dev",
     "build": "pnpm typecheck && pnpm --filter @epd/web build",
+    "desktop:build": "pnpm typecheck && pnpm --filter @epd/desktop build:app",
     "preview": "pnpm --filter @epd/web preview",
-    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p . && node node_modules/typescript7/bin/tsc --noEmit -p apps/web && node node_modules/typescript7/bin/tsc --noEmit -p packages/domain",
+    "typecheck": "node node_modules/typescript7/bin/tsc --noEmit -p . && node node_modules/typescript7/bin/tsc --noEmit -p apps/web && node node_modules/typescript7/bin/tsc --noEmit -p packages/domain && node node_modules/typescript7/bin/tsc --noEmit -p packages/bridge && node node_modules/typescript7/bin/tsc --noEmit -p apps/desktop",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "pnpm --filter @epd/web test:e2e",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e",
+    "test:e2e:desktop": "pnpm --filter @epd/desktop build && pnpm --filter @epd/desktop test:e2e",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e && pnpm test:e2e:desktop",
     "demo:epd": "node scripts/build-demo-epd.mjs"
   },
   "devDependencies": {

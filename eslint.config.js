@@ -19,6 +19,8 @@ export default defineConfig(
       '.gstack',
       '**/dist',
       '**/dist-e2e',
+      '**/out',
+      '**/release',
       '**/node_modules',
       '**/playwright-report',
       '**/test-results',
@@ -58,6 +60,49 @@ export default defineConfig(
             {
               group: ['@/*', '@epd/web', '@epd/web/*', '**/apps/**'],
               message: '@epd/domain must not import app layers.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The bridge is a types-and-names contract: it imports nothing from the apps.
+    files: ['packages/bridge/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@epd/web', '@epd/web/*', '@epd/desktop', '@epd/desktop/*', '**/apps/**'],
+              message: '@epd/bridge must not import app code.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The desktop shell (main, preload, e2e) talks to the web app only through @epd/bridge. The
+    // web app, in turn, never imports the shell (checked below through its own boundaries).
+    files: ['apps/desktop/{src,e2e}/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'react',
+                'react-*',
+                'react/*',
+                '@/*',
+                '@epd/web',
+                '@epd/web/*',
+                '**/apps/web/**',
+              ],
+              message: '@epd/desktop must not import React or the web app; use @epd/bridge.',
             },
           ],
         },
