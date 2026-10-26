@@ -1,6 +1,7 @@
 # Spec: Electrical Plan Designer (epic)
 
-Status: draft (2026-10-25); revised 2026-10-26 for the backend-free, file-based app
+Status: draft (2026-10-25); revised 2026-10-26 for the backend-free, file-based app,
+implemented the same day (open points: docs/plans/local-first.md, "Still open")
 (docs/plans/local-first.md)
 
 ## Context

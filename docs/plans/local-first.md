@@ -173,10 +173,21 @@ decoding), the per-user query keys go.
 
 ## Progress notes
 
-Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
-compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
-(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed); step 9 (E2E on files); step 10 (PWA and deploy). Decisions and deferrals the remaining steps
-must pick up:
+All 11 steps are done (from `b9f9591` to the step 11 docs commit); `c99e610` dropped the
+compatibility code before the first release. The notes below record the decisions taken along
+the way and what is still open.
+
+### Still open
+
+- **Second tab**: the spec's "draft in use" (`BroadcastChannel`, the second tab opens the
+  draft read-only) is not built: two tabs on the same browser write the same draft.
+- **CSV import**: category and modules come from a column or one default for all rows; the
+  spec's per-row or per-selection editing in the dialog is not built.
+- **Installed app**: no `file_handlers` (open `.epd` from the OS), no "update available" prompt.
+- **E2E**: no E2E for catalog import or templates (unit tests cover them); the drawing specs
+  start from a new project, not from the demo file.
+
+### Decisions by step
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
   stay at version 1 and change in place; update `projectFile/fixtures/v1.json` and run
