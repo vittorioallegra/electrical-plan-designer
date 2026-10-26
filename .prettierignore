@@ -4,6 +4,5 @@ docs
 .gstack
 playwright-report
 test-results
-dist-e2e
 out
 release

@@ -1,8 +1,9 @@
 # Spec: Electrical Plan Designer (epic)
 
 Status: draft (2026-10-25); revised 2026-10-26 for the backend-free, file-based app,
-implemented the same day (open points: docs/plans/local-first.md, "Still open")
-(docs/plans/local-first.md)
+implemented the same day (open points: docs/plans/local-first.md, "Still open");
+packaged as a desktop app afterwards: platform, saving, recovery, company data and catalogs
+are now specified in docs/specs/desktop-app.md, which supersedes the sections below that point to it
 
 ## Context
 
@@ -21,8 +22,8 @@ terminal boxes, and get two things out of it:
 
 First real use: the author's own house. Primary user: a professional electrician
 working on a desktop computer, one `.epd` file per client project. There are no
-accounts and no server: the app is a static web app and every project lives in a file
-the user opens and saves.
+accounts and no server: the app is a desktop app (Electron) and every project lives in a
+file the user opens and saves.
 
 ## Current State
 
@@ -47,24 +48,23 @@ Reference workflow being replaced: paper drawing + manual counting.
 
 | Concern | Choice |
 |---|---|
-| App | Single-page web app, React 18 + TypeScript + Vite |
+| App | Desktop app (Electron, macOS and Windows) around a React + TypeScript renderer built with Vite; platform and packaging: docs/specs/desktop-app.md |
 | Plan canvas | Konva (`react-konva`), world units in meters |
 | PDF background import | `pdfjs-dist` renders a chosen page to an image |
-| Backend | None. Static hosting (Netlify, GitHub Pages or Cloudflare Pages); installable PWA that works offline after the first visit |
-| Project files | `.epd` = zip (`fflate`) of a manifest, the project JSON and its assets; opened with `<input type=file>`, saved by download, the same on every browser |
-| Draft | IndexedDB copy of the open project, written by autosave |
+| Backend | None, no network at runtime |
+| Project files | `.epd` = zip (`fflate`) of a manifest, the project JSON and its assets; opened and saved in place through native dialogs (docs/specs/desktop-app.md) |
+| Recovery | Copy of the open project in the app data folder, written by autosave |
 | PDF export | `jspdf` (+ canvas snapshots of the plan and panel views) |
 | i18n | `i18next` + `react-i18next`; English base, Italian translation |
 | Tests | Vitest (unit, domain logic), Playwright (E2E) |
 
-Desktop only. The editor targets screens ≥ 1024 px wide; narrower screens get the same
+Desktop only. The editor targets windows ≥ 1024 px wide; narrower windows get the same
 editor with a non-blocking "best on a larger screen" notice. There is no phone view: on a
-phone the user reads the exported PDFs. Opening and saving work the same on every browser.
-Domain logic (geometry,
+phone the user reads the exported PDFs. Domain logic (geometry,
 lengths, routing, BOM, checks, project file schema and migrations) lives in a pure
-TypeScript module with no React or browser-storage imports so it is unit-testable. A
-desktop wrapper (Tauri) stays possible later because file access sits behind one
-interface.
+TypeScript module with no React or storage imports so it is unit-testable. File access,
+recovery and the library sit behind interfaces implemented by the desktop main process (and
+in-memory fakes in browser tests).
 
 ## Domain model
 
@@ -190,7 +190,8 @@ Categories: `device` (socket, Schuko, switch, two-way, intermediate, push button
 (cross-section, outer Ø, color), `panel_device` (type, poles, rating, curve, RCD
 sensitivity/type), `enclosure`.
 
-Catalogs are per project. The built-in catalog (generic, read-only items with stable
+Catalogs live in the app library, and a project keeps copies of the items it uses
+(docs/specs/desktop-app.md). The built-in catalog (generic, read-only items with stable
 `builtin:<slug>` ids) is always available; on top of it the project holds any number of
 imported catalogs, one per manufacturer or price list:
 
@@ -262,8 +263,8 @@ Each warning links to the offending element (selecting it on the plan/panel).
   - VAT rate (default 22%, e.g. 10% for residential renovation);
   - totals: materials subtotal, labor subtotal, taxable amount, VAT, grand total.
   The quote PDF header shows the company data stored in the project: business name,
-  VAT number, address, phone, email, logo. Company data is per project, seeded from
-  defaults or from the template the project was created from.
+  VAT number, address, phone, email, logo. Company data comes from the app library
+  (docs/specs/desktop-app.md).
 - Unit prices come from the project's catalog items or from its price overrides, which
   also price built-in items and cable lines.
 - "Issue quote" freezes a numbered snapshot (lines, unit prices, settings, totals,
@@ -290,9 +291,8 @@ interface QuoteSettings {
 
 ## Start screen
 
-New project; new project from template (any `.epd`: copies settings, company data,
-catalogs, price overrides and box presets, not the drawing or the quotes); open file;
-resume draft. One project is open per tab.
+New project, open file, recent files. There is no draft to resume and no template: see
+docs/specs/desktop-app.md.
 
 ## Persistence
 
@@ -321,17 +321,9 @@ step runs before validation. Old files always open (every migration is tested ag
 frozen fixture of the previous version); a file from a newer app version is refused with
 a clear message.
 
-Saving: Save (and Ctrl+S) downloads the project as `<project name>.epd`, on every browser.
-The app never writes over a file on disk, so two browsers or two people saving the same
-project never overwrite each other: each save is a new file (the browser renames it on a
-name clash), and the user keeps or moves the one they want. A failed save leaves the draft
-intact.
-
-Draft: the editor autosaves (debounced ~1 s) the open project, assets included, to
-IndexedDB, so a closed tab or a crash loses nothing; on start the app offers to resume
-it. The app requests persistent storage (`navigator.storage.persist()`). A second tab
-sees the draft as in use (`BroadcastChannel`) and opens it read-only. The save status
-shows saved / unsaved / draft only, and unsaved changes warn on `beforeunload`.
+Saving, the recovery copy of the open project, company data, catalogs, price overrides
+and box presets (the app library) changed with the desktop app: see docs/specs/desktop-app.md.
+The `.epd` no longer holds company data, catalogs, price overrides or presets.
 
 Editor has undo/redo for every document change.
 
@@ -400,7 +392,7 @@ migration and a frozen fixture, so files saved by any earlier version keep openi
 - Brand catalogs (BTicino, Vimar...) shipped with the app; the user imports price lists.
 - XLSX catalog import (CSV and `.epc` only).
 - Accounts, cloud sync, teams, sharing with clients; a phone view (users read the PDFs).
-- Native apps (a Tauri wrapper remains possible later).
+- Native apps for other platforms (Linux, mobile).
 - Comparing the current BOM with the approved quote to price change orders.
 - DWG/DXF import/export.
 - Pack sizes (cable coils, conduit rolls) in the BOM and quote: v1 uses exact meters.

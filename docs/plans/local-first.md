@@ -1,3 +1,5 @@
+> Superseded in part: docs/plans/desktop-app.md replaces this plan's platform, saving, draft and per-project company/catalog decisions.
+
 # Plan: backend-free, file-based app
 
 Remove Supabase and accounts. The app stays a web app (static hosting, installable PWA,

@@ -18,7 +18,6 @@ export default defineConfig(
     ignores: [
       '.gstack',
       '**/dist',
-      '**/dist-e2e',
       '**/out',
       '**/release',
       '**/node_modules',

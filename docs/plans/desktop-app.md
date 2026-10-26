@@ -211,7 +211,7 @@ receives the resolved strings from the renderer at startup and on language chang
 
 ## Progress
 
-Phase: implementation
+Phase: verification
 Branch: feat/desktop-app
 Base: main
 Spec: docs/specs/desktop-app.md
@@ -226,7 +226,7 @@ Approved: yes (2026-10-26)
 - [x] 5. Library storage and pages — `feat: add the library pages with export and import as an .epl file`
 - [x] 6. Projects use the library — `feat: make projects use the library through copies of the items they use`
 - [x] 7. Update catalog from library — `feat: add the update of a project's catalog from the library`
-- [ ] 8. Remove the web build, package, CI, docs
+- [x] 8. Remove the web build, package, CI, docs — `chore: remove the web build and add the desktop installers, CI and release docs`
 
 ### Verification
 - qa: pending
@@ -261,4 +261,4 @@ Approved: yes (2026-10-26)
 ### Open questions
 
 ### Next
-Step 8 (Remove the web build, package, CI, docs) on `feat/desktop-app`.
+Run qa, then review (Phase 4).
