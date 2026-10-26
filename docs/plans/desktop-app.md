@@ -263,6 +263,9 @@ Approved: yes (2026-10-26)
 - `.epd` files from the web build open, but their embedded catalogs and price overrides are
   ignored (no rebuild of the copies).
 - Review recommendations not taken for now: first-run company nudge, update count badge.
+- A price typed in the quote for an item with no project copy and no library entry (only in
+  `.epd` files from the web build) is ignored without a message; accepted as is (rare, no old
+  files in circulation).
 
 ### Open questions
 
