@@ -56,6 +56,26 @@ describe('server state (TanStack Query)', () => {
     expect(screen.queryByRole('link', { name: /Demo house/ })).toBeNull();
   });
 
+  // protects=no editor across users; fails_when=another user signing in restarts the open editor and saves the first user's project as the new user; no_claim=unsaved local copies
+  it('leaves an open project for the list when another user signs in', async () => {
+    const { repos, router, control } = await renderApp(planPath, { exposeTestHandle: true });
+    await screen.findByTestId('project-name');
+    act(() =>
+      editorStore()
+        .getState()
+        .applyCommand('rename', (d) => {
+          d.doc.nodes[0]!.label = 'unsaved edit';
+        }),
+    );
+
+    await act(() => repos.auth.signUp('second@example.test', 'second-password'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/projects'));
+    expect(await screen.findByText(/No projects yet/)).toBeInTheDocument();
+    expect(screen.queryByTestId('project-name')).toBeNull();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 1500)));
+    expect(control.saveCalls).toEqual([]);
+  });
+
   // protects=fresh record on re-entry; fails_when=re-opening a project after an autosave uses the old version and the next save conflicts; no_claim=concurrent devices
   it('reads a fresh record when re-entering the editor and saves without conflict', async () => {
     const { router, control } = await renderApp(planPath, { exposeTestHandle: true });

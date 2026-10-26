@@ -300,6 +300,7 @@ Approved: yes (2026-10-25)
 - qa: done
   - Opening a project (route loader) left the list on screen with no loading sign until the record arrived (main showed "Loading" at once) — `fix: show a loading notice while a navigation is pending`
 - review: done
+  - Another user signing in with an editor open restarted the editor from its first record and saved the previous user's project as the new user (suggestion 1, fixed on the user's request) — `fix: leave open pages for the project list when another user signs in`
 
 ### Decisions
 - Folder convention: Bulletproof React (not Feature-Sliced Design), see spec.
