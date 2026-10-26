@@ -7,8 +7,6 @@ const envSchema = z
   })
   .transform((env) => ({
     testHandle: env.DEV === true || env.VITE_E2E === 'true',
-    /** E2E builds open and save through an in-memory fake (`window.__epd.files`). */
-    fakeFiles: env.VITE_E2E === 'true',
   }));
 
 export type AppConfig = z.output<typeof envSchema>;

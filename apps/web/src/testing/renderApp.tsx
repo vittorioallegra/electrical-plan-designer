@@ -10,6 +10,7 @@ import { createI18n, type Language } from '@/lib/i18n';
 import { createMemoryDraftRepository } from '@/lib/repositories/drafts';
 import { createDraftPresence } from '@/lib/repositories/draftPresence';
 import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import { createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
 import { demoProjectFile } from './editor';
 
@@ -33,6 +34,7 @@ export async function renderApp(
 ) {
   const drafts = createMemoryDraftRepository();
   const fileAccess = createMemoryFileAccess();
+  const windowHost = createMemoryWindowHost();
   const presence = createDraftPresence({ channelName: channel });
   const workspace = createWorkspace({ drafts, presence, exposeTestHandle });
   if (project) workspace.getState().open({ data: project });
@@ -42,7 +44,7 @@ export async function renderApp(
     <AppProviders
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ drafts, presence, fileAccess, workspace }}
+      services={{ drafts, presence, fileAccess, windowHost, workspace }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
@@ -61,5 +63,5 @@ export async function renderApp(
         });
       }),
   );
-  return { ...result, router, drafts, presence, fileAccess, workspace, queryClient };
+  return { ...result, router, drafts, presence, fileAccess, windowHost, workspace, queryClient };
 }

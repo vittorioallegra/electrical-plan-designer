@@ -1,18 +1,17 @@
-import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import {
   editorState,
-  fixture,
   newProject,
   offerFile,
   offerFixture,
   projectOf,
+  fileNames,
   savedBytes,
   start,
 } from './helpers';
 
 // protects=AC 1 save and reopen; fails_when=a project saved to its file and reopened differs in drawing, settings, company, catalogs or quotes, or the draft is not offered after a reload; no_claim=the File System Access permission prompts (fake file access)
-test('open the demo file, edit, save it and reopen it', async ({ page }) => {
+test('open the demo file, edit, save it in place and reopen it', async ({ page }) => {
   await start(page);
   await offerFixture(page, 'demo-project.epd');
   await page.getByRole('button', { name: 'Open file…' }).click();
@@ -24,8 +23,9 @@ test('open the demo file, edit, save it and reopen it', async ({ page }) => {
   await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });
   await page.keyboard.press('Control+s');
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
-  // Save downloads <project name>.epd; the opened file is never written.
-  const bytes = (await savedBytes(page, 'Demo-house.epd'))!;
+  // Save writes the opened file in place; no other file appears.
+  const bytes = (await savedBytes(page, 'demo-project.epd'))!;
+  expect(await fileNames(page)).toEqual(['demo-project.epd']);
   const saved = projectOf(bytes);
   const open = await editorState(page, (s) => s.data);
   expect(saved).toEqual(open);
@@ -46,7 +46,7 @@ test('open the demo file, edit, save it and reopen it', async ({ page }) => {
   expect(await editorState(page, (s) => s.data)).toEqual(open);
 });
 
-// protects=saving a new project; fails_when=a new project is not downloaded as <name>.epd, or the file does not hold the project; no_claim=where the browser puts downloads
+// protects=saving a new project; fails_when=a new project is not saved through Save As as <name>.epd, or the file does not hold the project; no_claim=the native save dialog (Electron E2E)
 test('save a new project as a file', async ({ page }) => {
   await start(page);
   const name = `Saved ${Date.now()}`;
@@ -55,27 +55,20 @@ test('save a new project as a file', async ({ page }) => {
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
   const file = `${name.replace(/ /g, '-')}.epd`;
   expect(projectOf((await savedBytes(page, file))!).meta.name).toBe(name);
-  await expect(page.getByText(`Saved: ${file} downloaded`).first()).toBeVisible();
+  await expect(page.getByText(`Saved: ${file}`).first()).toBeVisible();
 });
 
-// protects=real file access; fails_when=a project cannot be opened through the file input or Save does not download it; no_claim=Firefox and Safari themselves (same code path, run in Chromium)
-test('open with the file input and save by download', async ({ page }) => {
-  await page.addInitScript(() => {
-    window.__epdRealFiles = true;
-  });
+// protects=AC 4 changed on disk in the browser build; fails_when=Save overwrites a file another program changed without asking; no_claim=real disks (Electron E2E)
+test('ask before overwriting a file that changed on disk', async ({ page }) => {
   await start(page);
-
-  const chooser = page.waitForEvent('filechooser');
+  await offerFixture(page, 'demo-project.epd');
   await page.getByRole('button', { name: 'Open file…' }).click();
-  await (await chooser).setFiles(fixture('demo-project.epd'));
   await expect(page.getByTestId('project-name')).toHaveText('Demo house');
-
   await page.getByRole('button', { name: 'Add floor' }).click();
-  const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  const file = await download;
-  expect(file.suggestedFilename()).toBe('Demo-house.epd');
-  const project = projectOf(new Uint8Array(await readFile(await file.path())));
-  expect(project.doc.floors).toHaveLength(await editorState(page, (s) => s.data.doc.floors.length));
+  await page.evaluate(() => window.__epd!.files!.touch('demo-project.epd', new Uint8Array([1])));
+  await page.keyboard.press('Control+s');
+  await expect(page.getByRole('dialog', { name: 'The file changed on disk' })).toBeVisible();
+  expect(await savedBytes(page, 'demo-project.epd')).toEqual(new Uint8Array([1]));
+  await page.getByRole('button', { name: 'Overwrite' }).click();
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
 });

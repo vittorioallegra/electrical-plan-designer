@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
 import { renderApp } from '@/testing/renderApp';
 
@@ -96,19 +96,13 @@ describe('quote page', () => {
     ]);
   });
 
-  // protects=CSV download wiring; fails_when=the button does not download the live quote as CSV; no_claim=CSV layout (quoteCsv tests)
-  it('downloads the live quote as CSV', async () => {
-    const blobs: Blob[] = [];
-    const create = vi.fn((b: Blob) => {
-      blobs.push(b);
-      return 'blob:quote';
-    });
-    Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
-    await renderApp(quotePath);
+  // protects=CSV export wiring; fails_when=the button does not save the live quote as CSV through the save dialog; no_claim=CSV layout (quoteCsv tests)
+  it('exports the live quote as CSV', async () => {
+    const { fileAccess } = await renderApp(quotePath);
     const live = await screen.findByRole('group', { name: 'Export the current quote' });
     await userEvent.click(within(live).getByRole('button', { name: 'CSV' }));
-    expect(blobs).toHaveLength(1);
-    const text = await blobs[0]!.text();
+    await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house-quote.csv']));
+    const text = new TextDecoder().decode(fileAccess.files.get('Demo-house-quote.csv'));
     expect(text).toContain('Wall box 503 (3 modules);4;pcs;;;No price');
   });
 });

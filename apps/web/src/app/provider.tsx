@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { EditorServicesProvider, type EditorServices } from '@/stores/editor/EditorContext';
 import { ToastProvider } from '@/components/ui/Toast';
+import { WindowSync } from './WindowSync';
 
 export function AppProviders({
   queryClient,
@@ -20,7 +21,10 @@ export function AppProviders({
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <EditorServicesProvider services={services}>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <WindowSync />
+            {children}
+          </ToastProvider>
         </EditorServicesProvider>
       </QueryClientProvider>
     </I18nextProvider>

@@ -50,6 +50,11 @@ export async function savedBytes(page: Page, name: string): Promise<Uint8Array |
   return bytes && new Uint8Array(bytes);
 }
 
+/** Paths of the files in the fake file access. */
+export async function fileNames(page: Page): Promise<string[]> {
+  return page.evaluate(() => [...window.__epd!.files!.files.keys()]);
+}
+
 /** The project.json of an `.epd` file. */
 export function projectOf(epd: Uint8Array): ProjectFile {
   return JSON.parse(strFromU8(unzipSync(epd)['project.json']!)) as ProjectFile;

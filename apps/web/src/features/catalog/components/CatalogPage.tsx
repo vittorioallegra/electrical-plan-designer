@@ -25,7 +25,8 @@ import { useToast } from '@/components/ui/Toast';
 import { useCatalog } from '@/hooks/useCatalog';
 import { useItemName } from '@/hooks/useItemName';
 import { cn } from '@/lib/cn';
-import { downloadJson, fileSafe } from '@/lib/download';
+import { fileSafe } from '@/lib/download';
+import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { formatMoney } from '@/lib/format';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { categories, ItemDialog, type ItemDraft } from './ItemDialog';
@@ -50,6 +51,7 @@ export function CatalogPage() {
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
   const toast = useToast();
+  const exportFile = useExportFile();
   const readOnly = useEditor((s) => s.readOnly);
   const doc = useEditor((s) => s.data.doc);
   const { items, catalogs, priceOverrides, boxPresets } = useCatalog();
@@ -187,7 +189,13 @@ export function CatalogPage() {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => downloadJson(toEpc(c), `${fileSafe(c.name)}.epc`)}
+                onClick={() =>
+                  void exportFile(
+                    `${fileSafe(c.name)}.epc`,
+                    new Blob([JSON.stringify(toEpc(c), null, 2)], { type: 'application/json' }),
+                    exportFilters.catalog,
+                  )
+                }
               >
                 {t('catalog.export')}
               </Button>

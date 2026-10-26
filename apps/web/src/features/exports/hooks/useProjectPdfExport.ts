@@ -1,18 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useEditorContext } from '@/stores/editor/EditorContext';
-import { downloadBlob, fileSafe } from '@/lib/download';
+import { fileSafe } from '@/lib/download';
+import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { assetBlob } from '@/lib/projectFile/epd';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useCatalog } from '@/hooks/useCatalog';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 
-/** Builds and downloads the project detail PDF. Throws when it cannot be built. */
+/** Builds the project detail PDF and saves it through the save dialog. Throws when it cannot be built. */
 export function useProjectPdfExport(): () => Promise<void> {
   const { t, i18n } = useTranslation();
   const { store } = useEditorContext();
   const { lookup, company } = useCatalog();
   const analysis = useAnalysis();
+  const exportFile = useExportFile();
   return async () => {
     const { data, assets } = store.getState();
     const { meta } = data;
@@ -34,9 +36,10 @@ export function useProjectPdfExport(): () => Promise<void> {
       locale: i18n.language === 'it' ? 'it' : 'en',
       now: new Date(),
     });
-    downloadBlob(
-      new Blob([pdf.bytes()], { type: 'application/pdf' }),
+    await exportFile(
       `${fileSafe(meta.name)}.pdf`,
+      new Blob([pdf.bytes()], { type: 'application/pdf' }),
+      exportFilters.pdf,
     );
   };
 }

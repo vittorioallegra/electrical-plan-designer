@@ -9,7 +9,8 @@ import { createQueryClient } from '@/lib/query-client';
 import { createI18n } from '@/lib/i18n';
 import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
 import { createDraftPresence } from '@/lib/repositories/draftPresence';
-import { createBrowserFileAccess, createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import { createDesktopFileAccess, createMemoryFileAccess } from '@/lib/repositories/fileAccess';
+import { createDesktopWindowHost, createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
 import './styles.css';
 
@@ -20,17 +21,19 @@ i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng;
 });
 
-// E2E builds use in-memory files the tests fill and read back, unless a test asks for the real
-// file access (`window.__epdRealFiles`, set by an init script).
-const fakeFiles = config.fakeFiles && !window.__epdRealFiles ? createMemoryFileAccess() : null;
-if (fakeFiles) window.__epd = { ...window.__epd, files: fakeFiles };
+// The desktop app (`window.epd`) opens and saves real files. In a browser (dev, browser E2E)
+// the files are in memory, where the tests fill and read them back (`window.__epd.files`).
+const bridge = window.epd;
+const fakeFiles = bridge ? null : createMemoryFileAccess();
+if (fakeFiles && config.testHandle) window.__epd = { ...window.__epd, files: fakeFiles };
 
 const drafts = createIndexedDbDraftRepository();
 const presence = createDraftPresence();
 const services = {
   drafts,
   presence,
-  fileAccess: fakeFiles ?? createBrowserFileAccess(),
+  fileAccess: bridge ? createDesktopFileAccess(bridge.files) : fakeFiles!,
+  windowHost: bridge ? createDesktopWindowHost(bridge.window) : createMemoryWindowHost(),
   workspace: createWorkspace({ drafts, presence, exposeTestHandle: config.testHandle }),
 };
 

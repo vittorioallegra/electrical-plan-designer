@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import type { IssuedQuote } from '@epd/domain/types';
 import { useEditor } from '@/stores/editor/EditorContext';
-import { downloadBlob, fileSafe } from '@/lib/download';
+import { fileSafe } from '@/lib/download';
+import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { assetBlob } from '@/lib/projectFile/epd';
 import type { Locale } from '@/lib/format';
 import { useCatalog } from '@/hooks/useCatalog';
@@ -12,10 +13,11 @@ import { quoteCsv } from '@/features/exports/utils/quoteCsv';
 
 const localeOf = (language: string): Locale => (language === 'it' ? 'it' : 'en');
 
-/** Downloads the live quote (current language) or an issued one (its own language). */
+/** Saves the live quote (current language) or an issued one (its own language). */
 export function useQuoteExport() {
   const { i18n } = useTranslation();
   const { company } = useCatalog();
+  const exportFile = useExportFile();
   const assets = useEditor((s) => s.assets);
   const meta = useEditor((s) => s.data.meta);
 
@@ -30,11 +32,12 @@ export function useQuoteExport() {
   }
 
   return {
-    csv(quote: QuoteDocument | IssuedQuote) {
+    async csv(quote: QuoteDocument | IssuedQuote) {
       const { t, locale, base } = target(quote);
-      downloadBlob(
-        new Blob([quoteCsv(quote, t, locale)], { type: 'text/csv;charset=utf-8' }),
+      await exportFile(
         `${base}.csv`,
+        new Blob([quoteCsv(quote, t, locale)], { type: 'text/csv;charset=utf-8' }),
+        exportFilters.csv,
       );
     },
     /** Throws when the PDF cannot be built; a missing logo is skipped. */
@@ -52,7 +55,11 @@ export function useQuoteExport() {
         locale,
         now: new Date(),
       });
-      downloadBlob(new Blob([pdf.bytes()], { type: 'application/pdf' }), `${base}.pdf`);
+      await exportFile(
+        `${base}.pdf`,
+        new Blob([pdf.bytes()], { type: 'application/pdf' }),
+        exportFilters.pdf,
+      );
     },
   };
 }

@@ -1,6 +1,11 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
-import type { DraftPresence, DraftRepository, FileAccess } from '@/lib/repositories/types';
+import type {
+  DraftPresence,
+  DraftRepository,
+  FileAccess,
+  WindowHost,
+} from '@/lib/repositories/types';
 import type { Autosave } from './autosave';
 import type { EditorState, EditorStore } from './editorStore';
 import type { Workspace, WorkspaceState } from './workspace';
@@ -10,6 +15,7 @@ export interface EditorServices {
   drafts: DraftRepository;
   presence: DraftPresence;
   fileAccess: FileAccess;
+  windowHost: WindowHost;
   workspace: Workspace;
 }
 

@@ -6,6 +6,7 @@ import type { ProjectFile } from '@epd/domain/projectFile';
 import { addIssuedQuote } from '@epd/domain/issuedQuotes';
 import { docIntegrityIssues } from '@epd/domain/schema';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
+import type { FileBinding } from '@/lib/repositories/types';
 import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
 
 enablePatches();
@@ -68,6 +69,8 @@ export interface EditorState {
   draftRevision: number;
   /** Revision the last opened or saved file matches; null when there is none or it is behind. */
   fileRevision: number | null;
+  /** The file the project was opened from or last saved to; null for a project never saved. */
+  file: FileBinding | null;
   /** The last draft write failed: the changes since draftRevision exist only in this tab. */
   draftFailed: boolean;
   past: HistoryEntry[];
@@ -84,8 +87,8 @@ export interface EditorState {
   setUi(patch: Partial<EditorUi>): void;
   /** Adds an asset (a new background, a logo); a command then references it. */
   addAsset(id: string, asset: ProjectAsset): void;
-  /** The data at `revision` was saved to a file (downloaded). */
-  markSaved(revision: number): void;
+  /** The data at `revision` was written to `file`, which the project is bound to from now on. */
+  markSaved(revision: number, file: FileBinding): void;
 }
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };
@@ -102,6 +105,8 @@ export interface EditorInit {
   readOnly?: boolean;
   /** Where the opened data already is (default `saved`: it is the content of a file). */
   status?: SaveStatus;
+  /** The file the data came from, so Save writes it in place. */
+  file?: FileBinding;
 }
 
 export function saveStatusOf(
@@ -134,6 +139,7 @@ export function createEditorStore(init: EditorInit): EditorStore {
       // `unsaved` at open = written nowhere yet: draftRevision -1 makes the first save write it.
       draftRevision: init.status === 'unsaved' ? -1 : 0,
       fileRevision: (init.status ?? 'saved') === 'saved' ? 0 : null,
+      file: init.file ?? null,
       draftFailed: false,
       past: [],
       future: [],
@@ -204,8 +210,8 @@ export function createEditorStore(init: EditorInit): EditorStore {
         set({ assets: new Map(get().assets).set(id, asset) });
       },
 
-      markSaved(revision) {
-        set({ fileRevision: revision });
+      markSaved(revision, file) {
+        set({ fileRevision: revision, file });
       },
     };
   });

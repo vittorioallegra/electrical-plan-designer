@@ -1,0 +1,74 @@
+import { act, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it } from 'vitest';
+import { renderApp } from '@/testing/renderApp';
+
+async function openDemo() {
+  const app = await renderApp('/project/plan', { exposeTestHandle: true });
+  await screen.findByTestId('project-name');
+  return app;
+}
+
+const requestClose = (windowHost: { requestClose(): void }) => act(() => windowHost.requestClose());
+
+describe('window sync', () => {
+  // protects=title state; fails_when=the window is not told the project name, the unsaved state after an edit and after a save, or that no project is open; no_claim=how main shows it (title, dot)
+  it('reports the project name and whether it has unsaved changes', async () => {
+    const { windowHost, workspace } = await openDemo();
+    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: false });
+    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: true });
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(windowHost.state?.unsaved).toBe(false));
+    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+    expect(windowHost.state?.unsaved).toBe(true);
+    act(() => workspace.getState().close());
+    await waitFor(() => expect(windowHost.state).toEqual({ name: null, unsaved: false }));
+  });
+
+  // protects=AC 8 close and quit prompt; fails_when=a close request with unsaved changes closes without asking, Cancel closes, Don't save keeps the window, or Save closes without writing the file; no_claim=the real window and quit (Electron E2E)
+  it('asks Save / Don’t save / Cancel and answers main', async () => {
+    const { windowHost, fileAccess } = await openDemo();
+    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+
+    requestClose(windowHost);
+    expect(await screen.findByText('Save changes to “Demo house”?')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(windowHost.answers).toEqual(['cancel']);
+
+    requestClose(windowHost);
+    await userEvent.click(await screen.findByRole('button', { name: 'Don’t save' }));
+    expect(windowHost.answers).toEqual(['cancel', 'close']);
+    expect(fileAccess.writes).toEqual([]);
+
+    requestClose(windowHost);
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(
+      Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent === 'Save')!,
+    );
+    await waitFor(() => expect(windowHost.answers).toEqual(['cancel', 'close', 'close']));
+    expect(fileAccess.writes).toEqual(['Demo-house.epd']);
+  });
+
+  // protects=Save from the close question; fails_when=a cancelled Save As closes the window anyway; no_claim=Save error dialogs (save tests)
+  it('keeps the window open when the save from the close question is cancelled', async () => {
+    const { windowHost, fileAccess } = await openDemo();
+    await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
+    requestClose(windowHost);
+    const dialog = await screen.findByRole('dialog');
+    fileAccess.nextSaveAs = null;
+    await userEvent.click(
+      Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent === 'Save')!,
+    );
+    await waitFor(() => expect(windowHost.answers).toEqual(['cancel']));
+    expect(fileAccess.writes).toEqual([]);
+  });
+
+  // protects=no question when nothing is at risk; fails_when=a project saved to its file, or no project, still asks; no_claim=—
+  it('closes without asking when there is nothing unsaved', async () => {
+    const { windowHost } = await openDemo();
+    requestClose(windowHost);
+    expect(windowHost.answers).toEqual(['close']);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});

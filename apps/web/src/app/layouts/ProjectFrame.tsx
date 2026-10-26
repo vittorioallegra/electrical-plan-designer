@@ -7,7 +7,8 @@ import { useEditor, useEditorContext, useWorkspace } from '@/stores/editor/Edito
 import { useDraftActions } from '@/hooks/useDraftActions';
 import type { DrawerTab } from '@/stores/editor/editorStore';
 import { Button } from '@/components/ui/Button';
-import { downloadJson, fileSafe } from '@/lib/download';
+import { fileSafe } from '@/lib/download';
+import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { Menu } from '@/components/ui/Menu';
 import { Tabs } from '@/components/ui/Tabs';
 import { cn } from '@/lib/cn';
@@ -61,14 +62,15 @@ export function ProjectFrame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [store]);
 
-  const saver = useSaveProject();
+  const saver = useSaveProject(store);
   const { save } = saver;
-  // Ctrl+S saves (downloads the project), also while typing in a field.
+  // Ctrl+S saves the project, also while typing in a field.
+  // A promise nobody awaits: save() reports its own failures.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 's') return;
       e.preventDefault();
-      save();
+      void save();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -87,8 +89,13 @@ export function ProjectFrame() {
     }
   }
 
+  const exportFile = useExportFile();
   const exportJson = () =>
-    downloadJson(store.getState().data.doc, `${fileSafe(store.getState().data.meta.name)}.json`);
+    void exportFile(
+      `${fileSafe(store.getState().data.meta.name)}.json`,
+      new Blob([JSON.stringify(store.getState().data.doc, null, 2)], { type: 'application/json' }),
+      exportFilters.json,
+    );
 
   async function importJson(file: File) {
     try {
@@ -122,7 +129,7 @@ export function ProjectFrame() {
           variant="secondary"
           disabled={readOnly || saver.saving}
           title={t('editor.saveHint')}
-          onClick={save}
+          onClick={() => void save()}
         >
           <Save size={16} />
           {t('editor.save')}
@@ -227,6 +234,7 @@ export function ProjectFrame() {
         <Outlet />
       </div>
       <BottomDrawer />
+      {saver.dialog}
     </div>
   );
 }

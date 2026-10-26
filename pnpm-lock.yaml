@@ -244,6 +244,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@epd/bridge':
+        specifier: workspace:*
+        version: link:../../packages/bridge
       '@epd/domain':
         specifier: workspace:*
         version: link:../../packages/domain

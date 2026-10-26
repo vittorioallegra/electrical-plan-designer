@@ -15,7 +15,7 @@ missing), pnpm 12. No Docker, backend or env vars needed.
 - `pnpm build` — typecheck, then the static site in `apps/web/dist` (PWA via vite-plugin-pwa)
 - `pnpm typecheck` (TypeScript 7 via the `typescript7` alias; `typescript` stays 6.0 for
   typescript-eslint) / `pnpm lint` / `pnpm format`
-- `pnpm test` — Vitest (projects: web/jsdom, domain/node, repo). Quiet, failures only:
+- `pnpm test` — Vitest (projects: web/jsdom, domain/node, desktop/node for `apps/desktop/src/main`, repo). Quiet, failures only:
   `pnpm exec vitest run --reporter=dot --silent`. One file, from the root:
   `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot` (one test: `-t "riser"`)
 - `pnpm test:e2e` — Playwright (`apps/web/e2e`): dev server on :5174 in `e2e` mode, plus a
@@ -49,8 +49,9 @@ with icons and the static-host `_headers`/`_redirects`).
   exports, settings; sub-folders `components/ hooks/ utils/` as needed
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared;
   `useCatalog` reads catalogs, prices, presets, company of the open project), `src/config/`
-- `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` file
-  input to open, download to save, in-memory fake; `draftPresence.ts` which tab may write the
+- `src/lib/` — `repositories/` (`types.ts`; `drafts.ts` IndexedDB draft; `fileAccess.ts` path-based
+  files (open, save in place, saveAs, exportFile) over `window.epd` or an in-memory fake;
+  `windowHost.ts` title state and close question; `draftPresence.ts` which tab may write the
   draft, over BroadcastChannel; `idb.ts`), `i18n/` (`locales/en.json` base,
   `it.json`), `projectFile/` (`.epd` zip read/write with `fflate`), formatting helpers
 - `src/stores/editor/` — `workspace.ts` (the tab's one open project), editor store
@@ -83,8 +84,11 @@ with icons and the static-host `_headers`/`_redirects`).
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents.
 - PDFs (jsPDF Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
 - jsdom has no canvas (setup stubs `react-konva`): canvas behavior is tested in Playwright via
-  `window.__epd.store` (dev and `.env.e2e`). E2E builds use in-memory files
-  (`window.__epd.files`; helpers `offerFixture`, `savedBytes`); `window.__epdRealFiles` set by
-  an init script switches to the real file access.
+  `window.__epd.store` (dev and `.env.e2e`). Browser E2E (no `window.epd`) uses in-memory files
+  (`window.__epd.files`; helpers `offerFixture`, `savedBytes`); real files are tested in the
+  Electron E2E, where native dialogs are stubbed in main (`stubOpenDialog`).
+- Files: Save writes the bound path (`store.file`) in place; no path means Save As. Every
+  export goes through `useExportFile`/`fileAccess.exportFile`, never an anchor download.
+  Main writes only paths it handed out and validates every IPC argument and sender.
 - `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).

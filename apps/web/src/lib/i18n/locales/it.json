@@ -81,13 +81,28 @@
     "exportPdf": "PDF del progetto",
     "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova.",
     "save": "Salva",
-    "saveHint": "Scarica il file del progetto (Ctrl+S)",
-    "savedTo": "Salvato: {{name}} scaricato",
-    "saveFailed": "Impossibile salvare il progetto. La bozza su questo dispositivo non è cambiata.",
+    "saveHint": "Salva il file del progetto (Ctrl+S)",
+    "savedTo": "Salvato: {{name}}",
+    "saveFailed": "Impossibile salvare il progetto. Le modifiche sono ancora nell’editor.",
     "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
     "dismissNotice": "Chiudi",
     "readOnlyInUse": "Sola lettura: questo progetto è in modifica in un'altra scheda.",
-    "takenOver": "Questo progetto ora è in modifica in un'altra scheda, quindi qui è in sola lettura. Le modifiche fatte fin qui sono conservate."
+    "takenOver": "Questo progetto ora è in modifica in un'altra scheda, quindi qui è in sola lettura. Le modifiche fatte fin qui sono conservate.",
+    "saveAs": "Salva come…",
+    "conflict": {
+      "title": "Il file è cambiato sul disco",
+      "body": "Un altro programma ha modificato questo file di progetto da quando lo hai aperto o salvato. Sovrascrivilo con la tua versione, salva in un altro file o annulla.",
+      "overwrite": "Sovrascrivi"
+    },
+    "writeFailed": {
+      "title": "Impossibile salvare il file",
+      "body": "Il file non può essere scritto ({{code}}). Le modifiche sono ancora nell’editor; salva invece in un altro file."
+    },
+    "close": {
+      "title": "Salvare le modifiche a “{{name}}”?",
+      "body": "Le modifiche non sono ancora nel file del progetto.",
+      "discard": "Non salvare"
+    }
   },
   "catalog": {
     "builtin": {
@@ -301,7 +316,8 @@
     "loading": "Caricamento…",
     "cancel": "Annulla",
     "save": "Salva",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "writeFailed": "Impossibile scrivere il file ({{code}})."
   },
   "settings": {
     "hint": "Questi valori valgono solo per questo progetto.",

@@ -114,7 +114,10 @@ export function StartPage() {
   async function openFile() {
     const picked = await fileAccess.open();
     const opened = picked && read(picked.bytes);
-    if (opened) openProject({ data: opened.project, assets: opened.assets });
+    if (picked && opened) {
+      const { path, name, stat } = picked;
+      openProject({ data: opened.project, assets: opened.assets, file: { path, name, stat } });
+    }
   }
 
   async function pickTemplate() {

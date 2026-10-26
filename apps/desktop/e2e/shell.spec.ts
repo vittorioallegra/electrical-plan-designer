@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { launchApp, type LaunchedApp } from './helpers';
 
-// protects=the desktop shell serves the built app over app:// with a locked-down window; fails_when=the start screen does not show, a deep route breaks on reload, a request leaves the app scheme, or the window gets node access or a bridge with members; no_claim=menus, files, recovery, library, packaging
+// protects=the desktop shell serves the built app over app:// with a locked-down window; fails_when=the start screen does not show, a deep route breaks on reload, a request leaves the app scheme, or the window gets node access or no bridge; no_claim=menus, files, recovery, library, packaging
 test('starts on app://, reloads a deep route and keeps every request inside the app', async () => {
   let launched: LaunchedApp | undefined;
   try {

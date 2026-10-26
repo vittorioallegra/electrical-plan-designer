@@ -20,13 +20,11 @@ async function setup(init: Partial<EditorInit> = {}) {
   const { store } = demoStore(init);
   const drafts = createMemoryDraftRepository();
   const save = vi.spyOn(drafts, 'save');
-  const target = new EventTarget();
   autosave = startAutosave(store, {
     drafts,
-    target: target as unknown as Window,
     now: () => new Date('2026-10-26T10:00:00Z'),
   });
-  return { store, drafts, save, target };
+  return { store, drafts, save };
 }
 
 describe('autosave', () => {
@@ -58,7 +56,11 @@ describe('autosave', () => {
     edit(store, 'a');
     await vi.advanceTimersByTimeAsync(1000);
     expect(drafts.draft).toMatchObject({ savedToFile: false });
-    store.getState().markSaved(store.getState().revision);
+    store.getState().markSaved(store.getState().revision, {
+      path: 'a.epd',
+      name: 'a.epd',
+      stat: { mtimeMs: 1, size: 1 },
+    });
     await vi.advanceTimersByTimeAsync(0);
     expect(save).toHaveBeenCalledTimes(3);
     expect(drafts.draft).toMatchObject({ savedToFile: true });
@@ -124,7 +126,7 @@ describe('autosave', () => {
     expect([...drafts.draft!.assets.keys()]).toEqual(['used']);
   });
 
-  // protects=edits right before leaving the editor; fails_when=stopping autosave drops changes still waiting for the debounce; no_claim=tab close (beforeunload)
+  // protects=edits right before leaving the editor; fails_when=stopping autosave drops changes still waiting for the debounce; no_claim=closing the window (the close guard asks about unsaved changes)
   it('writes pending changes when stopped', async () => {
     const { store, drafts } = await setup();
     edit(store, 'last');
@@ -138,20 +140,5 @@ describe('autosave', () => {
     const { save } = await setup({ readOnly: true, status: 'unsaved' });
     await vi.advanceTimersByTimeAsync(5000);
     expect(save).not.toHaveBeenCalled();
-  });
-
-  // protects=beforeunload guard; fails_when=closing the tab with changes not in the draft gives no warning, or it warns once they are stored; no_claim=browser dialog text
-  it('guards beforeunload while changes are not in the draft', async () => {
-    const { store, target } = await setup();
-    const unload = () => {
-      const event = new Event('beforeunload', { cancelable: true });
-      target.dispatchEvent(event);
-      return event.defaultPrevented;
-    };
-    expect(unload()).toBe(false);
-    edit(store, 'a');
-    expect(unload()).toBe(true);
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(unload()).toBe(false);
   });
 });

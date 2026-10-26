@@ -52,7 +52,7 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-xl font-semibold">{t('pages.quote')}</h1>
           <div className="flex items-center gap-2" role="group" aria-label={t('quote.exportLive')}>
-            <Button onClick={() => exporter.csv({ ...quote, settings })}>
+            <Button onClick={() => void exporter.csv({ ...quote, settings })}>
               <FileSpreadsheet size={16} />
               {t('quote.exportCsv')}
             </Button>

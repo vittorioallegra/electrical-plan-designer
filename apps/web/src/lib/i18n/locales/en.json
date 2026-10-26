@@ -81,13 +81,28 @@
     "exportPdf": "Project PDF",
     "exportPdfFailed": "Could not create the project PDF. Try again.",
     "save": "Save",
-    "saveHint": "Download the project file (Ctrl+S)",
-    "savedTo": "Saved: {{name}} downloaded",
-    "saveFailed": "Could not save the project. The draft on this device is unchanged.",
+    "saveHint": "Save the project file (Ctrl+S)",
+    "savedTo": "Saved: {{name}}",
+    "saveFailed": "Could not save the project. Your changes are still in the editor.",
     "narrowNotice": "The editor works best on screens at least 1024 px wide.",
     "dismissNotice": "Dismiss",
     "readOnlyInUse": "Read-only: this project is being edited in another tab.",
-    "takenOver": "This project is now being edited in another tab, so this tab is read-only. Your changes up to then are kept."
+    "takenOver": "This project is now being edited in another tab, so this tab is read-only. Your changes up to then are kept.",
+    "saveAs": "Save as…",
+    "conflict": {
+      "title": "The file changed on disk",
+      "body": "Another program changed this project file since you opened or last saved it. Overwrite it with your version, save to another file, or cancel.",
+      "overwrite": "Overwrite"
+    },
+    "writeFailed": {
+      "title": "Could not save the file",
+      "body": "The file cannot be written ({{code}}). Your changes are still in the editor; save to another file instead."
+    },
+    "close": {
+      "title": "Save changes to “{{name}}”?",
+      "body": "Your changes are not in the project file yet.",
+      "discard": "Don’t save"
+    }
   },
   "catalog": {
     "builtin": {
@@ -301,7 +316,8 @@
     "loading": "Loading…",
     "cancel": "Cancel",
     "save": "Save",
-    "retry": "Retry"
+    "retry": "Retry",
+    "writeFailed": "Could not write the file ({{code}})."
   },
   "settings": {
     "hint": "These values apply to this project only.",

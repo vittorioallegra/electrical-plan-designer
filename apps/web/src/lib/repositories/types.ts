@@ -2,18 +2,55 @@
 import type { ProjectFile } from '@epd/domain/projectFile';
 import type { ProjectAssets } from '@/lib/projectFile/epd';
 
-/** A project file the user picked. */
-export interface PickedFile {
-  name: string;
-  bytes: Uint8Array;
+export type {
+  CloseChoice,
+  ExportFilter,
+  ExportResult,
+  FileStat,
+  OpenedFile,
+  SaveAsResult,
+  SaveResult,
+  SavedFile,
+  WindowState,
+} from '@epd/bridge/bridge';
+import type {
+  CloseChoice,
+  ExportFilter,
+  ExportResult,
+  FileStat,
+  OpenedFile,
+  SaveAsResult,
+  SaveResult,
+  SavedFile,
+  WindowState,
+} from '@epd/bridge/bridge';
+
+/** The file a project is bound to: the path Save writes and the stat it expects there. */
+export type FileBinding = SavedFile;
+
+/** Project files by path: native dialogs and atomic writes in the desktop app. */
+export interface FileAccess {
+  /** Asks the user for a project file; null when cancelled. Rejects when it cannot be read. */
+  open(): Promise<OpenedFile | null>;
+  /**
+   * Writes the project over `path`. `expected` is the stat from the last open or save; the write
+   * is refused with `changed_on_disk` when the file differs. Null overwrites regardless.
+   */
+  save(path: string, bytes: Uint8Array, expected: FileStat | null): Promise<SaveResult>;
+  /** Asks where to save; later saves go to the path in the result. */
+  saveAs(suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
+  /** Asks where to save a file that is not the project (PDF, CSV, JSON, catalog). */
+  exportFile(name: string, blob: Blob, filters: ExportFilter[]): Promise<ExportResult>;
 }
 
-/** Project files, the same on every browser: a file input to open, a download to save. */
-export interface FileAccess {
-  /** Asks the user for a project file; null when cancelled. */
-  open(): Promise<PickedFile | null>;
-  /** Downloads a project file; the browser picks the folder and renames on a name clash. */
-  download(bytes: Uint8Array, name: string): void;
+/** The app window: its title and the question asked when it closes with unsaved changes. */
+export interface WindowHost {
+  /** The open project's name and whether it has changes that are not in its file. */
+  setState(state: WindowState): void;
+  /** The window is closing or the app quitting while the project has unsaved changes. */
+  onCloseRequested(listener: () => void): () => void;
+  /** The answer to a close request. */
+  answerClose(choice: CloseChoice): void;
 }
 
 /** The open project as autosave keeps it on this device. */

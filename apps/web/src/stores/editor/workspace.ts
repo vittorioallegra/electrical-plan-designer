@@ -41,8 +41,6 @@ declare global {
   interface Window {
     /** Test handle (dev and E2E builds): the open project's store, the fake files (E2E). */
     __epd?: { store?: EditorStore; files?: MemoryFileAccess };
-    /** Set by an E2E init script to use the real file access instead of the fake. */
-    __epdRealFiles?: boolean;
   }
 }
 

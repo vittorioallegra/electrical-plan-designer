@@ -2,12 +2,11 @@
 import { referencedAssetIds } from '@epd/domain/projectFile';
 import type { DraftRepository } from '@/lib/repositories/types';
 import type { ProjectAssets } from '@/lib/projectFile/epd';
-import { saveStatusOf, type EditorState, type EditorStore } from './editorStore';
+import type { EditorState, EditorStore } from './editorStore';
 
 export interface AutosaveOptions {
   drafts: DraftRepository;
   debounceMs?: number;
-  target?: Pick<Window, 'addEventListener' | 'removeEventListener'>;
   now?: () => Date;
 }
 
@@ -31,7 +30,6 @@ function usedAssets(s: EditorState): ProjectAssets {
 export function startAutosave(store: EditorStore, options: AutosaveOptions): Autosave {
   const debounceMs = options.debounceMs ?? 1000;
   const now = options.now ?? (() => new Date());
-  const target = options.target ?? (typeof window !== 'undefined' ? window : undefined);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight = false;
   let stopped = false;
@@ -85,15 +83,6 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
   });
   schedule(0);
 
-  // Changes not in the draft yet would be lost with the tab.
-  const onBeforeUnload = (e: BeforeUnloadEvent) => {
-    if (saveStatusOf(store.getState()) === 'unsaved') {
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  };
-  target?.addEventListener('beforeunload', onBeforeUnload as EventListener);
-
   return {
     flush() {
       schedule(0);
@@ -108,7 +97,6 @@ export function startAutosave(store: EditorStore, options: AutosaveOptions): Aut
       stopped = true;
       clearTimeout(timer);
       unsubscribe();
-      target?.removeEventListener('beforeunload', onBeforeUnload as EventListener);
       void run();
     },
   };
