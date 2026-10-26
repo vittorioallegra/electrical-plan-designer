@@ -1,5 +1,6 @@
 // The project open in this tab: at most one, with its editor store and autosave.
 import { createStore, type StoreApi } from 'zustand/vanilla';
+import type { MemoryFileAccess } from '@/lib/repositories/fileAccess';
 import type { DraftRepository } from '@/lib/repositories/types';
 import { startAutosave, type Autosave } from './autosave';
 import { createEditorStore, type EditorInit, type EditorStore } from './editorStore';
@@ -22,7 +23,10 @@ export type Workspace = StoreApi<WorkspaceState>;
 
 declare global {
   interface Window {
-    __epd?: { store: EditorStore };
+    /** Test handle (dev and E2E builds): the open project's store, the fake files (E2E). */
+    __epd?: { store?: EditorStore; files?: MemoryFileAccess };
+    /** Set by an E2E init script to use the real file access instead of the fake. */
+    __epdRealFiles?: boolean;
   }
 }
 
@@ -41,7 +45,7 @@ export function createWorkspace({
       get().close();
       const store = createEditorStore(init);
       const project = { id: ++opened, store, autosave: startAutosave(store, { drafts }) };
-      if (exposeTestHandle) window.__epd = { store };
+      if (exposeTestHandle) window.__epd = { ...window.__epd, store };
       set({ current: project });
       return project;
     },
@@ -49,7 +53,7 @@ export function createWorkspace({
       const current = get().current;
       if (!current) return;
       current.autosave.stop();
-      if (window.__epd?.store === current.store) delete window.__epd;
+      if (window.__epd?.store === current.store) delete window.__epd.store;
       set({ current: null });
     },
   }));

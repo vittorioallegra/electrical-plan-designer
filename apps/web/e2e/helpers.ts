@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Page } from '@playwright/test';
+import type { ProjectFile } from '@epd/domain/projectFile';
 import type { EditorState } from '../src/stores/editor/editorStore';
 
 /** Absolute path of a shared file in the repo's tests/fixtures. */
@@ -19,6 +22,37 @@ export async function newProject(page: Page, name: string) {
   await page.getByLabel('Project name').fill(name);
   await page.getByRole('button', { name: 'Create' }).click();
   await expect(page.getByTestId('project-name')).toHaveText(name);
+}
+
+/** Puts a file into the app's fake file access and has the next "Open file…" pick it. */
+export async function offerFile(page: Page, name: string, bytes: Uint8Array) {
+  await page.evaluate(
+    ([name, bytes]) => {
+      const files = window.__epd!.files!;
+      files.files.set(name, new Uint8Array(bytes));
+      files.nextOpen = name;
+    },
+    [name, [...bytes]] as const,
+  );
+}
+
+/** A fixture `.epd` offered to the next "Open file…". */
+export async function offerFixture(page: Page, name: string) {
+  await offerFile(page, name, new Uint8Array(readFileSync(fixture(name))));
+}
+
+/** Bytes the app saved to a file of the fake file access, or null when there is none. */
+export async function savedBytes(page: Page, name: string): Promise<Uint8Array | null> {
+  const bytes = await page.evaluate((n) => {
+    const file = window.__epd!.files!.files.get(n);
+    return file ? [...file] : null;
+  }, name);
+  return bytes && new Uint8Array(bytes);
+}
+
+/** The project.json of an `.epd` file. */
+export function projectOf(epd: Uint8Array): ProjectFile {
+  return JSON.parse(strFromU8(unzipSync(epd)['project.json']!)) as ProjectFile;
 }
 
 /** Editor state through the E2E-only `window.__epd` handle. */

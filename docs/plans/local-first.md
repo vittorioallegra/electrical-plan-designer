@@ -175,7 +175,7 @@ decoding), the per-user query keys go.
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
 compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
-(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed). Decisions and deferrals the remaining steps
+(company and catalogs inside the project); step 7 (quotes); step 8 (backend and mobile removed); step 9 (E2E on files). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -241,6 +241,12 @@ must pick up:
   here, left to step 9: opening `demo-project.epd` through a fake `FileAccess` in E2E, the file
   input fallback, checking saved bytes. The navigation "Loading" notice lost its test (it was
   driven by the project loader). docs/deploy.md is a placeholder until step 10.
+- **E2E on files** (step 9): `VITE_E2E` builds use `createMemoryFileAccess()` exposed as
+  `window.__epd.files`; `e2e/files.spec.ts` opens `demo-project.epd` through it, saves with
+  Ctrl+S and compares the saved `project.json` with the open project, checks the draft after a
+  reload and reopens the saved bytes; a new project goes through Save as; one test removes the
+  picker APIs (`__epdRealFiles`) and uses the real file input and download. The drawing specs
+  still start from a new project, not from the demo file.
 - **Templates**: `projectFileFromTemplate` copies VAT and material adjustment but not labor
   lines; the logo asset must be copied along by the caller.
 - **Catalog item fields**: `CatalogItem` gained `editedAt` (set on manual edits, step 6) and

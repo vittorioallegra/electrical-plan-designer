@@ -8,7 +8,7 @@ import { getConfig } from '@/config/env';
 import { createQueryClient } from '@/lib/query-client';
 import { createI18n } from '@/lib/i18n';
 import { createIndexedDbDraftRepository } from '@/lib/repositories/drafts';
-import { createBrowserFileAccess } from '@/lib/repositories/fileAccess';
+import { createBrowserFileAccess, createMemoryFileAccess } from '@/lib/repositories/fileAccess';
 import { createWorkspace } from '@/stores/editor/workspace';
 import './styles.css';
 
@@ -19,10 +19,15 @@ i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng;
 });
 
+// E2E builds use in-memory files the tests fill and read back, unless a test asks for the real
+// file access (`window.__epdRealFiles`, set by an init script).
+const fakeFiles = config.fakeFiles && !window.__epdRealFiles ? createMemoryFileAccess() : null;
+if (fakeFiles) window.__epd = { ...window.__epd, files: fakeFiles };
+
 const drafts = createIndexedDbDraftRepository();
 const services = {
   drafts,
-  fileAccess: createBrowserFileAccess(),
+  fileAccess: fakeFiles ?? createBrowserFileAccess(),
   workspace: createWorkspace({ drafts, exposeTestHandle: config.testHandle }),
 };
 

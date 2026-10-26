@@ -72,6 +72,8 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents.
 - PDFs (jsPDF Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
 - jsdom has no canvas (`src/testing/setup.ts` stubs `react-konva`): canvas behavior is tested
-  in Playwright via `window.__epd` (exposed in dev and with `.env.e2e`).
+  in Playwright via `window.__epd.store` (exposed in dev and with `.env.e2e`). E2E builds open
+  and save through an in-memory fake (`window.__epd.files`; helpers `offerFixture`,
+  `savedBytes`); an init script setting `window.__epdRealFiles` uses the real file access.
 - `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).

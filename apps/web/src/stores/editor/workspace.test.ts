@@ -27,6 +27,6 @@ describe('workspace', () => {
 
     workspace.getState().close();
     expect(workspace.getState().current).toBeNull();
-    expect(window.__epd).toBeUndefined();
+    expect(window.__epd?.store).toBeUndefined();
   });
 });
