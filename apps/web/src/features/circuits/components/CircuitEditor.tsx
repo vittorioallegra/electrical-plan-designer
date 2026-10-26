@@ -2,7 +2,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cableColorSchema } from '@epd/domain/schema';
 import type { Circuit } from '@epd/domain/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { ConductorBadge } from '@/components/ConductorBadge';
 import { Button } from '@/components/ui/Button';
 import { useShowPlan } from '@/features/circuits/hooks/useShowPlan';

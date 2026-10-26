@@ -10,12 +10,12 @@
   "nav": {
     "projects": "Projects",
     "catalog": "Catalog",
-    "profile": "Profile",
     "plan": "Plan",
     "panel": "Panel",
     "quote": "Quote",
     "settings": "Settings",
-    "start": "Start"
+    "start": "Start",
+    "company": "Company"
   },
   "pages": {
     "login": "Log in",
@@ -26,10 +26,10 @@
     "quote": "Quote",
     "settings": "Project settings",
     "catalog": "Catalog",
-    "profile": "Business profile",
     "mobileProjects": "Projects",
     "mobileProject": "Project",
-    "notFound": "Page not found"
+    "notFound": "Page not found",
+    "company": "Company"
   },
   "editor": {
     "untitledProject": "Untitled project",
@@ -161,7 +161,7 @@
       "usb_charger": "USB charger"
     },
     "missingItem": "Missing catalog item ({{id}})",
-    "hint": "Built-in items are generic and read-only: give them a price from your price list, or duplicate them to add your code and brand. Your items are archived, never deleted, so old projects keep their references.",
+    "hint": "Built-in items are generic: give them a price, or duplicate them to add your code and brand. Imported catalogs are copied into the project, so it prices the same when reopened. Items are archived, never deleted.",
     "category": "Category",
     "categories": {
       "device": "Devices",
@@ -234,6 +234,75 @@
       "isolator": "Isolator",
       "spd": "Surge protector",
       "other": "Other"
+    },
+    "myItems": "My items",
+    "catalogs": "Catalogs",
+    "builtinCatalog": "Built-in catalog",
+    "catalogInfo_one": "{{count}} item, imported {{date}}",
+    "catalogInfo_other": "{{count}} items, imported {{date}}",
+    "catalogColumn": "Catalog",
+    "export": "Export .epc",
+    "remove": "Remove",
+    "removeTitle": "Remove \"{{name}}\"?",
+    "removeBody": "The catalog and its items leave this project. Undo brings them back.",
+    "removeInUse_one": "{{name}} cannot be removed: {{count}} of its items is used in the project.",
+    "removeInUse_other": "{{name}} cannot be removed: {{count}} of its items are used in the project.",
+    "missingBadge": "not in the new list",
+    "priceOnlyBadge": "price only",
+    "import": {
+      "open": "Import catalog…",
+      "title": "Import catalog",
+      "hint": "An .epc file (exported from a project) or a CSV price list.",
+      "name": "Catalog name",
+      "columns": "Columns",
+      "defaults": "For rows without a value",
+      "defaultCategory": "Default category",
+      "defaultModules": "Default modules",
+      "notMapped": "— not imported —",
+      "column": "Column {{n}}",
+      "fields": {
+        "code": "Code",
+        "name": "Name",
+        "price": "Price",
+        "unit": "Unit",
+        "category": "Category",
+        "modules": "Modules"
+      },
+      "needName": "Choose the column with the item names.",
+      "skipped_one": "{{count}} row has no name or an unreadable price and is left out.",
+      "skipped_other": "{{count}} rows have no name or an unreadable price and are left out.",
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
+      "confirm_one": "Import {{count}} item",
+      "confirm_other": "Import {{count}} items",
+      "done_one": "{{name}}: {{count}} item imported.",
+      "done_other": "{{name}}: {{count}} items imported.",
+      "errors": {
+        "not_a_catalog": "This is not a catalog file.",
+        "newer_version": "This catalog was exported by a newer version of the app.",
+        "invalid": "The catalog file is damaged.",
+        "empty": "The file has no items."
+      }
+    },
+    "replace": {
+      "open": "Replace…",
+      "title": "Replace {{name}}",
+      "confirm": "Replace",
+      "unchanged_one": "{{count}} item unchanged",
+      "unchanged_other": "{{count}} items unchanged",
+      "changed_one": "{{count}} item changed",
+      "changed_other": "{{count}} items changed",
+      "added_one": "{{count}} new item",
+      "added_other": "{{count}} new items",
+      "dropped_one": "{{count}} unused item no longer listed (removed)",
+      "dropped_other": "{{count}} unused items no longer listed (removed)",
+      "priceChanges": "Price changes",
+      "missingInUse": "Used in the project but missing from the new list",
+      "missingInUseHint": "They keep their current data and show a warning in the checks.",
+      "edited": "Items you edited by hand",
+      "editedHint": "Checked items keep your edit; unchecked ones take the new list's data.",
+      "keepEdit": "Keep my edit of {{name}}",
+      "done": "{{name}} replaced."
     }
   },
   "fileDrop": {
@@ -281,21 +350,6 @@
     "loadFailed": "Could not load projects.",
     "saveFailed": "Could not save the project.",
     "deleteFailed": "Could not delete the project."
-  },
-  "profile": {
-    "hint": "Shown in the quote PDF header. Empty fields are left out.",
-    "businessName": "Business name",
-    "vatNumber": "VAT number",
-    "address": "Address",
-    "phone": "Phone",
-    "email": "Email",
-    "logo": "Logo",
-    "saved": "Profile saved.",
-    "saveFailed": "Could not save the profile.",
-    "loadFailed": "Could not load the profile.",
-    "logoType": "The logo must be a PNG or JPG image.",
-    "logoTooLarge": "The logo must be at most 2 MB.",
-    "logoFailed": "Could not upload the logo."
   },
   "settings": {
     "hint": "These values apply to this project only.",
@@ -588,7 +642,9 @@
       "box_empty": "Boxes without plate or devices",
       "riser_mixed_elevation": "Risers with mixed run elevations",
       "height_clamped": "Heights above the floor height",
-      "missing_item": "Missing catalog items"
+      "missing_item": "Missing catalog items",
+      "item_dropped": "Items missing from their new catalog",
+      "price_only": "Price-only items"
     },
     "messages": {
       "no_rcd": "{{name}} has no RCD or RCBO upstream",
@@ -606,7 +662,9 @@
       "box_empty": "{{name}}",
       "riser_mixed_elevation": "{{name}}: floor and ceiling runs meet here",
       "height_clamped": "{{name}}: mounting height capped at the floor height",
-      "missing_item": "{{name}}: catalog item {{id}} no longer exists"
+      "missing_item": "{{name}}: catalog item {{id}} no longer exists",
+      "item_dropped": "{{name}}: {{item}} is no longer in its catalog",
+      "price_only": "{{name}}: {{item}} has no modules or sizes (price only)"
     }
   },
   "progress": {
@@ -772,5 +830,17 @@
       "body": "“{{name}}” has changes that are not saved to a file. Opening another project discards them.",
       "confirm": "Discard and continue"
     }
+  },
+  "company": {
+    "hint": "The business shown on this project's quotes. Empty fields are left out. Saved with the project file.",
+    "businessName": "Business name",
+    "vatNumber": "VAT number",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "logo": "Logo",
+    "removeLogo": "Remove logo",
+    "logoType": "The logo must be a PNG or JPG image.",
+    "logoTooLarge": "The logo must be at most 2 MB."
   }
 }

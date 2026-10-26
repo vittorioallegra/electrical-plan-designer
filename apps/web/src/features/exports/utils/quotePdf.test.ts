@@ -41,7 +41,7 @@ const live: QuoteDocument = {
   },
 };
 
-const profile = {
+const company = {
   businessName: 'Elettricità Rossi',
   vatNumber: 'IT01234567890',
   address: 'Via Garibaldi 3, Torino',
@@ -55,7 +55,7 @@ describe('quote PDF', () => {
   it('renders the business header, lines and totals in Italian', async () => {
     const pdf = buildQuotePdf({
       quote: { ...live, number: 7, issuedAt: '2026-10-25T09:00:00.000Z', language: 'it' },
-      profile,
+      company,
       meta,
       t: createI18n('it').t,
       locale: 'it',
@@ -82,7 +82,7 @@ describe('quote PDF', () => {
     const lines = Array.from({ length: 80 }, (_, i) => ({ ...live.lines[0]!, key: `k${i}` }));
     const pdf = buildQuotePdf({
       quote: { ...live, lines },
-      profile: { ...profile, businessName: '' },
+      company: { ...company, businessName: '' },
       meta,
       t: createI18n('en').t,
       locale: 'en',

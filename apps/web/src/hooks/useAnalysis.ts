@@ -3,7 +3,7 @@ import { computeBom, type BomLine } from '@epd/domain/bom';
 import { runChecks, type Warning } from '@epd/domain/checks';
 import { routeDoc, type RoutingResult } from '@epd/domain/routing';
 import { useEditor } from '@/stores/editor/EditorContext';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 
 export interface Analysis {
   routing: RoutingResult;

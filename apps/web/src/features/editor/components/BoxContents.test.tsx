@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
@@ -39,12 +39,12 @@ describe('box contents', () => {
     ]);
   });
 
-  // protects=box presets; fails_when=a saved preset is not stored on the account or not applied; no_claim=placement on canvas
+  // protects=box presets; fails_when=a saved preset is not stored in the project or not applied; no_claim=placement on canvas
   it('saves the contents as a preset and applies it to another box', async () => {
-    const { control } = await openBox('n_s1');
+    await openBox('n_s1');
     await userEvent.click(screen.getByRole('button', { name: 'Save as preset' }));
     await userEvent.type(screen.getByLabelText('Preset name'), 'Schuko 503{Enter}');
-    await waitFor(() => expect([...control.profiles.values()][0]!.boxPresets).toHaveLength(1));
+    expect(store()!.store.getState().data.boxPresets).toHaveLength(1);
 
     act(() =>
       store()!

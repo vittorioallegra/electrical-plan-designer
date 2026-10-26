@@ -43,10 +43,11 @@ Below, `src/` = `apps/web/src/` (package `@epd/web`: Vite/Vitest/Playwright conf
   quote, catalogs, `.epd` project file schema); source-only, imported as `@epd/domain/<module>`, no barrel
 - `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes({ repos, queryClient })`),
   `auth.ts` (auth middleware), `layouts/`, `routes/` (route modules composing features)
-- `src/features/<name>/` — start, auth, projects, editor, panel, circuits, catalog, bom, checks,
-  quote, exports, mobile, profile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
-- `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, catalog, profile, record)
-- `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks), `src/config/` (env, version)
+- `src/features/<name>/` — start, auth, projects, editor, panel, circuits, catalog, company, bom,
+  checks, quote, exports, mobile, settings; sub-folders `components/ hooks/ utils/ api/` as needed
+- `src/api/` — shared TanStack Query hooks + `queryOptions` (`keys.ts`, profile, record)
+- `src/components/` (`ui/`, `symbols/`), `src/hooks/` (shared hooks; `useCatalog` reads catalogs,
+  prices, box presets and company from the open project), `src/config/` (env, version)
 - `src/lib/` — `repositories/` (interfaces, Supabase + in-memory, the only Supabase code; draft
   and file access: `drafts.ts`, `fileAccess.ts`, IndexedDB in `idb.ts`),
   `auth/`, `i18n/` (`locales/en.json` base, `it.json`), `projectFile/` (`.epd` zip read/write,

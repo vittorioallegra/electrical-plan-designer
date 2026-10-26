@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { bomCategoryOrder, type BomLine, type PurchaseLineStatus } from '@epd/domain/bom';
 import { useEditor } from '@/stores/editor/EditorContext';
 import { formatNumber } from '@/lib/format';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { describeBomLine } from '@/lib/describeBom';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { PurchasesLoadError } from './PurchasesLoadError';

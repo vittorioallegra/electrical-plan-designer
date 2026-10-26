@@ -3,7 +3,7 @@ import { useEditorContext } from '@/stores/editor/EditorContext';
 import { downloadBlob, fileSafe } from '@/lib/download';
 import { assetBlob } from '@/lib/projectFile/epd';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { blobToImage, type ImageData } from '@/features/exports/utils/pdfKit';
 import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 
@@ -11,7 +11,7 @@ import { buildProjectPdf } from '@/features/exports/utils/projectPdf';
 export function useProjectPdfExport(): () => Promise<void> {
   const { t, i18n } = useTranslation();
   const { store } = useEditorContext();
-  const { lookup, profile } = useCatalog();
+  const { lookup, company } = useCatalog();
   const analysis = useAnalysis();
   return async () => {
     const { data, assets } = store.getState();
@@ -29,7 +29,7 @@ export function useProjectPdfExport(): () => Promise<void> {
       analysis,
       lookup,
       backgrounds,
-      businessName: profile?.businessName ?? '',
+      businessName: company.businessName,
       t,
       locale: i18n.language === 'it' ? 'it' : 'en',
       now: new Date(),

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Stage } from 'react-konva';
 import { createLengthContext } from '@epd/domain/lengths';
 import type { PlanNode, Point } from '@epd/domain/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { useCanvasColors } from './canvasColors';
@@ -51,7 +51,7 @@ export function PlanCanvas({
   const settings = useEditor((s) => s.data.settings);
   const floor = doc.floors.find((f) => f.id === floorId);
   const { image } = useBackgroundImage(floor?.background?.assetId);
-  const { profile } = useCatalog();
+  const { boxPresets } = useCatalog();
   const presetId = useEditor((s) => s.ui.presetId);
   const pick = useEditor((s) => s.ui.pick);
   const activeOwner = useEditor((s) => s.ui.activeOwner);
@@ -89,7 +89,7 @@ export function PlanCanvas({
     snapTargets,
     pick,
     pickHandlers,
-    boxPreset: profile?.boxPresets.find((p) => p.id === presetId),
+    boxPreset: boxPresets.find((p) => p.id === presetId),
     onCalibrationPoints,
   });
   useCanvasKeyboard({ store, tool, pointer, onDeleteRequest });

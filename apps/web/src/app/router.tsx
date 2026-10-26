@@ -1,8 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Navigate, type LoaderFunctionArgs, type RouteObject } from 'react-router';
-import { catalogItemsQuery } from '@/api/catalog';
-import { profileQuery } from '@/api/profile';
 import { projectRecordQuery } from '@/api/projectRecord';
 import { authMiddleware, sessionContext } from '@/app/auth';
 import { AppShell } from '@/app/layouts/AppShell';
@@ -12,9 +10,7 @@ import { RootLayout } from '@/app/layouts/RootLayout';
 import { PlaceholderPage } from '@/app/routes/PlaceholderPage';
 import { RouteError } from '@/components/ui/RouteError';
 import { AuthForm } from '@/features/auth/components/AuthForm';
-import { CatalogPage } from '@/features/catalog/components/CatalogPage';
 import { ViewModeGate } from '@/features/mobile/components/ViewModeGate';
-import { ProfilePage } from '@/features/profile/components/ProfilePage';
 import { ProjectsPage } from '@/features/projects/components/ProjectsPage';
 import { StartPage } from '@/features/start/components/StartPage';
 import type { Repositories } from '@/lib/repositories/types';
@@ -94,14 +90,6 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
         {
           element: <RequireAuth />,
           middleware: [authMiddleware(repos)],
-          // Catalog and profile load in the background; pages render while they arrive.
-          loader: ({ context }) => {
-            const { userId } = context.get(sessionContext);
-            void queryClient.prefetchQuery(catalogItemsQuery(repos, userId));
-            void queryClient.prefetchQuery(profileQuery(repos, userId));
-            return null;
-          },
-          shouldRevalidate: () => false,
           children: [
             {
               element: <ViewModeGate />,
@@ -153,6 +141,20 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
                             .SettingsPage,
                       },
                     },
+                    {
+                      path: 'catalog',
+                      lazy: {
+                        Component: async () =>
+                          (await import('@/features/catalog/components/CatalogPage')).CatalogPage,
+                      },
+                    },
+                    {
+                      path: 'company',
+                      lazy: {
+                        Component: async () =>
+                          (await import('@/features/company/components/CompanyPage')).CompanyPage,
+                      },
+                    },
                   ],
                 },
                 {
@@ -176,8 +178,6 @@ export function createRoutes({ repos, queryClient }: RouteDeps): RouteObject[] {
                   children: [
                     { index: true, element: <StartPage /> },
                     { path: 'projects', element: <ProjectsPage /> },
-                    { path: 'catalog', element: <CatalogPage /> },
-                    { path: 'profile', element: <ProfilePage /> },
                     { path: '*', element: <PlaceholderPage titleKey="pages.notFound" /> },
                   ],
                 },

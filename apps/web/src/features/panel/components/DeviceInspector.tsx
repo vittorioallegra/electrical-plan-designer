@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CatalogItem } from '@epd/domain/catalog/types';
 import type { Panel, PanelDevice } from '@epd/domain/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { Button } from '@/components/ui/Button';
 import { NumberInput } from '@/components/ui/NumberInput';
 import {

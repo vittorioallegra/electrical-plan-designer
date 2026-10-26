@@ -174,7 +174,8 @@ decoding), the per-user query keys go.
 ## Progress notes
 
 Done: steps 1–3 (commits `b9f9591`, `9346636`, `87be8d8`), then `c99e610` dropped all
-compatibility code; step 4 (open project state); step 5 (start screen, routes, Save). Decisions and deferrals the remaining steps
+compatibility code; step 4 (open project state); step 5 (start screen, routes, Save); step 6
+(company and catalogs inside the project). Decisions and deferrals the remaining steps
 must pick up:
 
 - **No migrations before the first release** (no users yet): the doc and project file schemas
@@ -214,10 +215,18 @@ must pick up:
   `/project/catalog` and `/project/company` routes come with it.
 - **Mobile** (step 4): it reads the server record, which desktop edits no longer reach, so
   the E2E only checks purchase-mark sync now.
-- **Logo** (step 6): the app still reads it from the profile (`logoPath`); move it to
-  `company.logoAssetId` with the company tab.
-- **Check 10** (step 6): items marked `missing` after a catalog replace, and "price only" items
-  where attributes are needed, are not checked yet (`checks.ts`).
+- **Company and catalogs** (step 6): `/project/company` (`features/company`, logo as an asset)
+  and `/project/catalog` replace the global profile and catalog pages; `hooks/useCatalog` reads
+  everything from the open project and pages edit it with undoable commands. Hand-made and
+  duplicated items go to a catalog with the fixed id `own` ("My items"). Import: `.epc`
+  (`catalog/epc.ts`) or CSV (`catalog/csv.ts`: delimiter detection, IT/EN price formats, header
+  guessing; category and modules from a column or one default for all rows, no per-row or
+  per-selection editing in the dialog: items are fixed one by one afterwards). Replace shows the
+  diff and asks per hand-edited item. A catalog with items in use cannot be removed. Check 10:
+  `item_dropped` and `price_only` (`catalog/attributes.ts`: modules for devices, covers, boxes
+  and panel devices; inner Ø for conduits; rails × modules for enclosures). The Supabase
+  profile, user catalog items and their repositories stay unused until step 8; server records
+  open with empty company data and no imported catalogs.
 - **Quotes** (step 7): the domain rules are in `packages/domain/src/issuedQuotes.ts`
   (`nextQuoteNumber`, `addIssuedQuote` supersedes pending quotes, `setQuoteStatus`,
   `setQuoteNote`); the app still uses `ProfileRepository.nextQuoteNumber`, appends snapshots

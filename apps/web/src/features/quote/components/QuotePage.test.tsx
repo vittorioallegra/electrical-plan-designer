@@ -1,9 +1,11 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { EditorStore } from '@/stores/editor/editorStore';
 import { DEMO_PROJECT_ID, renderApp } from '@/testing/renderApp';
 
 const quotePath = `/projects/${DEMO_PROJECT_ID}/quote`;
+const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
 async function typeNumber(input: HTMLElement, value: string) {
   await userEvent.clear(input);
@@ -11,9 +13,9 @@ async function typeNumber(input: HTMLElement, value: string) {
 }
 
 describe('quote page', () => {
-  // protects=inline prices for unpriced lines (stored as account overrides); fails_when=the price is not applied to the line, the totals or the price list; no_claim=price lookup order (domain tests)
+  // protects=inline prices for unpriced lines (stored as project price overrides); fails_when=the price is not applied to the line, the totals or the price list; no_claim=price lookup order (domain tests)
   it('prices an unpriced line inline and updates the totals', async () => {
-    const { repos } = await renderApp(quotePath);
+    await renderApp(quotePath, { exposeTestHandle: true });
     expect(await screen.findByText(/lines have no price/)).toBeInTheDocument();
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€0.00');
 
@@ -23,19 +25,19 @@ describe('quote page', () => {
     expect(row).toHaveTextContent('€6.00');
     // €6.00 + 22% VAT
     expect(screen.getByTestId('quote-total')).toHaveTextContent('€7.32');
-    expect((await repos.profile.get()).priceOverrides['builtin:box_503']).toEqual({
+    expect(editorStore().getState().data.priceOverrides['builtin:box_503']).toEqual({
       unitPrice: 150,
     });
   });
 
   // protects=correcting an inline price; fails_when=a price typed on the quote page can no longer be changed there; no_claim=prices of user catalog items (edited in the catalog)
   it('keeps an inline price editable after it is set', async () => {
-    const { repos } = await renderApp(quotePath);
+    await renderApp(quotePath, { exposeTestHandle: true });
     await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '1.5');
     await typeNumber(await screen.findByLabelText('Price of Wall box 503 (3 modules)'), '2');
     const row = (await screen.findByText('Wall box 503 (3 modules)')).closest('tr')!;
     expect(row).toHaveTextContent('€8.00');
-    expect((await repos.profile.get()).priceOverrides['builtin:box_503']).toEqual({
+    expect(editorStore().getState().data.priceOverrides['builtin:box_503']).toEqual({
       unitPrice: 200,
     });
   });

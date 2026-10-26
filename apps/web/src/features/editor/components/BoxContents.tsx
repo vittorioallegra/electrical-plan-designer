@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/components/ui/Toast';
 import { applyPresetTo } from '@/features/editor/utils/commands';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
 
@@ -17,7 +17,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const readOnly = useEditor((s) => s.readOnly);
-  const { lookup, profile, updateProfile } = useCatalog();
+  const { lookup, boxPresets } = useCatalog();
   const itemName = useItemName();
   const toast = useToast();
   const devices = useItemsOf('device');
@@ -48,8 +48,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
       else n.contents = [...list, { itemId, qty }];
     });
 
-  async function savePreset(name: string) {
-    if (!profile) return;
+  function savePreset(name: string) {
     const preset = {
       id: newId(),
       name,
@@ -57,12 +56,11 @@ export function BoxContents({ node }: { node: PlanNode }) {
       ...(node.boxItemId ? { boxItemId: node.boxItemId } : {}),
       contents: structuredClone(contents),
     };
-    try {
-      await updateProfile({ boxPresets: [...profile.boxPresets, preset] });
-      toast(t('contents.presetSaved', { name }), 'success');
-    } catch {
-      toast(t('contents.presetFailed'), 'error');
-    }
+    const result = store.getState().applyCommand('box preset', (d) => {
+      d.boxPresets.push(preset);
+    });
+    if (result.ok) toast(t('contents.presetSaved', { name }), 'success');
+    else toast(t('contents.presetFailed'), 'error');
   }
 
   return (
@@ -150,19 +148,19 @@ export function BoxContents({ node }: { node: PlanNode }) {
 
       <div className="flex flex-col gap-1 border-t border-border pt-2">
         <span>{t('contents.presets')}</span>
-        {profile && profile.boxPresets.length > 0 ? (
+        {boxPresets.length > 0 ? (
           <select
             aria-label={t('contents.applyPreset')}
             className="h-[var(--control-height)] rounded border border-border px-1"
             value=""
             disabled={readOnly}
             onChange={(e) => {
-              const preset = profile.boxPresets.find((p) => p.id === e.target.value);
+              const preset = boxPresets.find((p) => p.id === e.target.value);
               if (preset) update('apply preset', (n) => applyPresetTo(n, preset));
             }}
           >
             <option value="">{t('contents.applyPreset')}</option>
-            {profile.boxPresets.map((p) => (
+            {boxPresets.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -170,7 +168,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
           </select>
         ) : null}
         {presetName === null ? (
-          <Button disabled={readOnly || !profile} onClick={() => setPresetName('')}>
+          <Button disabled={readOnly} onClick={() => setPresetName('')}>
             {t('contents.savePreset')}
           </Button>
         ) : (
@@ -178,7 +176,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
             className="flex gap-1"
             onSubmit={(e) => {
               e.preventDefault();
-              if (presetName.trim()) void savePreset(presetName.trim());
+              if (presetName.trim()) savePreset(presetName.trim());
               setPresetName(null);
             }}
           >

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { suggestEnclosure, totalModules } from '@epd/domain/panel';
 import type { Panel } from '@epd/domain/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { Button } from '@/components/ui/Button';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { setEnclosure, setLayout } from '@/features/panel/utils/commands';

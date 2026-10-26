@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useCatalogItems } from '@/api/catalog';
-import { useProfile } from '@/api/profile';
 import { useAuth } from '@/lib/auth/AuthProvider';
 
 /**
@@ -37,17 +35,5 @@ export function RequireAuth() {
     const list = location.pathname.startsWith('/m/') ? '/m/projects' : '/';
     return <Navigate to={list} replace />;
   }
-  return (
-    <>
-      <SharedData />
-      <Outlet />
-    </>
-  );
-}
-
-/** Loads the catalog and profile once on entering the signed-in area and keeps them cached. */
-function SharedData() {
-  useCatalogItems();
-  useProfile();
-  return null;
+  return <Outlet />;
 }

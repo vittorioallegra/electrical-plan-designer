@@ -10,7 +10,7 @@ import { describeBomLine, describeLineKey } from '@/lib/describeBom';
 import { PurchasesLoadError } from './PurchasesLoadError';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { usePurchases } from '@/features/bom/hooks/usePurchases';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 
 /** Phone purchase checklist: one big row per BOM line, ticked lines store the bought quantity. */
 export function Checklist() {

@@ -1,5 +1,6 @@
 // Basic checks: warnings, never blocking. Each carries params for its i18n message.
 import { cableOuterDiameters } from './catalog/builtin';
+import { isPriceOnly } from './catalog/attributes';
 import type { CatalogLookup } from './catalog/lookup';
 import { bundleDiameter, conduitTooSmall, estimatedOuterDiameter } from './conduitFill';
 import { routeDoc, type RoutingResult } from './routing';
@@ -20,7 +21,9 @@ export type CheckId =
   | 'target_unreachable'
   | 'riser_mixed_elevation'
   | 'height_clamped'
-  | 'missing_item';
+  | 'missing_item' // 10
+  | 'item_dropped' // 10
+  | 'price_only'; // 10
 
 export type ElementRef =
   | { kind: 'circuit' | 'node' | 'segment' | 'extra_run'; id: string }
@@ -222,8 +225,13 @@ export function runChecks(
     warn('riser_mixed_elevation', { kind: 'node', id }, {});
   }
   for (const id of routing.ctx.clampedNodeIds) warn('height_clamped', { kind: 'node', id }, {});
+  // Check 10: items gone from the catalog, dropped by a catalog replace, or price only.
   const missing = (itemId: string | undefined, ref: ElementRef) => {
-    if (itemId !== undefined && !catalog(itemId)) warn('missing_item', ref, { itemId });
+    if (itemId === undefined) return;
+    const item = catalog(itemId);
+    if (!item) warn('missing_item', ref, { itemId });
+    else if (item.missing) warn('item_dropped', ref, { itemId, item: item.name });
+    else if (isPriceOnly(item)) warn('price_only', ref, { itemId, item: item.name });
   };
   for (const n of doc.nodes) {
     missing(n.boxItemId, { kind: 'node', id: n.id });

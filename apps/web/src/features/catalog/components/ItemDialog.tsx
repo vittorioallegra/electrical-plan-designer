@@ -8,7 +8,6 @@ import type {
   DeviceType,
   PanelDeviceType,
 } from '@epd/domain/catalog/types';
-import type { NewCatalogItem } from '@/lib/repositories/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
@@ -39,6 +38,9 @@ const deviceTypes: DeviceType[] = [
   'data',
   'other',
 ];
+/** An item as the dialog edits it; the page gives it its id and catalog. */
+export type ItemDraft = Omit<CatalogItem, 'id'>;
+
 const panelDeviceTypes: PanelDeviceType[] = ['mcb', 'rcd', 'rcbo', 'isolator', 'spd', 'other'];
 const withModules = new Set<CatalogCategory>([
   'device',
@@ -52,7 +54,7 @@ export function defaultUnit(category: CatalogCategory): 'pcs' | 'm' {
   return category === 'conduit' || category === 'cable' ? 'm' : 'pcs';
 }
 
-/** Create/edit dialog for a user item. `initial` without an id duplicates. */
+/** Create/edit dialog for a project catalog item. `initial` without an id duplicates. */
 export function ItemDialog({
   initial,
   title,
@@ -62,7 +64,7 @@ export function ItemDialog({
   initial: Partial<CatalogItem> & { category: CatalogCategory };
   title: string;
   onClose: () => void;
-  onSave: (item: NewCatalogItem) => Promise<void>;
+  onSave: (item: ItemDraft) => void;
 }) {
   const { t } = useTranslation();
   const [category, setCategory] = useState<CatalogCategory>(initial.category);
@@ -73,7 +75,6 @@ export function ItemDialog({
   );
   const [modules, setModules] = useState<number | null>(initial.modules ?? null);
   const [attributes, setAttributes] = useState<CatalogAttributes>(initial.attributes ?? {});
-  const [busy, setBusy] = useState(false);
   const attr = <K extends keyof CatalogAttributes>(key: K, value: CatalogAttributes[K] | null) =>
     setAttributes((a) => {
       const next = { ...a };
@@ -126,14 +127,13 @@ export function ItemDialog({
     </label>
   );
 
-  async function submit() {
-    setBusy(true);
+  function submit() {
     const enclosureModules =
       category === 'enclosure' && attributes.rails && attributes.modulesPerRail
         ? attributes.rails * attributes.modulesPerRail
         : null;
     const mods = enclosureModules ?? (withModules.has(category) ? modules : null);
-    await onSave({
+    onSave({
       category,
       name: name.trim(),
       ...(code.trim() ? { code: code.trim() } : {}),
@@ -143,7 +143,6 @@ export function ItemDialog({
       attributes,
       archived: initial.archived ?? false,
     });
-    setBusy(false);
   }
 
   return (
@@ -152,7 +151,7 @@ export function ItemDialog({
         className="grid max-h-[70vh] grid-cols-2 gap-3 overflow-y-auto"
         onSubmit={(e) => {
           e.preventDefault();
-          void submit();
+          submit();
         }}
       >
         <label className="col-span-2 flex flex-col gap-1">
@@ -248,7 +247,7 @@ export function ItemDialog({
         ) : null}
         <div className="col-span-2 mt-2 flex justify-end gap-2">
           <Button onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" variant="primary" disabled={busy || name.trim() === ''}>
+          <Button type="submit" variant="primary" disabled={name.trim() === ''}>
             {t('common.save')}
           </Button>
         </div>

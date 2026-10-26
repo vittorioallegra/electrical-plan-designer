@@ -19,6 +19,8 @@ export const checkOrder: CheckId[] = [
   'riser_mixed_elevation',
   'height_clamped',
   'missing_item',
+  'item_dropped',
+  'price_only',
 ];
 
 /** Name of the element a warning points at, for warnings whose params carry none. */
@@ -72,6 +74,9 @@ export function describeWarning(w: Warning, doc: ProjectDoc, t: TFunction, local
       return t('checks.messages.target_unreachable', { name, count: p.count });
     case 'missing_item':
       return t('checks.messages.missing_item', { name, id: p.itemId });
+    case 'item_dropped':
+    case 'price_only':
+      return t(`checks.messages.${w.id}`, { name, item: p.item });
     default:
       return t(`checks.messages.${w.id}`, { name });
   }

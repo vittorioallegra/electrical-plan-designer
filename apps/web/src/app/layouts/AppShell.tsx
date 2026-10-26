@@ -22,8 +22,6 @@ export function AppShell() {
               {t('nav.start')}
             </NavLink>
             <NavLink to="/projects">{t('nav.projects')}</NavLink>
-            <NavLink to="/catalog">{t('nav.catalog')}</NavLink>
-            <NavLink to="/profile">{t('nav.profile')}</NavLink>
           </nav>
         ) : null}
         <div className="ml-auto flex items-center gap-3">

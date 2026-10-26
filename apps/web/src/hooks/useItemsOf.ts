@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import type { CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 
-/** Non-archived items of one category, for pickers. */
+/** Items of one category for pickers: not archived, not left over from a catalog replace. */
 export function useItemsOf(category: CatalogCategory): CatalogItem[] {
   const { items } = useCatalog();
   return useMemo(
-    () => items.filter((i) => i.category === category && !i.archived),
+    () => items.filter((i) => i.category === category && !i.archived && !i.missing),
     [items, category],
   );
 }

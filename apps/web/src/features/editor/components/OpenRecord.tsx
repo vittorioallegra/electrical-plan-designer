@@ -18,7 +18,7 @@ type LoadState =
   | { status: 'confirm'; draftName: string; open: () => void }
   | { status: 'opened' };
 
-export const PROJECT_VIEWS = ['plan', 'panel', 'quote', 'settings'] as const;
+export const PROJECT_VIEWS = ['plan', 'panel', 'quote', 'settings', 'catalog', 'company'] as const;
 
 /** The draft, when it was opened from this record and still passes the file schema. */
 function draftFor(draft: Draft | null, recordId: string): Draft | null {

@@ -5,14 +5,14 @@ import { useEditor } from '@/stores/editor/EditorContext';
 import type { Locale } from '@/lib/format';
 import { describeBomLine } from '@/lib/describeBom';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 
-/** Prices of the signed-in account: user items, built-in catalog and price overrides. */
+/** Prices of the open project: its catalog items, built-ins and price overrides. */
 export function usePriceContext(): PriceContext {
-  const { lookup, userItems, profile } = useCatalog();
+  const { lookup, projectItems, priceOverrides } = useCatalog();
   return useMemo(
-    () => ({ catalog: lookup, userItems, overrides: profile?.priceOverrides ?? {} }),
-    [lookup, userItems, profile],
+    () => ({ catalog: lookup, userItems: projectItems, overrides: priceOverrides }),
+    [lookup, projectItems, priceOverrides],
   );
 }
 

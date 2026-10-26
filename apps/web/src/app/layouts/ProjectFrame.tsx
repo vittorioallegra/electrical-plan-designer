@@ -25,6 +25,8 @@ const viewTabs = [
   { to: 'panel', key: 'nav.panel' },
   { to: 'quote', key: 'nav.quote' },
   { to: 'settings', key: 'nav.settings' },
+  { to: 'catalog', key: 'nav.catalog' },
+  { to: 'company', key: 'nav.company' },
 ] as const;
 
 function isTyping(target: EventTarget | null): boolean {

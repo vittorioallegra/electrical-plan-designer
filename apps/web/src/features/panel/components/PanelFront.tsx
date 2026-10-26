@@ -2,7 +2,7 @@ import { useMemo, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { deviceWidth, isRcdType } from '@epd/domain/panel';
 import type { Panel, PanelDevice } from '@epd/domain/types';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { addDevice, moveDevice, setUpstream } from '@/features/panel/utils/commands';
 import { rcdGroupColors } from '@/features/panel/utils/rcdGroups';
 import { useAnalysis } from '@/hooks/useAnalysis';

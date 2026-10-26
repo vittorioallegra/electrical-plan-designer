@@ -7,13 +7,13 @@ import { renderApp } from '@/testing/renderApp';
 describe('auth', () => {
   // protects=protected routes; fails_when=a signed-out user sees the project list; no_claim=server-side RLS
   it('redirects signed-out users to login and back after logging in', async () => {
-    const { router } = await renderApp('/profile', { signedIn: false });
+    const { router } = await renderApp('/projects', { signedIn: false });
     expect(await screen.findByRole('heading', { name: 'Log in' })).toBeInTheDocument();
-    expect(router.state.location.search).toBe('?next=%2Fprofile');
+    expect(router.state.location.search).toBe('?next=%2Fprojects');
     await userEvent.type(screen.getByLabelText('Email'), 'dev@example.test');
     await userEvent.type(screen.getByLabelText('Password'), 'devpassword');
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
-    expect(await screen.findByRole('heading', { name: 'Business profile' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Projects' })).toBeInTheDocument();
   });
 
   // protects=login error feedback; fails_when=wrong credentials fail silently; no_claim=rate limiting

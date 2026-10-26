@@ -1,6 +1,6 @@
 // Quote PDF: business header, client, numbered lines, labor and totals.
 import type { TFunction } from 'i18next';
-import type { Profile } from '@/lib/repositories/types';
+import type { Company } from '@epd/domain/projectFile';
 import { formatQuoteNumber, laborAmounts } from '@epd/domain/quote';
 import type { IssuedQuote, ProjectMeta } from '@epd/domain/types';
 import { formatMoney, formatNumber, type Locale } from '@/lib/format';
@@ -9,7 +9,7 @@ import type { QuoteDocument } from '@epd/domain/quote';
 
 export interface QuotePdfInput {
   quote: QuoteDocument | IssuedQuote;
-  profile: Pick<Profile, 'businessName' | 'vatNumber' | 'address' | 'phone' | 'email'>;
+  company: Pick<Company, 'businessName' | 'vatNumber' | 'address' | 'phone' | 'email'>;
   logo?: ImageData;
   meta: Pick<ProjectMeta, 'name' | 'clientName' | 'address'>;
   t: TFunction;
@@ -18,7 +18,7 @@ export interface QuotePdfInput {
   now: Date;
 }
 
-export function buildQuotePdf({ quote, profile, logo, meta, t, locale, now }: QuotePdfInput) {
+export function buildQuotePdf({ quote, company, logo, meta, t, locale, now }: QuotePdfInput) {
   const pdf = new PdfWriter();
   const money = (cents: number | null) => (cents === null ? '—' : formatMoney(cents, locale));
   const issued = 'number' in quote ? quote : null;
@@ -38,15 +38,15 @@ export function buildQuotePdf({ quote, profile, logo, meta, t, locale, now }: Qu
   pdf.doc.setFont('helvetica', 'bold');
   pdf.doc.setFontSize(13);
   pdf.y = top + 5;
-  if (profile.businessName) pdf.doc.text(profile.businessName, textX, pdf.y);
+  if (company.businessName) pdf.doc.text(company.businessName, textX, pdf.y);
   pdf.doc.setFont('helvetica', 'normal');
   pdf.doc.setFontSize(9);
   pdf.y += 1;
   pdf.lines(
     [
-      profile.address,
-      profile.vatNumber ? t('pdf.vatNumber', { value: profile.vatNumber }) : '',
-      [profile.phone, profile.email].filter(Boolean).join(' · '),
+      company.address,
+      company.vatNumber ? t('pdf.vatNumber', { value: company.vatNumber }) : '',
+      [company.phone, company.email].filter(Boolean).join(' · '),
     ],
     textX,
     PAGE.margin + CONTENT_WIDTH - textX,

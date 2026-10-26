@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useCatalog } from '@/api/catalog';
+import { useCatalog } from '@/hooks/useCatalog';
 import { Button } from '@/components/ui/Button';
 import { addDevice, defaultDeviceLabel } from '@/features/panel/utils/commands';
 import { useItemName } from '@/hooks/useItemName';

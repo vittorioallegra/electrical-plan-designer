@@ -14,7 +14,7 @@ export interface QuoteDocument {
 
 export interface PriceContext {
   catalog: CatalogLookup;
-  /** The account's user items; priced cable items match cable lines by section + color. */
+  /** The project's catalog items; priced cable items match cable lines by section + color. */
   userItems: readonly CatalogItem[];
   overrides: PriceOverrides;
 }
@@ -26,7 +26,7 @@ export interface ResolvedPrice {
 }
 
 /**
- * Lookup order: user item price → account override → unpriced. A cable line without its
+ * Lookup order: catalog item price → project price override → unpriced. A cable line without its
  * own override falls back to the override of the built-in cable of its cross-section, which
  * is the price the catalog page edits.
  */

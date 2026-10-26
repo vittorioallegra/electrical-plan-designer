@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { isPriceOnly } from './catalog/attributes';
+import { builtinCatalog } from './catalog/builtin';
 import { createCatalogLookup } from './catalog/lookup';
+import type { CatalogItem } from './catalog/types';
 import { runChecks, type CheckId } from './checks';
 import { bundleDiameter, conduitTooSmall } from './conduitFill';
 import { defaultProjectSettings } from './defaults';
@@ -103,6 +106,50 @@ describe('checks', () => {
       x.circuits[0]!.routing = { mode: 'manual', segmentIds: ['S2'] };
     });
     expect(ids(d)).toEqual(expect.arrayContaining(['missing_item', 'route_invalid']));
+  });
+});
+
+describe('check 10: catalog items after a replace or a price-list import', () => {
+  const catalogItem = (patch: Partial<CatalogItem>): CatalogItem => ({
+    id: 'c1:D1',
+    category: 'device',
+    name: 'Vimar socket',
+    code: 'D1',
+    unitPrice: 500,
+    unit: 'pcs',
+    modules: 1,
+    attributes: { deviceType: 'socket' },
+    ...patch,
+  });
+  const run = (item: CatalogItem) => {
+    const d = withChange((x) => x.nodes[2]!.contents!.push({ itemId: item.id, qty: 1 }));
+    return runChecks(d, settings, createCatalogLookup([item])).filter((w) =>
+      ['item_dropped', 'price_only'].includes(w.id),
+    );
+  };
+
+  // protects=check 10; fails_when=an item kept as missing by a replace, or a price-only item where modules are needed, is not flagged on the element using it; no_claim=items only in box presets
+  it('flags dropped and price-only items on the element that uses them', () => {
+    expect(run(catalogItem({}))).toEqual([]);
+    expect(run(catalogItem({ missing: true }))).toEqual([
+      expect.objectContaining({
+        id: 'item_dropped',
+        elementRef: { kind: 'node', id: ac4Doc().nodes[2]!.id },
+        params: { itemId: 'c1:D1', item: 'Vimar socket' },
+      }),
+    ]);
+    const { modules: _m, ...noModules } = catalogItem({});
+    expect(run(noModules).map((w) => w.id)).toEqual(['price_only']);
+  });
+
+  // protects=price-only rule; fails_when=a category is flagged for attributes it does not need, or a conduit or enclosure without its sizes passes; no_claim=—
+  it('knows which attributes each category needs', () => {
+    expect(isPriceOnly(catalogItem({ category: 'plate', modules: undefined }))).toBe(false);
+    expect(isPriceOnly(catalogItem({ category: 'conduit', unit: 'm', attributes: {} }))).toBe(true);
+    expect(isPriceOnly(catalogItem({ category: 'enclosure', attributes: { rails: 2 } }))).toBe(
+      true,
+    );
+    expect(builtinCatalog.filter(isPriceOnly)).toEqual([]);
   });
 });
 

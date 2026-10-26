@@ -10,12 +10,12 @@
   "nav": {
     "projects": "Progetti",
     "catalog": "Catalogo",
-    "profile": "Profilo",
     "plan": "Pianta",
     "panel": "Quadro",
     "quote": "Preventivo",
     "settings": "Impostazioni",
-    "start": "Inizio"
+    "start": "Inizio",
+    "company": "Azienda"
   },
   "pages": {
     "login": "Accedi",
@@ -26,10 +26,10 @@
     "quote": "Preventivo",
     "settings": "Impostazioni progetto",
     "catalog": "Catalogo",
-    "profile": "Profilo aziendale",
     "mobileProjects": "Progetti",
     "mobileProject": "Progetto",
-    "notFound": "Pagina non trovata"
+    "notFound": "Pagina non trovata",
+    "company": "Azienda"
   },
   "editor": {
     "untitledProject": "Progetto senza nome",
@@ -161,7 +161,7 @@
       "usb_charger": "Caricatore USB"
     },
     "missingItem": "Articolo di catalogo mancante ({{id}})",
-    "hint": "Gli articoli integrati sono generici e in sola lettura: dai loro un prezzo dal tuo listino o duplicali per aggiungere codice e marca. I tuoi articoli vengono archiviati, mai eliminati, così i progetti vecchi restano validi.",
+    "hint": "Gli articoli predefiniti sono generici: dai loro un prezzo, oppure duplicali per aggiungere codice e marca. I cataloghi importati vengono copiati nel progetto, così riaperto avrà gli stessi prezzi. Gli articoli si archiviano, non si eliminano.",
     "category": "Categoria",
     "categories": {
       "device": "Frutti",
@@ -234,6 +234,75 @@
       "isolator": "Sezionatore",
       "spd": "Scaricatore",
       "other": "Altro"
+    },
+    "myItems": "I miei articoli",
+    "catalogs": "Cataloghi",
+    "builtinCatalog": "Catalogo predefinito",
+    "catalogInfo_one": "{{count}} articolo, importato il {{date}}",
+    "catalogInfo_other": "{{count}} articoli, importato il {{date}}",
+    "catalogColumn": "Catalogo",
+    "export": "Esporta .epc",
+    "remove": "Rimuovi",
+    "removeTitle": "Rimuovere \"{{name}}\"?",
+    "removeBody": "Il catalogo e i suoi articoli escono da questo progetto. Annulla li riporta.",
+    "removeInUse_one": "Impossibile rimuovere {{name}}: {{count}} suo articolo è usato nel progetto.",
+    "removeInUse_other": "Impossibile rimuovere {{name}}: {{count}} suoi articoli sono usati nel progetto.",
+    "missingBadge": "non nel nuovo listino",
+    "priceOnlyBadge": "solo prezzo",
+    "import": {
+      "open": "Importa catalogo…",
+      "title": "Importa catalogo",
+      "hint": "Un file .epc (esportato da un progetto) o un listino CSV.",
+      "name": "Nome del catalogo",
+      "columns": "Colonne",
+      "defaults": "Per le righe senza valore",
+      "defaultCategory": "Categoria predefinita",
+      "defaultModules": "Moduli predefiniti",
+      "notMapped": "— non importata —",
+      "column": "Colonna {{n}}",
+      "fields": {
+        "code": "Codice",
+        "name": "Nome",
+        "price": "Prezzo",
+        "unit": "Unità",
+        "category": "Categoria",
+        "modules": "Moduli"
+      },
+      "needName": "Scegli la colonna con i nomi degli articoli.",
+      "skipped_one": "{{count}} riga senza nome o con un prezzo illeggibile viene esclusa.",
+      "skipped_other": "{{count}} righe senza nome o con un prezzo illeggibile vengono escluse.",
+      "count_one": "{{count}} articolo",
+      "count_other": "{{count}} articoli",
+      "confirm_one": "Importa {{count}} articolo",
+      "confirm_other": "Importa {{count}} articoli",
+      "done_one": "{{name}}: importato {{count}} articolo.",
+      "done_other": "{{name}}: importati {{count}} articoli.",
+      "errors": {
+        "not_a_catalog": "Questo non è un file di catalogo.",
+        "newer_version": "Questo catalogo è stato esportato da una versione più recente dell'app.",
+        "invalid": "Il file del catalogo è danneggiato.",
+        "empty": "Il file non contiene articoli."
+      }
+    },
+    "replace": {
+      "open": "Sostituisci…",
+      "title": "Sostituisci {{name}}",
+      "confirm": "Sostituisci",
+      "unchanged_one": "{{count}} articolo invariato",
+      "unchanged_other": "{{count}} articoli invariati",
+      "changed_one": "{{count}} articolo modificato",
+      "changed_other": "{{count}} articoli modificati",
+      "added_one": "{{count}} articolo nuovo",
+      "added_other": "{{count}} articoli nuovi",
+      "dropped_one": "{{count}} articolo non usato non più a listino (rimosso)",
+      "dropped_other": "{{count}} articoli non usati non più a listino (rimossi)",
+      "priceChanges": "Prezzi cambiati",
+      "missingInUse": "Usati nel progetto ma assenti dal nuovo listino",
+      "missingInUseHint": "Mantengono i dati attuali e compaiono come avviso nei controlli.",
+      "edited": "Articoli modificati a mano",
+      "editedHint": "Quelli selezionati mantengono la tua modifica; gli altri prendono i dati del nuovo listino.",
+      "keepEdit": "Mantieni la mia modifica di {{name}}",
+      "done": "{{name}} sostituito."
     }
   },
   "fileDrop": {
@@ -281,21 +350,6 @@
     "loadFailed": "Impossibile caricare i progetti.",
     "saveFailed": "Impossibile salvare il progetto.",
     "deleteFailed": "Impossibile eliminare il progetto."
-  },
-  "profile": {
-    "hint": "Compare nell'intestazione del preventivo PDF. I campi vuoti vengono omessi.",
-    "businessName": "Ragione sociale",
-    "vatNumber": "Partita IVA",
-    "address": "Indirizzo",
-    "phone": "Telefono",
-    "email": "Email",
-    "logo": "Logo",
-    "saved": "Profilo salvato.",
-    "saveFailed": "Impossibile salvare il profilo.",
-    "loadFailed": "Impossibile caricare il profilo.",
-    "logoType": "Il logo deve essere un'immagine PNG o JPG.",
-    "logoTooLarge": "Il logo deve essere al massimo 2 MB.",
-    "logoFailed": "Impossibile caricare il logo."
   },
   "settings": {
     "hint": "Questi valori valgono solo per questo progetto.",
@@ -588,7 +642,9 @@
       "box_empty": "Scatole senza placca né apparecchi",
       "riser_mixed_elevation": "Montanti con posa mista",
       "height_clamped": "Altezze oltre l’altezza del piano",
-      "missing_item": "Articoli di catalogo mancanti"
+      "missing_item": "Articoli di catalogo mancanti",
+      "item_dropped": "Articoli assenti dal nuovo catalogo",
+      "price_only": "Articoli solo prezzo"
     },
     "messages": {
       "no_rcd": "{{name}} non ha un differenziale o un RCBO a monte",
@@ -606,7 +662,9 @@
       "box_empty": "{{name}}",
       "riser_mixed_elevation": "{{name}}: qui si incontrano tratti a pavimento e a soffitto",
       "height_clamped": "{{name}}: altezza di montaggio limitata all’altezza del piano",
-      "missing_item": "{{name}}: l’articolo {{id}} non esiste più"
+      "missing_item": "{{name}}: l’articolo {{id}} non esiste più",
+      "item_dropped": "{{name}}: {{item}} non è più nel suo catalogo",
+      "price_only": "{{name}}: {{item}} non ha moduli o misure (solo prezzo)"
     }
   },
   "progress": {
@@ -772,5 +830,17 @@
       "body": "“{{name}}” ha modifiche non salvate in un file. Aprendo un altro progetto vanno perse.",
       "confirm": "Scarta e continua"
     }
+  },
+  "company": {
+    "hint": "L'azienda che compare nei preventivi di questo progetto. I campi vuoti non vengono stampati. Salvata nel file del progetto.",
+    "businessName": "Ragione sociale",
+    "vatNumber": "Partita IVA",
+    "address": "Indirizzo",
+    "phone": "Telefono",
+    "email": "Email",
+    "logo": "Logo",
+    "removeLogo": "Rimuovi logo",
+    "logoType": "Il logo deve essere un'immagine PNG o JPG.",
+    "logoTooLarge": "Il logo può pesare al massimo 2 MB."
   }
 }
