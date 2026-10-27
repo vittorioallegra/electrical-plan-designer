@@ -7,7 +7,7 @@ let app: Awaited<ReturnType<typeof renderApp>>;
 const catalogs = () => app.library.getState().library.catalogs;
 
 async function openCatalog() {
-  app = await renderApp('/library/catalog');
+  app = await renderApp('/settings/catalog');
   await screen.findByRole('heading', { name: 'Catalog' });
   return app;
 }

@@ -6,8 +6,8 @@ import { ProjectSettingsForm } from '@/components/settings/ProjectSettingsForm';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibrary } from '@/stores/library/useLibrary';
 
-/** `/library/defaults`: the project and quote settings a new project starts with. */
-export function DefaultsPage() {
+/** `/settings/new-projects`: the project and quote settings a new project starts with. */
+export function NewProjectsPage() {
   const { t } = useTranslation();
   const { library } = useEditorServices();
   const settings = useLibrary((s) => s.library.defaults.settings);
@@ -20,11 +20,11 @@ export function DefaultsPage() {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
       <div>
-        <h1 className="mb-1 text-xl font-semibold">{t('pages.defaults')}</h1>
+        <h1 className="mb-1 text-xl font-semibold">{t('pages.newProjects')}</h1>
         <p className="text-text-muted">{t('library.defaults.hint')}</p>
       </div>
-      <section aria-label={t('pages.settings')} className="flex flex-col gap-2">
-        <h2 className="font-medium">{t('pages.settings')}</h2>
+      <section aria-label={t('pages.projectSettings')} className="flex flex-col gap-2">
+        <h2 className="font-medium">{t('pages.projectSettings')}</h2>
         <ProjectSettingsForm
           settings={settings}
           edit={(_label, fn) =>

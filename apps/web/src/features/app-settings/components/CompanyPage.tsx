@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/Toast';
 
 const fields = ['businessName', 'vatNumber', 'address', 'phone', 'email'] as const;
 
-/** `/library/company`: the business shown on every quote and PDF, logo included. */
+/** `/settings/company`: the business shown on every quote and PDF, logo included. */
 export function CompanyPage() {
   const { t } = useTranslation();
   const { library } = useEditorServices();

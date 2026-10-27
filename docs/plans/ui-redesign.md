@@ -234,7 +234,7 @@ Approved: yes (2026-10-27)
 - [x] 1. Tokens, fonts, theme-aware canvas — `feat: add design tokens, bundled fonts and a theme-aware canvas`
 - [x] 2. Theme preference end to end — `feat: add the theme preference end to end`
 - [x] 3. UI kit — `feat: replace native selects and the catalog badge with the UI kit`
-- [ ] 4. Routes and names: Settings and Project
+- [x] 4. Routes and names: Settings and Project — `refactor: rename library to app-settings and settings to project-details, with Settings and Project routes`
 - [ ] 5. Native menu: Settings and Export
 - [ ] 6. Settings screen
 - [ ] 7. Catalog
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 4.
+Implement step 5.

@@ -14,7 +14,7 @@ const libraryWithBoxPrice = (unitPrice: number) => ({
 
 async function openDialog(options: Parameters<typeof renderApp>[1]) {
   const app = await renderApp('/project/plan', options);
-  await userEvent.click(await screen.findByRole('button', { name: 'Update from library' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Update from catalog' }));
   const dialog = await screen.findByRole('dialog');
   const store = app.workspace.getState().current!.store;
   return { app, dialog, store };
@@ -22,7 +22,7 @@ async function openDialog(options: Parameters<typeof renderApp>[1]) {
 const priceOf = (store: EditorStore) =>
   store.getState().data.items.find((i) => i.id === box.id)?.unitPrice;
 
-describe('update from library dialog', () => {
+describe('update from catalog dialog', () => {
   // protects=AC 12 and the quote-typed price risk; fails_when=a price the project holds is overwritten without a tick, both prices are not shown, or undo does not restore the copy; no_claim=the diff rules (domain tests)
   it('shows both prices, starts a differing price unticked, and applies one undoable command', async () => {
     const project = demoProjectFile();
@@ -67,7 +67,7 @@ describe('update from library dialog', () => {
     ];
     const { dialog, store } = await openDialog({ project });
     const missing = within(dialog).getByRole('alert');
-    expect(missing).toHaveTextContent('No longer in the library');
+    expect(missing).toHaveTextContent('No longer in the catalog');
     expect(missing).toHaveTextContent('Gone socket');
     expect(within(dialog).queryByRole('checkbox')).toBeNull();
     expect(within(dialog).queryByRole('button', { name: /^Update/ })).toBeNull();
@@ -77,6 +77,6 @@ describe('update from library dialog', () => {
   // protects=the up-to-date state; fails_when=a project whose copies match the library lists differences; no_claim=—
   it('says the project is up to date when nothing differs', async () => {
     const { dialog } = await openDialog({ project: demoProjectFile() });
-    expect(within(dialog).getByText('The project is up to date with the library.')).toBeVisible();
+    expect(within(dialog).getByText('The project is up to date with the catalog.')).toBeVisible();
   });
 });

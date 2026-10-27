@@ -7,7 +7,7 @@ import { renderApp } from '@/testing/renderApp';
 describe('library presets page', () => {
   // protects=box presets in the library; fails_when=a preset cannot be created, renamed, given a box and contents, or deleted (after a confirmation), or the changes are not written to the library; no_claim=placing boxes with a preset (step 6)
   it('creates, edits and deletes a preset', async () => {
-    const app = await renderApp('/library/presets', { project: null });
+    const app = await renderApp('/settings/presets', { project: null });
     expect(await screen.findByText('No presets yet.')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'New preset' }));
@@ -61,7 +61,7 @@ describe('library presets page', () => {
       boxItemId: 'builtin:box_503',
       contents: [{ itemId: 'builtin:switch', qty: 1 }],
     });
-    await renderApp('/library/presets', { library: { library }, project: null });
+    await renderApp('/settings/presets', { library: { library }, project: null });
     const card = await screen.findByRole('region', { name: 'Bedroom' });
     expect(within(card).getByLabelText('Box')).toHaveValue('builtin:box_503');
     expect(within(within(card).getByRole('list')).getByText('One-way switch')).toBeInTheDocument();

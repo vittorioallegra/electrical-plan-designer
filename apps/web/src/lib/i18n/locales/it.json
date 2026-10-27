@@ -12,22 +12,25 @@
     "plan": "Pianta",
     "panel": "Quadro",
     "quote": "Preventivo",
-    "settings": "Impostazioni",
     "start": "Inizio",
     "company": "Azienda",
     "presets": "Preset",
-    "defaults": "Predefiniti"
+    "general": "Generale",
+    "project": "Progetto",
+    "newProjects": "Nuovi progetti"
   },
   "pages": {
     "plan": "Pianta",
     "panel": "Progetto quadro",
     "quote": "Preventivo",
-    "settings": "Impostazioni progetto",
     "catalog": "Catalogo",
     "notFound": "Pagina non trovata",
     "company": "Azienda",
     "presets": "Preset scatole",
-    "defaults": "Predefiniti per i nuovi progetti"
+    "general": "Generale",
+    "projectDetails": "Dettagli del progetto",
+    "projectSettings": "Impostazioni progetto",
+    "newProjects": "Nuovi progetti"
   },
   "editor": {
     "saveStatus": {
@@ -248,7 +251,7 @@
     "export": "Esporta .epc",
     "remove": "Rimuovi",
     "removeTitle": "Rimuovere \"{{name}}\"?",
-    "removeBody": "Il catalogo e i suoi articoli escono dalla libreria. I progetti che li usano ne mantengono la copia.",
+    "removeBody": "Il catalogo e i suoi articoli vengono rimossi dalle Impostazioni. I progetti che li usano ne mantengono la copia.",
     "removeInUse_one": "Impossibile rimuovere {{name}}: {{count}} suo articolo è usato in un preset di scatola.",
     "removeInUse_other": "Impossibile rimuovere {{name}}: {{count}} suoi articoli sono usati in preset di scatola.",
     "missingBadge": "non nel nuovo listino",
@@ -788,7 +791,7 @@
     }
   },
   "company": {
-    "hint": "L'azienda che compare in ogni preventivo e PDF. I campi vuoti non vengono stampati. Salvata nella libreria, non nel file del progetto.",
+    "hint": "L'azienda che compare in ogni preventivo e PDF. I campi vuoti non vengono stampati. Salvata nelle impostazioni dell'app, non nel file del progetto.",
     "businessName": "Ragione sociale",
     "vatNumber": "Partita IVA",
     "address": "Indirizzo",
@@ -800,30 +803,28 @@
     "logoTooLarge": "Il logo può pesare al massimo 2 MB."
   },
   "library": {
-    "title": "Libreria",
-    "open": "Libreria",
-    "sections": "Sezioni della libreria",
+    "open": "Impostazioni",
     "backToProject": "Torna a {{name}}",
     "backToStart": "Torna all'inizio",
-    "invalidNotice": "Alcuni file della libreria non erano validi. Sono stati messi da parte, non eliminati, e la libreria è partita con i valori predefiniti per quelle parti: {{files}}.",
-    "writeFailed": "Non è stato possibile salvare una modifica della libreria: {{message}}",
+    "invalidNotice": "Alcuni file delle impostazioni non erano validi. Sono stati messi da parte, non eliminati, e l'app è partita con i valori predefiniti per quelle parti: {{files}}.",
+    "writeFailed": "Non è stato possibile salvare una modifica delle impostazioni: {{message}}",
     "dismiss": "Chiudi",
     "export": {
-      "action": "Esporta libreria…",
-      "done": "Libreria esportata."
+      "action": "Esporta impostazioni…",
+      "done": "Impostazioni esportate."
     },
     "import": {
-      "action": "Importa libreria…",
-      "title": "Sostituire la libreria?",
-      "body_one": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} catalogo). La libreria attuale viene prima copiata in una cartella di backup nei dati dell'app.",
-      "body_other": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} cataloghi). La libreria attuale viene prima copiata in una cartella di backup nei dati dell'app.",
-      "confirm": "Sostituisci libreria",
-      "done": "Libreria sostituita.",
-      "failed": "Impossibile sostituire la libreria. Non è stato modificato nulla.",
+      "action": "Importa impostazioni…",
+      "title": "Sostituire le impostazioni?",
+      "body_one": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} catalogo). Le impostazioni attuali vengono prima copiate in una cartella di backup nei dati dell'app.",
+      "body_other": "Questo sostituisce i dati aziendali, i cataloghi, i prezzi, i preset e i valori predefiniti con il contenuto di «{{name}}» ({{count}} cataloghi). Le impostazioni attuali vengono prima copiate in una cartella di backup nei dati dell'app.",
+      "confirm": "Sostituisci impostazioni",
+      "done": "Impostazioni sostituite.",
+      "failed": "Impossibile sostituire le impostazioni. Non è stato modificato nulla.",
       "errors": {
-        "not_a_library": "Questo non è un file di libreria.",
-        "newer_version": "Questa libreria è stata esportata da una versione più recente dell'app.",
-        "invalid": "Il file della libreria è danneggiato."
+        "not_a_library": "Questo non è un file di impostazioni.",
+        "newer_version": "Queste impostazioni sono state esportate da una versione più recente dell'app.",
+        "invalid": "Il file delle impostazioni è danneggiato."
       }
     },
     "defaults": {
@@ -838,29 +839,29 @@
       "box": "Scatola",
       "delete": "Elimina",
       "deleteTitle": "Eliminare «{{name}}»?",
-      "deleteBody": "Il preset esce dalla libreria. Le scatole già posizionate nei progetti non cambiano."
+      "deleteBody": "Il preset viene rimosso dalle Impostazioni. Le scatole già posizionate nei progetti non cambiano."
     },
     "update": {
-      "open": "Aggiorna dalla libreria",
-      "title": "Aggiorna il catalogo dalla libreria",
-      "hint": "Il progetto conserva le proprie copie degli articoli che usa. Spunta quelli da allineare alla libreria. Un prezzo digitato nel preventivo compare qui come differenza, quindi parte non spuntato.",
-      "upToDate": "Il progetto è allineato alla libreria.",
+      "open": "Aggiorna dal catalogo",
+      "title": "Aggiorna dal catalogo",
+      "hint": "Il progetto conserva le proprie copie degli articoli che usa. Spunta quelli da allineare al catalogo. Un prezzo digitato nel preventivo compare qui come differenza, quindi parte non spuntato.",
+      "upToDate": "Il progetto è allineato al catalogo.",
       "differences": "Differenze",
       "item": "Articolo",
       "projectPrice": "Progetto",
-      "libraryPrice": "Libreria",
+      "libraryPrice": "Catalogo",
       "notCopied": "Non ancora copiato nel progetto",
       "alsoChanged": "Modificati anche: {{fields}}",
       "selectAll": "Seleziona tutto",
       "selectNone": "Deseleziona tutto",
-      "take": "Prendi {{name}} dalla libreria",
+      "take": "Prendi {{name}} dal catalogo",
       "apply_one": "Aggiorna {{count}} voce",
       "apply_other": "Aggiorna {{count}} voci",
       "close": "Chiudi",
-      "missing": "Non più nella libreria",
+      "missing": "Non più nel catalogo",
       "missingHint": "Restano come sono nel progetto e mantengono il loro avviso.",
-      "done_one": "{{count}} voce aggiornata dalla libreria.",
-      "done_other": "{{count}} voci aggiornate dalla libreria.",
+      "done_one": "{{count}} voce aggiornata dal catalogo.",
+      "done_other": "{{count}} voci aggiornate dal catalogo.",
       "failed": "Non è stato possibile aggiornare il catalogo.",
       "fields": {
         "name": "nome",
@@ -909,5 +910,9 @@
     "help": "Aiuto",
     "about": "Informazioni su",
     "version": "Versione"
+  },
+  "appSettings": {
+    "title": "Impostazioni",
+    "sections": "Sezioni delle impostazioni"
   }
 }

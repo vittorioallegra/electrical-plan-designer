@@ -15,7 +15,7 @@ import { useToast } from '@/components/ui/Toast';
 import { LanguageSwitch } from '@/components/ui/LanguageSwitch';
 import { BomTab } from '@/features/bom/components/BomTab';
 import { WarningsBadge, WarningsTab } from '@/features/checks/components/WarningsTab';
-import { UpdateFromLibraryDialog } from '@/features/library/components/UpdateFromLibraryDialog';
+import { UpdateFromCatalogDialog } from '@/features/app-settings/components/UpdateFromCatalogDialog';
 import { useProjectPdfExport } from '@/features/exports/hooks/useProjectPdfExport';
 import { CircuitsTab } from '@/features/circuits/components/CircuitsTab';
 import { ProgressStrip } from '@/features/editor/components/ProgressStrip';
@@ -26,7 +26,7 @@ const viewTabs = [
   { to: 'plan', key: 'nav.plan' },
   { to: 'panel', key: 'nav.panel' },
   { to: 'quote', key: 'nav.quote' },
-  { to: 'settings', key: 'nav.settings' },
+  { to: 'details', key: 'nav.project' },
 ] as const;
 
 function isTyping(target: EventTarget | null): boolean {
@@ -174,7 +174,7 @@ export function ProjectFrame() {
           <Library size={16} />
           {t('library.update.open')}
         </Button>
-        <NavLink to="/library/company" className="text-text-muted hover:text-text">
+        <NavLink to="/settings/company" className="text-text-muted hover:text-text">
           {t('library.open')}
         </NavLink>
         <Menu
@@ -234,7 +234,7 @@ export function ProjectFrame() {
       </div>
       <BottomDrawer />
       {saver.dialog}
-      {updating ? <UpdateFromLibraryDialog onClose={() => setUpdating(false)} /> : null}
+      {updating ? <UpdateFromCatalogDialog onClose={() => setUpdating(false)} /> : null}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Navigate, type RouteObject } from 'react-router';
+import { Navigate, useParams, type RouteObject } from 'react-router';
 import { AppShell } from '@/app/layouts/AppShell';
 import { RootLayout } from '@/app/layouts/RootLayout';
 import { PlaceholderPage } from '@/app/routes/PlaceholderPage';
@@ -9,6 +9,19 @@ import { StartPage } from '@/features/start/components/StartPage';
 function Loading() {
   const { t } = useTranslation();
   return <p className="p-4 text-text-muted">{t('common.loading')}</p>;
+}
+
+const legacyLibrarySections: Record<string, string> = { defaults: 'new-projects' };
+
+/** `/library/<section>` became `/settings/<section>` (`defaults` is now `new-projects`). */
+function LegacyLibraryRedirect() {
+  const section = useParams()['*']?.split('/')[0] ?? '';
+  return (
+    <Navigate
+      to={`/settings/${legacyLibrarySections[section] ?? section}`.replace(/\/$/, '')}
+      replace
+    />
+  );
 }
 
 /** Every route gets an error boundary, so an error stays inside the part that failed. */
@@ -24,7 +37,7 @@ function withErrorBoundaries(routes: RouteObject[]): RouteObject[] {
 }
 
 /**
- * The app's routes: the start screen at `/`, the library under `/library/` and the open
+ * The app's routes: the start screen at `/`, the app Settings under `/settings/` and the open
  * project's views under `/project/`.
  * The editor, the canvas and the PDF code are lazy route modules, outside the initial bundle.
  */
@@ -63,52 +76,65 @@ export function createRoutes(): RouteObject[] {
               },
             },
             {
-              path: 'settings',
+              path: 'details',
               lazy: {
                 Component: async () =>
-                  (await import('@/features/settings/components/SettingsPage')).SettingsPage,
+                  (await import('@/features/project-details/components/ProjectDetailsPage'))
+                    .ProjectDetailsPage,
               },
             },
           ],
         },
+        // Old paths from before the Settings and Project renames.
+        { path: 'library/*', element: <LegacyLibraryRedirect /> },
+        { path: 'project/settings', element: <Navigate to="/project/details" replace /> },
         {
           element: <AppShell />,
           children: [
             { index: true, element: <StartPage /> },
             {
-              path: 'library',
+              path: 'settings',
               lazy: {
                 Component: async () =>
-                  (await import('@/features/library/components/LibraryLayout')).LibraryLayout,
+                  (await import('@/features/app-settings/components/SettingsLayout'))
+                    .SettingsLayout,
               },
               children: [
-                { index: true, element: <Navigate to="company" replace /> },
+                { index: true, element: <Navigate to="general" replace /> },
+                {
+                  path: 'general',
+                  lazy: {
+                    Component: async () =>
+                      (await import('@/features/app-settings/components/GeneralPage')).GeneralPage,
+                  },
+                },
                 {
                   path: 'company',
                   lazy: {
                     Component: async () =>
-                      (await import('@/features/library/components/CompanyPage')).CompanyPage,
+                      (await import('@/features/app-settings/components/CompanyPage')).CompanyPage,
                   },
                 },
                 {
                   path: 'catalog',
                   lazy: {
                     Component: async () =>
-                      (await import('@/features/library/components/CatalogPage')).CatalogPage,
+                      (await import('@/features/app-settings/components/CatalogPage')).CatalogPage,
                   },
                 },
                 {
                   path: 'presets',
                   lazy: {
                     Component: async () =>
-                      (await import('@/features/library/components/PresetsPage')).PresetsPage,
+                      (await import('@/features/app-settings/components/PresetsPage')).PresetsPage,
                   },
                 },
                 {
-                  path: 'defaults',
+                  path: 'new-projects',
                   lazy: {
                     Component: async () =>
-                      (await import('@/features/library/components/DefaultsPage')).DefaultsPage,
+                      (await import('@/features/app-settings/components/NewProjectsPage'))
+                        .NewProjectsPage,
                   },
                 },
               ],

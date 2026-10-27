@@ -151,7 +151,7 @@ export function StartPage() {
           {t('start.new')}
         </Button>
         <Button onClick={() => opener.openFile()}>{t('start.open')}</Button>
-        <Button onClick={() => navigate('/library/company')}>{t('library.open')}</Button>
+        <Button onClick={() => navigate('/settings/company')}>{t('library.open')}</Button>
       </div>
 
       {recentFiles.data && recentFiles.data.length > 0 ? (

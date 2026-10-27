@@ -13,11 +13,11 @@ const filled = (): Library => ({
   catalogs: [{ id: 'c1', name: 'Vimar', importedAt: '2026-10-26T10:00:00.000Z', items: [] }],
 });
 
-describe('library frame', () => {
+describe('settings frame', () => {
   // protects=AC 10 library reachable and the project kept open; fails_when=the library cannot be opened from the start screen or from a project, the open project is closed by visiting it, or the link back does not return to it; no_claim=the project pages themselves
   it('is reachable from the start screen and the project, and links back', async () => {
     const app = await renderApp('/project/plan');
-    await userEvent.click(await screen.findByRole('link', { name: 'Library' }));
+    await userEvent.click(await screen.findByRole('link', { name: 'Settings' }));
     expect(await screen.findByRole('heading', { name: 'Company' })).toBeInTheDocument();
     expect(app.workspace.getState().current).not.toBeNull();
     await userEvent.click(screen.getByRole('link', { name: 'Back to Demo house' }));
@@ -25,7 +25,7 @@ describe('library frame', () => {
     expect(app.workspace.getState().current).not.toBeNull();
 
     const start = await renderApp('/', { project: null });
-    await userEvent.click(await within(start.container).findByRole('button', { name: 'Library' }));
+    await userEvent.click(await within(start.container).findByRole('button', { name: 'Settings' }));
     expect(await screen.findByRole('link', { name: 'Back to start' })).toBeInTheDocument();
   });
 
@@ -38,14 +38,14 @@ describe('library frame', () => {
   });
 });
 
-describe('library export and import', () => {
+describe('settings export and import', () => {
   // protects=AC 17 export then import; fails_when=the exported .epl does not hold library.json, the catalogs and the logo, or importing it into an empty library does not restore company, logo and catalogs; no_claim=the files on disk (main tests)
   it('exports the library and restores it on an empty one', async () => {
-    const source = await renderApp('/library/company', {
+    const source = await renderApp('/settings/company', {
       project: null,
       library: { library: filled(), logo: { mimeType: 'image/png', bytes: png } },
     });
-    await userEvent.click(await screen.findByRole('button', { name: 'Export library…' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Export settings…' }));
     await waitFor(() => expect(source.fileAccess.exports).toEqual(['library.epl']));
     const bytes = source.fileAccess.files.get('library.epl')!;
     expect(Object.keys(unzipSync(bytes)).sort()).toEqual([
@@ -56,14 +56,14 @@ describe('library export and import', () => {
     expect(strFromU8(unzipSync(bytes)['library.json']!)).toContain('Rossi');
     source.unmount();
 
-    const fresh = await renderApp('/library/company', { project: null });
+    const fresh = await renderApp('/settings/company', { project: null });
     await userEvent.upload(
       await screen.findByTestId('library-file'),
       new File([bytes as Uint8Array<ArrayBuffer>], 'library.epl'),
     );
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('1 catalog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Replace library' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Replace settings' }));
     await waitFor(() =>
       expect(fresh.library.getState().library.company.businessName).toBe('Rossi'),
     );
@@ -75,7 +75,7 @@ describe('library export and import', () => {
 
   // protects=AC 17 invalid .epl refused, library unchanged; fails_when=a damaged or foreign file replaces anything, asks for the replace confirmation, or the existing library changes; no_claim=the wording of each error
   it('refuses an invalid file and keeps the library', async () => {
-    const app = await renderApp('/library/company', {
+    const app = await renderApp('/settings/company', {
       project: null,
       library: { library: filled() },
     });
@@ -83,7 +83,7 @@ describe('library export and import', () => {
       await screen.findByTestId('library-file'),
       new File(['not a zip'], 'x.epl'),
     );
-    expect(await screen.findByText('This is not a library file.')).toBeInTheDocument();
+    expect(await screen.findByText('This is not a settings file.')).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(app.libraryRepository.writes).toEqual([]);
     expect(app.library.getState().library.company.businessName).toBe('Rossi');

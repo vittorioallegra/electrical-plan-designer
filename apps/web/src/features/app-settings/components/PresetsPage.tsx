@@ -12,7 +12,7 @@ import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
 
 const contentCategories = ['device', 'blanking_cover', 'plate'] as const;
 
-/** `/library/presets`: box presets (a box with its contents) that boxes can be placed with. */
+/** `/settings/presets`: box presets (a box with its contents) that boxes can be placed with. */
 export function PresetsPage() {
   const { t } = useTranslation();
   const { library } = useEditorServices();

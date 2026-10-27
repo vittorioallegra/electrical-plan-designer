@@ -46,7 +46,7 @@ type Editing = {
 type Importing =
   { mode: 'import' } | { mode: 'replace'; catalog: ProjectCatalog; incoming?: IncomingCatalog };
 
-/** `/library/catalog`: the built-ins and the catalogs of the library. */
+/** `/settings/catalog`: the built-ins and the catalogs of the library. */
 export function CatalogPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';

@@ -30,7 +30,7 @@ function startsTicked(update: CatalogUpdate): boolean {
  * library's, to tick and apply as one undoable command. Items the library no longer has stay
  * as they are.
  */
-export function UpdateFromLibraryDialog({ onClose }: { onClose: () => void }) {
+export function UpdateFromCatalogDialog({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();

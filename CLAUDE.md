@@ -44,8 +44,8 @@ the renderer: Vite/Vitest/Playwright configs, `e2e/`).
   quotes, library, catalogs with CSV/`.epc` import, `.epd` schema and migrations);
   source-only, imported as `@epd/domain/<module>`, no barrel
 - `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes()`), `layouts/`, `routes/`
-- `src/features/<name>/` — start, editor, panel, circuits, library, bom, checks, quote, exports,
-  settings; sub-folders `components/ hooks/ utils/`
+- `src/features/<name>/` — start, editor, panel, circuits, app-settings (the app Settings
+  screen), bom, checks, quote, exports, project-details (the per-project view); sub-folders `components/ hooks/ utils/`
 - `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`, shared forms),
   `src/hooks/` (`useCatalog` = project copies, `useItemsOf` = pickers), `src/config/`
 - `src/lib/` — `repositories/` (`types.ts`, `fileAccess.ts`, `recovery.ts`, `library.ts`,
@@ -75,7 +75,8 @@ the renderer: Vite/Vitest/Playwright configs, `e2e/`).
   (copies of what it uses); BOM, checks and quotes read those, never the library (only "Update
   from library" pulls changes in). Services (`recovery`, `fileAccess`, `windowHost`, `workspace`,
   `library`) come from `useEditorServices()`. TanStack Query only for local async reads.
-- Routes: `/` start; `/library/<section>` (project stays open); `/project/<view>` (none → `/`);
+- Routes: `/` start; `/settings/<general|company|catalog|presets|new-projects>` (project stays
+  open; `/library/*` redirects); `/project/<plan|panel|quote|details>` (none → `/`);
   every route has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)`
   opens the demo project for `/project/...` (`project: null` to skip).
 - Tests sit next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.

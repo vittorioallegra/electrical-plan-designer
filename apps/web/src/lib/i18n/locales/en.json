@@ -12,22 +12,25 @@
     "plan": "Plan",
     "panel": "Panel",
     "quote": "Quote",
-    "settings": "Settings",
     "start": "Start",
     "company": "Company",
     "presets": "Presets",
-    "defaults": "Defaults"
+    "general": "General",
+    "project": "Project",
+    "newProjects": "New projects"
   },
   "pages": {
     "plan": "Plan",
     "panel": "Panel designer",
     "quote": "Quote",
-    "settings": "Project settings",
     "catalog": "Catalog",
     "notFound": "Page not found",
     "company": "Company",
     "presets": "Box presets",
-    "defaults": "Defaults for new projects"
+    "general": "General",
+    "projectDetails": "Project details",
+    "projectSettings": "Project settings",
+    "newProjects": "New projects"
   },
   "editor": {
     "saveStatus": {
@@ -248,7 +251,7 @@
     "export": "Export .epc",
     "remove": "Remove",
     "removeTitle": "Remove \"{{name}}\"?",
-    "removeBody": "The catalog and its items leave the library. Projects that use them keep their own copies.",
+    "removeBody": "The catalog and its items are removed from Settings. Projects that use them keep their own copies.",
     "removeInUse_one": "{{name}} cannot be removed: {{count}} of its items is used in a box preset.",
     "removeInUse_other": "{{name}} cannot be removed: {{count}} of its items are used in box presets.",
     "missingBadge": "not in the new list",
@@ -788,7 +791,7 @@
     }
   },
   "company": {
-    "hint": "The business shown on every quote and PDF. Empty fields are left out. Saved in the library, not in the project file.",
+    "hint": "The business shown on every quote and PDF. Empty fields are left out. Saved in the app settings, not in the project file.",
     "businessName": "Business name",
     "vatNumber": "VAT number",
     "address": "Address",
@@ -800,30 +803,28 @@
     "logoTooLarge": "The logo must be at most 2 MB."
   },
   "library": {
-    "title": "Library",
-    "open": "Library",
-    "sections": "Library sections",
+    "open": "Settings",
     "backToProject": "Back to {{name}}",
     "backToStart": "Back to start",
-    "invalidNotice": "Some library files were not valid. They were set aside, not deleted, and the library started with defaults for those parts: {{files}}.",
-    "writeFailed": "A library change could not be saved: {{message}}",
+    "invalidNotice": "Some settings files were not valid. They were set aside, not deleted, and the app started with defaults for those parts: {{files}}.",
+    "writeFailed": "A settings change could not be saved: {{message}}",
     "dismiss": "Dismiss",
     "export": {
-      "action": "Export library…",
-      "done": "Library exported."
+      "action": "Export settings…",
+      "done": "Settings exported."
     },
     "import": {
-      "action": "Import library…",
-      "title": "Replace the library?",
-      "body_one": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalog). Your current library is first copied to a backup folder in the app data folder.",
-      "body_other": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalogs). Your current library is first copied to a backup folder in the app data folder.",
-      "confirm": "Replace library",
-      "done": "Library replaced.",
-      "failed": "Could not replace the library. Nothing was changed.",
+      "action": "Import settings…",
+      "title": "Replace the settings?",
+      "body_one": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalog). Your current settings are first copied to a backup folder in the app data folder.",
+      "body_other": "This replaces your company data, catalogs, prices, presets and defaults with the contents of “{{name}}” ({{count}} catalogs). Your current settings are first copied to a backup folder in the app data folder.",
+      "confirm": "Replace settings",
+      "done": "Settings replaced.",
+      "failed": "Could not replace the settings. Nothing was changed.",
       "errors": {
-        "not_a_library": "This is not a library file.",
-        "newer_version": "This library was exported by a newer version of the app.",
-        "invalid": "The library file is damaged."
+        "not_a_library": "This is not a settings file.",
+        "newer_version": "These settings were exported by a newer version of the app.",
+        "invalid": "The settings file is damaged."
       }
     },
     "defaults": {
@@ -838,29 +839,29 @@
       "box": "Box",
       "delete": "Delete",
       "deleteTitle": "Delete \"{{name}}\"?",
-      "deleteBody": "The preset leaves the library. Boxes already placed in projects are not changed."
+      "deleteBody": "The preset is removed from Settings. Boxes already placed in projects are not changed."
     },
     "update": {
-      "open": "Update from library",
-      "title": "Update catalog from library",
-      "hint": "The project keeps its own copies of the items it uses. Tick the ones to bring in line with the library. A price typed in the quote shows here as a difference, so it starts unticked.",
-      "upToDate": "The project is up to date with the library.",
+      "open": "Update from catalog",
+      "title": "Update from catalog",
+      "hint": "The project keeps its own copies of the items it uses. Tick the ones to bring in line with the catalog. A price typed in the quote shows here as a difference, so it starts unticked.",
+      "upToDate": "The project is up to date with the catalog.",
       "differences": "Differences",
       "item": "Item",
       "projectPrice": "Project",
-      "libraryPrice": "Library",
+      "libraryPrice": "Catalog",
       "notCopied": "Not copied into the project yet",
       "alsoChanged": "Also changed: {{fields}}",
       "selectAll": "Select all",
       "selectNone": "Select none",
-      "take": "Take {{name}} from the library",
+      "take": "Take {{name}} from the catalog",
       "apply_one": "Update {{count}} entry",
       "apply_other": "Update {{count}} entries",
       "close": "Close",
-      "missing": "No longer in the library",
+      "missing": "No longer in the catalog",
       "missingHint": "They stay as they are in the project and keep their warning.",
-      "done_one": "{{count}} entry updated from the library.",
-      "done_other": "{{count}} entries updated from the library.",
+      "done_one": "{{count}} entry updated from the catalog.",
+      "done_other": "{{count}} entries updated from the catalog.",
       "failed": "The catalog could not be updated.",
       "fields": {
         "name": "name",
@@ -909,5 +910,9 @@
     "help": "Help",
     "about": "About",
     "version": "Version"
+  },
+  "appSettings": {
+    "title": "Settings",
+    "sections": "Settings sections"
   }
 }

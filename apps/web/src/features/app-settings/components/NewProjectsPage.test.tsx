@@ -6,7 +6,7 @@ import { renderApp } from '@/testing/renderApp';
 describe('library defaults page', () => {
   // protects=AC 10 default settings; fails_when=a project setting, the VAT, the markup or a labor line edited here is not stored in the library defaults, or touches the open project; no_claim=new projects using them (step 6)
   it('edits the defaults new projects start from', async () => {
-    const app = await renderApp('/library/defaults', { project: null });
+    const app = await renderApp('/settings/new-projects', { project: null });
     const waste = await screen.findByLabelText('Waste on cable and conduit');
     await userEvent.clear(waste);
     await userEvent.type(waste, '15{Enter}');

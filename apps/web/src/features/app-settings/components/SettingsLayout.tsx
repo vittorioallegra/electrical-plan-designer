@@ -5,17 +5,18 @@ import { useWorkspace } from '@/stores/editor/EditorContext';
 import { LibraryTransfer } from './LibraryTransfer';
 
 const tabs = [
+  { to: 'general', key: 'nav.general' },
   { to: 'company', key: 'nav.company' },
   { to: 'catalog', key: 'nav.catalog' },
   { to: 'presets', key: 'nav.presets' },
-  { to: 'defaults', key: 'nav.defaults' },
+  { to: 'new-projects', key: 'nav.newProjects' },
 ] as const;
 
 /**
- * Frame of the library pages. They sit beside the project routes, so an open project stays
+ * Frame of the Settings screen sections. They sit beside the project routes, so an open project stays
  * open; a link goes back to it.
  */
-export function LibraryLayout() {
+export function SettingsLayout() {
   const { t } = useTranslation();
   const project = useWorkspace((s) => s.current);
   return (
@@ -30,8 +31,8 @@ export function LibraryLayout() {
             {t('library.backToStart')}
           </Link>
         )}
-        <span className="font-semibold">{t('library.title')}</span>
-        <nav className="flex gap-1" aria-label={t('library.sections')}>
+        <span className="font-semibold">{t('appSettings.title')}</span>
+        <nav className="flex gap-1" aria-label={t('appSettings.sections')}>
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}

@@ -6,7 +6,7 @@ import { renderApp } from '@/testing/renderApp';
 describe('library company page', () => {
   // protects=AC 10 company data in the library; fails_when=fields or the logo are not stored in the library (and written to its files), the logo is accepted with the wrong content or type, or removing it keeps the file; no_claim=quote PDF layout (quotePdf.test)
   it('edits the company and stores the logo in the library', async () => {
-    const app = await renderApp('/library/company');
+    const app = await renderApp('/settings/company');
     await userEvent.type(await screen.findByLabelText('Business name'), 'Elettricità Rossi');
     await userEvent.tab();
     expect(app.library.getState().library.company.businessName).toBe('Elettricità Rossi');
@@ -32,7 +32,7 @@ describe('library company page', () => {
     const { defaultLibrary } = await import('@epd/domain/library');
     const library = defaultLibrary();
     library.company.vatNumber = 'IT01234567890';
-    await renderApp('/library/company', { library: { library } });
+    await renderApp('/settings/company', { library: { library } });
     expect(await screen.findByLabelText('VAT number')).toHaveValue('IT01234567890');
   });
 });

@@ -15,7 +15,7 @@ import { launchApp, stubSaveDialog, type LaunchedApp } from './helpers';
 const library = (userData: string, ...parts: string[]) => join(userData, 'library', ...parts);
 
 async function openLibrary(page: Page, section: 'Company' | 'Catalog') {
-  await page.getByRole('button', { name: 'Library' }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByRole('link', { name: section, exact: true }).click();
   await expect(page.getByRole('heading', { name: section })).toBeVisible();
 }
@@ -140,7 +140,7 @@ test('export the library, import it on a fresh install; an invalid file is refus
     await addOwnItem(first.page, 'Brand socket');
     await expect.poll(() => existsSync(library(source, 'catalogs', 'own.json'))).toBe(true);
     await stubSaveDialog(first.app, epl);
-    await first.page.getByRole('button', { name: 'Export library…' }).click();
+    await first.page.getByRole('button', { name: 'Export settings…' }).click();
     await expect.poll(() => existsSync(epl)).toBe(true);
 
     const second = await launchApp(target);
@@ -152,13 +152,13 @@ test('export the library, import it on a fresh install; an invalid file is refus
 
     await second.page.getByTestId('library-file').setInputFiles(broken);
     await expect(
-      second.page.getByText('This is not a library file.', { exact: true }),
+      second.page.getByText('This is not a settings file.', { exact: true }),
     ).toBeVisible();
     await expect(second.page.getByRole('dialog')).toHaveCount(0);
     await expect(second.page.getByLabel('Business name')).toHaveValue('Old company');
 
     await second.page.getByTestId('library-file').setInputFiles(epl);
-    await second.page.getByRole('dialog').getByRole('button', { name: 'Replace library' }).click();
+    await second.page.getByRole('dialog').getByRole('button', { name: 'Replace settings' }).click();
     await expect(second.page.getByLabel('Business name')).toHaveValue('Elettricità Rossi');
     await expect(second.page.getByRole('img', { name: 'Logo' })).toBeVisible();
     await second.page.getByRole('link', { name: 'Catalog', exact: true }).click();

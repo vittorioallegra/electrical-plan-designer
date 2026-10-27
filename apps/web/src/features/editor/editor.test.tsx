@@ -62,7 +62,7 @@ describe('floors', () => {
 describe('project settings', () => {
   // protects=settings per project, undoable; fails_when=a settings edit is lost or not undoable; no_claim=AC 11 storage
   it('edits a mounting height with a comma decimal and undoes it', async () => {
-    await renderApp('/project/settings', { lng: 'it' });
+    await renderApp('/project/details', { lng: 'it' });
     const input = await screen.findByLabelText('Altezza scatola prese');
     await userEvent.clear(input);
     await userEvent.type(input, '0,45{Enter}');
