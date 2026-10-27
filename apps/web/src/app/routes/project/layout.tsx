@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router';
+import { TitleBarDrawnProvider } from '@/components/TitleBarStrip';
 import { ProjectFrame } from '@/app/layouts/ProjectFrame';
 import { EditorProvider, useWorkspace } from '@/stores/editor/EditorContext';
 
@@ -8,7 +9,9 @@ export function ProjectLayoutRoute() {
   if (!current) return <Navigate to="/" replace />;
   return (
     <EditorProvider key={current.id} store={current.store} autosave={current.autosave}>
-      <ProjectFrame />
+      <TitleBarDrawnProvider value>
+        <ProjectFrame />
+      </TitleBarDrawnProvider>
     </EditorProvider>
   );
 }

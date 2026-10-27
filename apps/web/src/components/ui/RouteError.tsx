@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, Link, useLocation, useNavigate, useRouteError } from 'react-router';
+import { useNeedsTitleBarStrip, TitleBarStrip } from '@/components/TitleBarStrip';
 import { Button } from './Button';
 
 /** Error screen with a Retry and a link back; `messageKey` is an i18n key. */
@@ -13,7 +14,8 @@ export function ErrorState({
   backTo: string;
 }) {
   const { t } = useTranslation();
-  return (
+  const needsStrip = useNeedsTitleBarStrip();
+  const alert = (
     <div className="flex flex-col items-start gap-3 p-6" role="alert">
       <p className="text-heading">{t(messageKey)}</p>
       <div className="flex items-center gap-3">
@@ -26,6 +28,14 @@ export function ErrorState({
           {t('nav.start')}
         </Link>
       </div>
+    </div>
+  );
+  if (!needsStrip) return alert;
+  // The error replaced a whole frame, so the macOS drag strip and traffic-light room are ours.
+  return (
+    <div className="flex h-screen flex-col bg-surface text-text">
+      <TitleBarStrip />
+      {alert}
     </div>
   );
 }

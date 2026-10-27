@@ -258,6 +258,7 @@ Approved: yes (2026-10-27)
 - The window background kept the colour of the theme at creation after a theme change — `fix: repaint every window's background when the theme changes instead of keeping the colour it was created with`
 - A menu command (Settings) sent while all windows were minimized went to a window left hidden — `fix: show and focus the target window before delivering a menu command when no window has focus, so Settings is not opened in a hidden window`
 - The `EPD_TEST_HOOKS` hook was active in a packaged app too — `fix: enable the EPD_TEST_HOOKS window hook only in an unpackaged app`
+- The root and frame-level error screens had no macOS drag strip, so the window could not be dragged and the traffic lights overlapped the message — `fix: give the error screens that replace a whole frame the macOS drag strip, so the window can be dragged and the traffic lights clear the message`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.

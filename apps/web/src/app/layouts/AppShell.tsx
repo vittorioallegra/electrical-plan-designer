@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router';
 import { useTitleBarInset } from '@/lib/platform';
-import { TitleBarStrip } from '@/components/TitleBarStrip';
+import { TitleBarDrawnProvider, TitleBarStrip } from '@/components/TitleBarStrip';
 import { LibraryNotices } from '@/app/LibraryNotices';
 
 /**
@@ -15,7 +15,9 @@ export function AppShell() {
       {inset ? <TitleBarStrip /> : null}
       <LibraryNotices />
       <div className="min-h-0 flex-1 overflow-auto">
-        <Outlet />
+        <TitleBarDrawnProvider value>
+          <Outlet />
+        </TitleBarDrawnProvider>
       </div>
     </div>
   );
