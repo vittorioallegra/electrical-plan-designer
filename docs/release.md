@@ -43,6 +43,6 @@ approval.
 
 ## Compatibility
 
-Projects are `.epd` files on the user's computer and the library lives in the app data
-folder, so an update never touches them; a new app version must still open old `.epd` and
+Projects are `.epd` files on the user's computer and the library (edited in Settings) lives in the
+app data folder, so an update never touches them; a new app version must still open old `.epd` and
 `.epl` files (see the versioning rule in `CLAUDE.md`).

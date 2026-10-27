@@ -92,13 +92,14 @@ Windows `%APPDATA%\<app>\`) and survives restarts and app updates. It holds:
 
 | Library section | Edited where | In the `.epd`? |
 |---|---|---|
-| Company data + logo | Library page only | **No.** PDFs and quotes always print the current library company |
-| Imported catalogs, "My items", price overrides | Library page only | Only a copy of the items the project uses (below) |
-| Box presets | Library page only | No (placed boxes keep their own composition, as today) |
-| Default project settings | Library page | Project gets a copy at creation, then edits its own |
-| Default quote settings (VAT, material adjustment, labor lines) | Library page | Project gets a copy at creation, then edits its own |
+| Company data + logo | Settings only | **No.** PDFs and quotes always print the current library company |
+| Imported catalogs, "My items", price overrides | Settings only | Only a copy of the items the project uses (below) |
+| Box presets | Settings only | No (placed boxes keep their own composition, as today) |
+| Default project settings | Settings | Project gets a copy at creation, then edits its own |
+| Default quote settings (VAT, material adjustment, labor lines) | Settings | Project gets a copy at creation, then edits its own |
 
-- A **Library** area, reachable from the start screen and from an open project, replaces the
+- A **Settings** area (General, Company, Catalog, Box presets, New projects), reachable from the
+  start screen, the title bar of an open project and the native menu, replaces the
   per-project company and catalog pages. It keeps today's catalog features (import `.epc` and
   CSV, replace with diff, edit items, "My items", remove) and company form, now writing to the
   library. Library edits are saved immediately; they are not part of a project's undo history.
@@ -188,7 +189,7 @@ start option, per-project company and catalog pages.
 | Layer | What | Count |
 |---|---|---|
 | Unit (domain) | Used-item copy on place, catalog diff for update, BOM/quote from copies only, new project from library defaults, library schema load/validate | ~+12 |
-| Unit (web) | File service (save in place, Save As, changed-on-disk, write error, recent list), recovery copy lifecycle, library store, library pages, start screen | ~+15, existing file/draft/presence tests rewritten or removed |
+| Unit (web) | File service (save in place, Save As, changed-on-disk, write error, recent list), recovery copy lifecycle, library store, Settings pages, start screen | ~+15, existing file/draft/presence tests rewritten or removed |
 | E2E | Open → save in place, Save As, recovery after kill, library persists across restart and reaches a new project, update catalog from library, double-click open | ~+6, drawing specs run against the desktop build |
 
 The E2E harness must drive the desktop app (or its renderer with a fake file service), keeping
