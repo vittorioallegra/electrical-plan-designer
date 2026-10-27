@@ -43,11 +43,9 @@
       "draftFailed": "Copia di recupero non salvata",
       "retry": "Riprova"
     },
-    "undo": "Annulla",
-    "redo": "Ripeti",
     "views": "Viste del progetto",
     "export": "Esporta",
-    "drawer": "Dettagli progetto",
+    "drawer": "Circuiti, distinta e avvisi",
     "tabs": {
       "circuits": "Circuiti",
       "bom": "Distinta",
@@ -88,7 +86,6 @@
     "exportPdf": "PDF del progetto",
     "exportPdfFailed": "Impossibile creare il PDF del progetto. Riprova.",
     "save": "Salva",
-    "saveHint": "Salva il file del progetto (Ctrl+S)",
     "savedTo": "Salvato: {{name}}",
     "saveFailed": "Impossibile salvare il progetto. Le modifiche sono ancora nell’editor.",
     "narrowNotice": "L’editor funziona meglio su schermi larghi almeno 1024 px.",
@@ -107,7 +104,10 @@
       "title": "Salvare le modifiche a “{{name}}”?",
       "body": "Le modifiche non sono ancora nel file del progetto.",
       "discard": "Non salvare"
-    }
+    },
+    "projectMenu": "Menu del progetto",
+    "closePanel": "Chiudi pannello",
+    "statusBar": "Pannelli"
   },
   "catalog": {
     "builtin": {
@@ -653,7 +653,9 @@
       "boxes": "Scatole",
       "circuits": "Circuiti",
       "bom": "Distinta"
-    }
+    },
+    "nextStage": "Prossima: {{stage}}",
+    "complete": "Tutte le fasi completate"
   },
   "quote": {
     "issue": "Emetti preventivo",

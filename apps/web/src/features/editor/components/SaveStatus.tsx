@@ -10,7 +10,7 @@ export function SaveStatus() {
   const status = useEditor(saveStatusOf);
   const failed = useEditor((s) => s.draftFailed);
   return (
-    <span className="flex items-center gap-2" role="status" aria-live="polite">
+    <span className="app-no-drag flex items-center gap-2" role="status" aria-live="polite">
       <span
         data-testid="save-status"
         data-status={status}

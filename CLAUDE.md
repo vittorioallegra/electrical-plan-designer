@@ -90,6 +90,9 @@ the renderer: Vite/Vitest/Playwright configs, `e2e/`).
 - jsdom has no canvas: canvas behavior is tested in the browser E2E via `window.__epd.store`.
   Browser E2E (no `window.epd`) uses in-memory files (`window.__epd.files`, `.library`); real
   files are tested in the Electron E2E, where native dialogs are stubbed in main.
+- Title bar (macOS `hiddenInset`): the page is the drag region (`app-drag`); every control inside
+  needs `app-no-drag`. `useTitleBarInset()` (`lib/platform.ts`) gives the traffic-light room; the
+  Electron E2E (`titleBar.spec.ts`) checks it. The bottom panel's open state lives in `ui`.
 - Save writes the bound path in place (no path: Save As); exports go through `useExportFile`.
 - `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).

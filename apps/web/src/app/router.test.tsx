@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { openDrawer } from '@/testing/drawer';
 import { renderApp } from '@/testing/renderApp';
 import { pickOption } from '@/testing/select';
 
@@ -23,10 +24,10 @@ describe('app shell', () => {
 });
 
 describe('editor layout shell', () => {
-  // protects=editor frame (top bar, drawer, inspector); fails_when=the plan route loses a region; no_claim=canvas behavior
+  // protects=editor frame (title bar, bottom panel, inspector); fails_when=the plan route loses a region; no_claim=canvas behavior
   it('shows the drawer tabs and an empty inspector on the plan view', async () => {
     await renderApp('/project/plan');
-    expect(await screen.findByRole('tab', { name: 'Circuits' })).toBeInTheDocument();
+    await openDrawer('Circuits');
     expect(screen.getByRole('tab', { name: 'BOM' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /^Warnings/ })).toBeInTheDocument();
     expect(screen.getByText('Nothing selected.')).toBeInTheDocument();

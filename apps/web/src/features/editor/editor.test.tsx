@@ -67,8 +67,8 @@ describe('project settings', () => {
     await userEvent.clear(input);
     await userEvent.type(input, '0,45{Enter}');
     expect(input).toHaveValue('0,45');
-    await userEvent.click(screen.getByRole('button', { name: 'Annulla' }));
-    expect(input).toHaveValue('0,3');
+    fireEvent.keyDown(window, { key: 'z', ctrlKey: true });
+    await waitFor(() => expect(input).toHaveValue('0,3'));
   });
 });
 

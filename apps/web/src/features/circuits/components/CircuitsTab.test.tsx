@@ -2,6 +2,7 @@ import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { openDrawer } from '@/testing/drawer';
 import { renderApp } from '@/testing/renderApp';
 import { toggleRouteSegment, toggleTarget } from '@/features/circuits/utils/commands';
 
@@ -10,7 +11,7 @@ const doc = () => store().getState().data.doc;
 
 async function openCircuits() {
   await renderApp('/project/plan', { exposeTestHandle: true });
-  await userEvent.click(await screen.findByRole('tab', { name: 'Circuits' }));
+  await openDrawer('Circuits');
   return screen.findByTestId('circuits-tab');
 }
 
@@ -49,7 +50,7 @@ describe('circuits tab', () => {
     const { router } = await renderApp('/project/panel', {
       exposeTestHandle: true,
     });
-    await userEvent.click(await screen.findByRole('tab', { name: 'Circuits' }));
+    await openDrawer('Circuits');
     const tab = await screen.findByTestId('circuits-tab');
     await userEvent.click(within(tab).getByRole('button', { name: /Sockets GF/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Pick targets on the plan' }));

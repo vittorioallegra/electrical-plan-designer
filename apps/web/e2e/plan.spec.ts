@@ -10,13 +10,17 @@ test.beforeEach(async ({ page }) => {
   await start(page);
 });
 
-// protects=AC 2 import + calibration, dialog overlay above the drawer tab bar; fails_when=a calibrated 4.20 m distance measures off by > 1 cm or the tab bar shows over the overlay; no_claim=PDF import
+// protects=AC 2 import + calibration, dialog overlay above the bottom panel's tab bar; fails_when=a calibrated 4.20 m distance measures off by > 1 cm or the tab bar shows over the overlay; no_claim=PDF import
 test('import a PNG, calibrate two points 4.20 m apart, and measure 4.20 m between them', async ({
   page,
 }) => {
   await newProject(page, `AC2 ${Date.now()}`);
+  await page
+    .getByRole('toolbar', { name: 'Panels' })
+    .getByRole('button', { name: 'Circuits' })
+    .click();
   await page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }).click();
-  // The dialog overlay covers the sticky drawer tab bar.
+  // The dialog overlay covers the sticky tab bar of the bottom panel.
   const tab = await page.getByRole('tab', { name: 'Circuits', includeHidden: true }).boundingBox();
   const topmost = await page.evaluate(
     ({ x, y }) => document.elementFromPoint(x, y)?.getAttribute('data-testid') ?? null,

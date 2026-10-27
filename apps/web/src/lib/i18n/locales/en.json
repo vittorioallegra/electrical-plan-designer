@@ -43,11 +43,9 @@
       "draftFailed": "Recovery copy not saved",
       "retry": "Retry"
     },
-    "undo": "Undo",
-    "redo": "Redo",
     "views": "Project views",
     "export": "Export",
-    "drawer": "Project details",
+    "drawer": "Circuits, bill of materials and warnings",
     "tabs": {
       "circuits": "Circuits",
       "bom": "BOM",
@@ -88,7 +86,6 @@
     "exportPdf": "Project PDF",
     "exportPdfFailed": "Could not create the project PDF. Try again.",
     "save": "Save",
-    "saveHint": "Save the project file (Ctrl+S)",
     "savedTo": "Saved: {{name}}",
     "saveFailed": "Could not save the project. Your changes are still in the editor.",
     "narrowNotice": "The editor works best on screens at least 1024 px wide.",
@@ -107,7 +104,10 @@
       "title": "Save changes to “{{name}}”?",
       "body": "Your changes are not in the project file yet.",
       "discard": "Don’t save"
-    }
+    },
+    "projectMenu": "Project menu",
+    "closePanel": "Close panel",
+    "statusBar": "Panels"
   },
   "catalog": {
     "builtin": {
@@ -653,7 +653,9 @@
       "boxes": "Boxes",
       "circuits": "Circuits",
       "bom": "BOM"
-    }
+    },
+    "nextStage": "Next: {{stage}}",
+    "complete": "All stages done"
   },
   "quote": {
     "issue": "Issue quote",

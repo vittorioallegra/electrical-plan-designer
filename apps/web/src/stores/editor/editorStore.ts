@@ -51,6 +51,10 @@ export interface EditorUi {
   /** Plan picking mode: clicking boxes toggles targets, clicking segments toggles the manual route. */
   pick: { mode: 'targets' | 'route'; owner: { kind: 'circuit' | 'extra'; id: string } } | null;
   drawerTab: DrawerTab;
+  /** Bottom panel (Circuits, BOM, Warnings) open; presentation only, like the rest of `ui`. */
+  drawerOpen: boolean;
+  /** Height of the open bottom panel, % of the editor area. */
+  drawerSize: number;
   /** Hides connectivity warnings while drawing (presentation only). */
   hideConnectivity: boolean;
   /** World point (m) the plan canvas should center on, consumed by the canvas. */
@@ -161,6 +165,8 @@ export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): Edit
         activeOwner: null,
         pick: null,
         drawerTab: 'circuits',
+        drawerOpen: false,
+        drawerSize: 30,
         hideConnectivity: false,
         focus: null,
       },

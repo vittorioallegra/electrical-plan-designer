@@ -17,6 +17,7 @@ export function focusElement(store: EditorStore, ref: ElementRef): FocusTarget {
       setUi({
         activeOwner: { kind: ref.kind === 'circuit' ? 'circuit' : 'extra', id: ref.id },
         drawerTab: 'circuits',
+        drawerOpen: true,
         selection: [],
         pick: null,
       });

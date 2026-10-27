@@ -1,10 +1,11 @@
-import { Check } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import type { ProjectDoc } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { EditorUi } from '@/stores/editor/editorStore';
-import { cn } from '@/lib/cn';
+import { Button } from '@/components/ui/Button';
+import { Menu } from '@/components/ui/Menu';
 import { useAnalysis } from '@/hooks/useAnalysis';
 
 type Stage = 'plan' | 'panel' | 'conduits' | 'boxes' | 'circuits' | 'bom';
@@ -49,14 +50,14 @@ function stages(doc: ProjectDoc, hasCable: boolean): StageDef[] {
       stage: 'circuits',
       done: doc.circuits.some((c) => c.targetNodeIds.length > 0),
       view: 'plan',
-      ui: { drawerTab: 'circuits' },
+      ui: { drawerTab: 'circuits', drawerOpen: true },
     },
-    { stage: 'bom', done: hasCable, view: 'plan', ui: { drawerTab: 'bom' } },
+    { stage: 'bom', done: hasCable, view: 'plan', ui: { drawerTab: 'bom', drawerOpen: true } },
   ];
 }
 
-/** First-project guide: each stage shows done / next and opens its tool. */
-export function ProgressStrip() {
+/** First-project guide in the status bar: the next stage, and a menu of all stages with their state. */
+export function ProgressControl() {
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const doc = useEditor((s) => s.data.doc);
@@ -76,31 +77,29 @@ export function ProgressStrip() {
     if (pathname !== target) void navigate(target);
   }
 
+  const current = next
+    ? t('progress.nextStage', { stage: t(`progress.stages.${next}`) })
+    : t('progress.complete');
   return (
-    <nav
-      className="flex flex-wrap items-center gap-1 border-b border-border px-3 py-1 text-sm"
-      aria-label={t('progress.label')}
-    >
-      {list.map((s, i) => (
-        <span key={s.stage} className="flex items-center gap-1">
-          {i > 0 ? <span className="text-text-muted">→</span> : null}
-          <button
-            className={cn(
-              'flex items-center gap-1 rounded px-2 py-0.5',
-              s.done && 'text-success',
-              s.stage === next && 'bg-accent text-accent-contrast',
-              !s.done && s.stage !== next && 'text-text-muted',
-            )}
-            data-state={s.done ? 'done' : s.stage === next ? 'next' : 'todo'}
-            aria-current={s.stage === next ? 'step' : undefined}
-            onClick={() => open(s)}
-          >
-            {s.done ? <Check size={14} aria-label={t('progress.done')} /> : null}
-            {t(`progress.stages.${s.stage}`)}
-            {s.stage === next ? <span className="sr-only">({t('progress.next')})</span> : null}
-          </button>
-        </span>
-      ))}
-    </nav>
+    <Menu
+      trigger={
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<ListChecks size={14} />}
+          aria-label={`${t('progress.label')}: ${current}`}
+          data-testid="progress-control"
+          data-next={next ?? 'none'}
+        >
+          {current}
+        </Button>
+      }
+      items={list.map((s) => ({
+        key: s.stage,
+        label: t(`progress.stages.${s.stage}`),
+        hint: s.done ? t('progress.done') : s.stage === next ? t('progress.next') : '',
+        onSelect: () => open(s),
+      }))}
+    />
   );
 }

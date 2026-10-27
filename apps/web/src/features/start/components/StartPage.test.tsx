@@ -92,7 +92,7 @@ describe('start screen', () => {
     expect(screen.getByTestId('save-status')).toHaveTextContent('Draft');
     expect(editorStore().getState().file?.path).toBe('house.epd');
 
-    await userEvent.click(screen.getByRole('button', { name: /^Save$/ }));
+    await userEvent.keyboard('{Control>}s{/Control}');
     // The stat of the memory file did not change (it never existed): saved in place.
     await waitFor(() => expect(screen.getByTestId('save-status')).toHaveTextContent('Saved'));
     expect(fileAccess.writes).toEqual(['house.epd']);

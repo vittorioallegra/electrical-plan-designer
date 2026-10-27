@@ -19,7 +19,7 @@ describe('window sync', () => {
     expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: false });
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
     expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: true });
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.keyboard('{Control>}s{/Control}');
     await waitFor(() => expect(windowHost.state?.unsaved).toBe(false));
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
     expect(windowHost.state?.unsaved).toBe(true);
@@ -121,7 +121,7 @@ describe('window sync', () => {
   it('gives the menu its labels and updates them with the language', async () => {
     const { windowHost } = await openDemo();
     expect(windowHost.menuLabels).toMatchObject({ file: 'File', saveAs: 'Save As…' });
-    await userEvent.click(screen.getByRole('link', { name: 'Settings' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
     await pickOption(await screen.findByRole('combobox', { name: 'Language' }), 'Italiano');
     await waitFor(() => expect(windowHost.menuLabels).toMatchObject({ saveAs: 'Salva con nome…' }));
   });

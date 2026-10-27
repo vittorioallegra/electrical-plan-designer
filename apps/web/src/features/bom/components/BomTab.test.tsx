@@ -1,7 +1,7 @@
 import { act, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { openDrawer } from '@/testing/drawer';
 import { renderApp } from '@/testing/renderApp';
 
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
@@ -10,7 +10,7 @@ describe('BOM drawer tab', () => {
   // protects=G2 live BOM in the UI; fails_when=the BOM tab misses lines or does not update after an edit; no_claim=quote prices
   it('lists the demo BOM and updates after an edit', async () => {
     await renderApp('/project/plan', { exposeTestHandle: true });
-    await userEvent.click(await screen.findByRole('tab', { name: 'BOM' }));
+    await openDrawer('BOM');
     const bom = await screen.findByTestId('bom');
     const boxes = within(bom).getByRole('region', { name: 'Wall boxes' });
     expect(boxes).toHaveTextContent('Wall box 503 (3 modules)4 pcs');
@@ -34,7 +34,7 @@ describe('BOM drawer tab', () => {
   // protects=category totals; fails_when=a category total is not the sum of its lines; no_claim=line quantities (domain tests)
   it('shows a total per category', async () => {
     await renderApp('/project/plan', { exposeTestHandle: true });
-    await userEvent.click(await screen.findByRole('tab', { name: 'BOM' }));
+    await openDrawer('BOM');
     const bom = await screen.findByTestId('bom');
     for (const region of within(bom).getAllByRole('region')) {
       const quantities = within(region)

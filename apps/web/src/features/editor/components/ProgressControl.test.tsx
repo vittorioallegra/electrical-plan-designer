@@ -6,25 +6,31 @@ import { renderApp } from '@/testing/renderApp';
 
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
 
-async function openStrip() {
+async function openControl() {
   await renderApp('/project/plan', { exposeTestHandle: true });
-  return screen.findByRole('navigation', { name: 'Progress' });
+  return screen.findByTestId('progress-control');
 }
 
-describe('progress strip', () => {
+/** Opens the stage menu and returns its items. */
+async function openMenu(control: HTMLElement) {
+  await userEvent.click(control);
+  return within(await screen.findByRole('menu'));
+}
+
+describe('progress control', () => {
   // protects=stage state from the drawing; fails_when=a finished project shows a next stage; no_claim=—
   it('marks every stage done on the demo project', async () => {
-    const strip = await openStrip();
-    const states = within(strip)
-      .getAllByRole('button')
-      .map((b) => b.getAttribute('data-state'));
-    expect(states).toEqual(['done', 'done', 'done', 'done', 'done', 'done']);
+    const control = await openControl();
+    expect(control).toHaveTextContent('All stages done');
+    const menu = await openMenu(control);
+    const items = menu.getAllByRole('menuitem');
+    expect(items).toHaveLength(6);
+    for (const item of items) expect(item).toHaveAccessibleName(/, done$/);
   });
 
   // protects=Plan stage without walls; fails_when=a plan drawn straight onto an empty floor keeps Plan as the next stage; no_claim=—
   it('counts drawn elements as a plan even without walls or background', async () => {
-    const strip = await openStrip();
-    const plan = within(strip).getByRole('button', { name: /Plan/ });
+    const control = await openControl();
     act(() => {
       store()
         .getState()
@@ -35,7 +41,7 @@ describe('progress strip', () => {
           }
         });
     });
-    expect(plan).toHaveAttribute('data-state', 'done');
+    expect(control).toHaveAttribute('data-next', 'none');
     act(() => {
       store()
         .getState()
@@ -47,12 +53,13 @@ describe('progress strip', () => {
           for (const p of d.doc.panels) p.devices = [];
         });
     });
-    expect(plan).toHaveAttribute('aria-current', 'step');
+    expect(control).toHaveAttribute('data-next', 'plan');
+    expect(control).toHaveTextContent('Next: Plan');
   });
 
-  // protects=next stage and its link; fails_when=the first unfinished stage is not marked next or does not open its tool; no_claim=—
+  // protects=next stage and its menu actions; fails_when=the first unfinished stage is not marked next or a stage does not open its tool or the bottom panel; no_claim=—
   it('points to the first unfinished stage and opens its tool', async () => {
-    const strip = await openStrip();
+    const control = await openControl();
     act(() => {
       store()
         .getState()
@@ -61,16 +68,16 @@ describe('progress strip', () => {
           d.doc.extraRuns = [];
         });
     });
-    const circuits = within(strip).getByRole('button', { name: /Circuits/ });
-    expect(circuits).toHaveAttribute('aria-current', 'step');
-    expect(within(strip).getByRole('button', { name: /BOM/ })).toHaveAttribute(
-      'data-state',
-      'todo',
-    );
+    expect(control).toHaveAttribute('data-next', 'circuits');
+    let menu = await openMenu(control);
+    expect(menu.getByRole('menuitem', { name: 'Circuits, next' })).toBeInTheDocument();
+    expect(menu.getByRole('menuitem', { name: 'BOM' })).toBeInTheDocument();
 
     store().getState().setUi({ drawerTab: 'bom' });
-    await userEvent.click(circuits);
+    expect(store().getState().ui.drawerOpen).toBe(false);
+    await userEvent.click(menu.getByRole('menuitem', { name: 'Circuits, next' }));
     expect(store().getState().ui.drawerTab).toBe('circuits');
+    expect(store().getState().ui.drawerOpen).toBe(true);
 
     act(() => {
       store()
@@ -79,7 +86,8 @@ describe('progress strip', () => {
           d.doc.segments = [];
         });
     });
-    await userEvent.click(within(strip).getByRole('button', { name: /Conduits/ }));
+    menu = await openMenu(control);
+    await userEvent.click(menu.getByRole('menuitem', { name: /^Conduits, / }));
     expect(store().getState().ui.tool).toBe('conduit');
   });
 });

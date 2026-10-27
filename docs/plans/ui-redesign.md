@@ -239,7 +239,7 @@ Approved: yes (2026-10-27)
 - [x] 6. Settings screen — `feat: add the Settings screen with sidebar, General section and kit-styled sections`
 - [x] 7. Catalog — `feat: add the catalog table with detail panel, sidebar catalog actions and kit selects`
 - [x] 8. Start screen — `feat: add the start screen sidebar layout, app mark and recent file dates`
-- [ ] 9. Editor shell
+- [x] 9. Editor shell — `feat: add the editor shell with title bar, status bar, bottom panel and progress control`
 - [ ] 10. Plan view
 - [ ] 11. Panel, circuits, BOM, warnings, quote, project details
 - [ ] 12. Dialogs and states pass
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 9.
+Implement step 10.

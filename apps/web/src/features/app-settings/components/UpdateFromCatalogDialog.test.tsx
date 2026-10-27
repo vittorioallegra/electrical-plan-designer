@@ -14,7 +14,8 @@ const libraryWithBoxPrice = (unitPrice: number) => ({
 
 async function openDialog(options: Parameters<typeof renderApp>[1]) {
   const app = await renderApp('/project/plan', options);
-  await userEvent.click(await screen.findByRole('button', { name: 'Update from catalog' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Project menu' }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: 'Update from catalog' }));
   const dialog = await screen.findByRole('dialog');
   const store = app.workspace.getState().current!.store;
   return { app, dialog, store };

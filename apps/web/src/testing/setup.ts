@@ -26,3 +26,13 @@ if (typeof Element !== 'undefined') {
   Element.prototype.releasePointerCapture ??= () => {};
   Element.prototype.scrollIntoView ??= () => {};
 }
+
+// jsdom has no ResizeObserver (react-resizable-panels measures its group with one) and never
+// lays anything out, so the stub reports nothing.
+if (typeof window !== 'undefined') {
+  window.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

@@ -49,7 +49,7 @@ test('save a new project as a file', async ({ page }) => {
   await start(page);
   const name = `Saved ${Date.now()}`;
   await newProject(page, name);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.keyboard.press('ControlOrMeta+s');
   await expect(page.getByTestId('save-status')).toHaveText('Saved');
   const file = `${name.replace(/ /g, '-')}.epd`;
   expect(projectOf((await savedBytes(page, file))!).meta.name).toBe(name);

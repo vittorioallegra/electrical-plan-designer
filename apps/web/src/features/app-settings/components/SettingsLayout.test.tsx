@@ -17,7 +17,7 @@ describe('settings frame', () => {
   // protects=AC 10 library reachable and the project kept open; fails_when=the library cannot be opened from the start screen or from a project, the open project is closed by visiting it, or the link back does not return to it; no_claim=the project pages themselves
   it('is reachable from the start screen and the project, and links back', async () => {
     const app = await renderApp('/project/plan');
-    await userEvent.click(await screen.findByRole('link', { name: 'Settings' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Settings' }));
     expect(await screen.findByRole('heading', { name: 'General' })).toBeInTheDocument();
     expect(app.workspace.getState().current).not.toBeNull();
     await userEvent.click(screen.getByRole('link', { name: 'Back to Demo house' }));

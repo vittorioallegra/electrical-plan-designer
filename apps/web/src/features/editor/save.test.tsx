@@ -26,7 +26,8 @@ async function openFromFile() {
 }
 
 const addFloor = () => userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
-const clickSave = () => userEvent.click(screen.getByRole('button', { name: 'Save' }));
+// The title bar has no Save button: the shortcut (the native menu's accelerator on the desktop).
+const clickSave = () => userEvent.keyboard('{Control>}s{/Control}');
 const status = () => screen.getByTestId('save-status');
 const floorsIn = (bytes: Uint8Array) => readEpd(bytes).project.doc.floors.length;
 

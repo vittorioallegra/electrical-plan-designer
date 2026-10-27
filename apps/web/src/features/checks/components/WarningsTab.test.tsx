@@ -2,6 +2,7 @@ import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
+import { openDrawer } from '@/testing/drawer';
 import { renderApp } from '@/testing/renderApp';
 
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
@@ -9,7 +10,7 @@ const ui = () => store().getState().ui;
 
 async function openWarnings() {
   await renderApp('/project/plan', { exposeTestHandle: true });
-  await userEvent.click(await screen.findByRole('tab', { name: /^Warnings/ }));
+  await openDrawer('Warnings');
   return screen.findByTestId('warnings');
 }
 

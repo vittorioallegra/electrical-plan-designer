@@ -14,7 +14,7 @@ test('a library price change reaches the project only after the update, and undo
     await expect(total).toHaveText('€0.00');
 
     // Price a built-in box in the library, then come back to the project.
-    await page.getByRole('link', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('link', { name: 'Catalog', exact: true }).click();
     await page.getByRole('radio', { name: 'Wall boxes' }).click();
     await page.getByRole('cell', { name: 'Wall box 503 (3 modules)' }).click();
@@ -24,13 +24,14 @@ test('a library price change reaches the project only after the update, and undo
     await page.getByRole('link', { name: 'Quote', exact: true }).click();
     await expect(total).toHaveText('€0.00');
 
-    await page.getByRole('button', { name: 'Update from catalog' }).click();
+    await page.getByRole('button', { name: 'Project menu' }).click();
+    await page.getByRole('menuitem', { name: 'Update from catalog' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Wall box 503 (3 modules)')).toBeVisible();
     await dialog.getByRole('button', { name: 'Update 1 entry' }).click();
     await expect(total).not.toHaveText('€0.00');
 
-    await page.getByRole('button', { name: 'Undo' }).click();
+    await page.keyboard.press('Control+z');
     await expect(total).toHaveText('€0.00');
 
     // Saved, so closing the app does not ask about unsaved changes.
