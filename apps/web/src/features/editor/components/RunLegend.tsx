@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button';
 import type { RunElevation } from '@epd/domain/types';
 import { runDash } from '@/features/editor/canvas/canvasColors';
 
@@ -19,16 +20,17 @@ export function RunLegend() {
       className="absolute bottom-3 left-3 rounded-md border border-border bg-raised text-small shadow-pop"
       data-testid="run-legend"
     >
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         aria-expanded={open}
         aria-controls={bodyId}
-        className="flex h-6 w-full items-center gap-1 rounded-md px-2 text-text-muted hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1"
+        icon={open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        className="w-full justify-start"
         onClick={() => setOpen((o) => !o)}
       >
-        {open ? <ChevronDown size={12} aria-hidden /> : <ChevronRight size={12} aria-hidden />}
         {t('editor.legend.title')}
-      </button>
+      </Button>
       <ul id={bodyId} hidden={!open} className="flex flex-col gap-1 px-2 pt-0.5 pb-2">
         {elevations.map((el) => (
           <li key={el} className="flex items-center gap-2">

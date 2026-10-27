@@ -261,6 +261,7 @@ Approved: yes (2026-10-27)
 - The root and frame-level error screens had no macOS drag strip, so the window could not be dragged and the traffic lights overlapped the message — `fix: give the error screens that replace a whole frame the macOS drag strip, so the window can be dragged and the traffic lights clear the message`
 - `Menu` wrapped each item in an extra `div` — `refactor: render Menu items as direct children of the Radix content instead of wrapping each in a div`
 - Hand-styled buttons in StartPage recent rows, CatalogList, FloorsPanel, PanelFront and BackgroundImportDialog — `refactor: add a kit ListRow and use it for the recent files, the catalog import row and the floors, and Button for the page thumbnails and panel devices, instead of hand-styled buttons in features`
+- Hand-styled buttons in StatusBar, ZoomControl and RunLegend (the status bar ones 20px high instead of 24px) — `fix: draw the status bar tabs, the zoom level and the run legend toggle with Button, so the status bar buttons are 24px high as DESIGN.md says`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.

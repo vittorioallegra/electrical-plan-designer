@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
 import { Badge } from '@/components/ui/Badge';
-import { cn } from '@/lib/cn';
+import { Button } from '@/components/ui/Button';
 import { useVisibleWarnings } from '@/features/checks/components/WarningsTab';
 import { ProgressControl } from '@/features/editor/components/ProgressControl';
 
@@ -36,15 +36,13 @@ export function StatusBar() {
       {panelTabs.map(({ tab, key }) => {
         const active = open && current === tab;
         return (
-          <button
+          <Button
             key={tab}
-            type="button"
-            aria-pressed={active}
+            variant="ghost"
+            size="sm"
+            pressed={active}
             onClick={() => toggle(tab)}
-            className={cn(
-              'inline-flex h-5 items-center gap-1.5 rounded-xs px-2 font-medium text-text-muted transition-colors duration-[80ms] hover:bg-hover hover:text-text focus-visible:outline-2',
-              active && 'bg-accent-subtle text-accent-text hover:bg-accent-subtle',
-            )}
+            className="gap-1.5"
           >
             {t(key)}
             {tab === 'warnings' ? (
@@ -52,7 +50,7 @@ export function StatusBar() {
                 <span data-testid="status-warnings-count">{visible.length}</span>
               </Badge>
             ) : null}
-          </button>
+          </Button>
         );
       })}
       <span className="flex-1" />

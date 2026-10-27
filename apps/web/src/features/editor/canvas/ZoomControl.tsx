@@ -1,6 +1,7 @@
 import { Minus, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Toolbar } from '@/components/ui/Toolbar';
 import { DEFAULT_VIEW, zoomAt } from './viewport';
@@ -29,15 +30,16 @@ export function ZoomControl({ size }: { size: { width: number; height: number } 
         icon={<Minus size={14} />}
         onClick={() => zoom(1 / STEP)}
       />
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         aria-label={t('editor.zoom.reset')}
         data-testid="zoom-level"
-        className="h-6 min-w-12 rounded-sm px-1 font-mono text-small text-text-muted tabular-nums hover:bg-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1"
+        className="min-w-12 font-mono tabular-nums"
         onClick={() => zoom(DEFAULT_VIEW.scale / store.getState().ui.view.scale)}
       >
         {percent}%
-      </button>
+      </Button>
       <IconButton
         label={t('editor.zoom.in')}
         icon={<Plus size={14} />}
