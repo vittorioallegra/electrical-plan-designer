@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { Tool } from '@/stores/editor/editorStore';
 import { IconButton } from '@/components/ui/IconButton';
+import { TOOLBAR_ITEMS } from '@/components/ui/Toolbar';
+import { useRovingFocus } from '@/hooks/useRovingFocus';
 import { Select } from '@/components/ui/Select';
 import { ElectricalSymbol } from '@/components/symbols/ElectricalSymbol';
 import { useLibrary } from '@/stores/library/useLibrary';
@@ -64,6 +66,7 @@ export const toolShortcuts: Record<string, Tool> = Object.fromEntries(
 
 /** Vertical tool rail: 32px tool buttons in groups, each with a tooltip showing its shortcut. */
 export function ToolRail() {
+  const roving = useRovingFocus<HTMLDivElement>(TOOLBAR_ITEMS, 'vertical');
   const { t } = useTranslation();
   const { store } = useEditorContext();
   const active = useEditor((s) => s.ui.tool);
@@ -77,6 +80,7 @@ export function ToolRail() {
       role="toolbar"
       aria-label={t('editor.tools')}
       aria-orientation="vertical"
+      {...roving}
       className="flex w-11 shrink-0 flex-col items-center gap-0.5 border-r border-border bg-panel py-2"
     >
       {groups.map((group, i) => (

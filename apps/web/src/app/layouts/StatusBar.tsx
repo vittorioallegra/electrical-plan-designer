@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
 import { Badge } from '@/components/ui/Badge';
+import { TOOLBAR_ITEMS } from '@/components/ui/Toolbar';
+import { useRovingFocus } from '@/hooks/useRovingFocus';
 import { Button } from '@/components/ui/Button';
 import { useVisibleWarnings } from '@/features/checks/components/WarningsTab';
 import { ProgressControl } from '@/features/editor/components/ProgressControl';
@@ -20,6 +22,8 @@ export function StatusBar() {
   const current = useEditor((s) => s.ui.drawerTab);
   const { visible } = useVisibleWarnings();
 
+  const roving = useRovingFocus<HTMLDivElement>(TOOLBAR_ITEMS);
+
   function toggle(tab: DrawerTab) {
     const { setUi, ui } = store.getState();
     // The open tab's button closes the panel; any other opens it on that tab.
@@ -31,6 +35,7 @@ export function StatusBar() {
     <div
       role="toolbar"
       aria-label={t('editor.statusBar')}
+      {...roving}
       className="flex h-7 shrink-0 items-center gap-1 border-t border-border bg-chrome px-2 text-small"
     >
       {panelTabs.map(({ tab, key }) => {
