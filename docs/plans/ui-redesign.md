@@ -266,6 +266,8 @@ Approved: yes (2026-10-27)
 - `Table` set `aria-selected` on plain table rows, where it is not valid — `fix: make selectable tables an ARIA grid with row, gridcell and aria-selected and roving row focus, instead of aria-selected on plain table rows where it is not valid`
 - The status bar tabs, zoom level and run legend toggle idled in `text-text` after the move to ghost `Button` — `fix: add a ghost-muted Button variant and use it for the status bar tabs, the zoom level and the run legend toggle, so their idle text is text-muted again as DESIGN.md says`
 - The catalog category chips showed a horizontal scrollbar in Italian at common widths — `fix: let the catalog category chips wrap inside the toolbar instead of scrolling horizontally in Italian`
+- CLAUDE.md had grown to 100 lines — `docs: trim CLAUDE.md to the stable project facts after the UI redesign`
+- The 1,300-item catalog test timed out under a parallel full run — `test: give the 1,300-item catalog test a longer timeout so it does not time out under a full parallel run`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.

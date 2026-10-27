@@ -310,5 +310,6 @@ describe('library catalog page', () => {
     await userEvent.type(screen.getByRole('textbox', { name: 'Search by name or code' }), 'I1299');
     await waitFor(() => expect(screen.queryByRole('gridcell', { name: 'Socket 7' })).toBeNull());
     expect(screen.getByRole('gridcell', { name: 'Socket 1299' })).toBeInTheDocument();
-  });
+    // jsdom role queries over 1,300 rows take seconds; under a parallel full run the default 5s is not enough.
+  }, 20_000);
 });
