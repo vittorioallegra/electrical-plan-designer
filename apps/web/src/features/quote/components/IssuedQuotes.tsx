@@ -12,6 +12,7 @@ import { quoteStatusSchema } from '@epd/domain/schema';
 import type { IssuedQuote, QuoteStatus } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/cn';
 import { formatMoney, type Locale } from '@/lib/format';
@@ -88,22 +89,17 @@ export function IssuedQuotes({
               </span>
               <span className="text-text-muted">{dateFormat.format(new Date(q.issuedAt))}</span>
               <span className="tabular-nums">{money(q.totals.total)}</span>
-              <select
+              <Select
                 aria-label={t('quote.statusFor', { number: q.number })}
-                className={cn(
-                  'h-[var(--control-height)] rounded border border-border px-2',
-                  statusTone[q.status],
-                )}
+                className={cn('w-36', statusTone[q.status])}
                 value={q.status}
                 disabled={readOnly}
-                onChange={(e) => pickStatus(q, e.target.value as QuoteStatus)}
-              >
-                {quoteStatusSchema.options.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`quote.status.${s}`)}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(v) => pickStatus(q, v as QuoteStatus)}
+                options={quoteStatusSchema.options.map((s) => ({
+                  value: s,
+                  label: t(`quote.status.${s}`),
+                }))}
+              />
               <NoteField
                 number={q.number}
                 note={q.note}

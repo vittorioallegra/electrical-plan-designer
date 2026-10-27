@@ -127,7 +127,7 @@ export function useProjectOpener() {
         <>
           <Button onClick={() => setConfirm(null)}>{t('common.cancel')}</Button>
           <Button
-            variant="danger"
+            variant="danger-ghost"
             onClick={() => {
               const choice = confirm;
               setConfirm(null);

@@ -6,6 +6,7 @@ import type { Panel, PanelDevice } from '@epd/domain/types';
 import { useCatalog } from '@/hooks/useCatalog';
 import { Button } from '@/components/ui/Button';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { Select } from '@/components/ui/Select';
 import {
   deleteDevice,
   moveDevice,
@@ -74,26 +75,29 @@ export function DeviceInspector({ panel, device }: { panel: Panel; device: Panel
       </div>
       <label className="flex flex-col gap-1">
         {t('panel.upstream')}
-        <select
-          className="h-[var(--control-height)] rounded border border-border px-2"
+        <Select
           value={device.upstreamDeviceId ?? ''}
           disabled={readOnly}
-          onChange={(e) => setUpstream(store, device.id, e.target.value || null)}
-        >
-          <option value="">{t('panel.noUpstream')}</option>
-          {upstreamOptions.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.label || itemName(lookup(d.itemId), d.itemId)}
-            </option>
-          ))}
-        </select>
+          onValueChange={(v) => setUpstream(store, device.id, v || null)}
+          options={[
+            { value: '', label: t('panel.noUpstream') },
+            ...upstreamOptions.map((d) => ({
+              value: d.id,
+              label: d.label || itemName(lookup(d.itemId), d.itemId),
+            })),
+          ]}
+        />
       </label>
       <p className="text-text-muted">
         {circuits.length > 0
           ? t('panel.circuitsOn', { names: circuits.map((c) => c.name).join(', ') })
           : t('panel.noCircuits')}
       </p>
-      <Button variant="danger" disabled={readOnly} onClick={() => deleteDevice(store, device.id)}>
+      <Button
+        variant="danger-ghost"
+        disabled={readOnly}
+        onClick={() => deleteDevice(store, device.id)}
+      >
         <Trash2 size={16} />
         {circuits.length > 0
           ? t('panel.deleteUsed', { count: circuits.length })

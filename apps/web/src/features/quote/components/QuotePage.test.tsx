@@ -7,6 +7,7 @@ import { defaultLibrary } from '@epd/domain/library';
 import { pdfText } from '@/testing/pdfText';
 import { demoProjectFile } from '@/testing/editor';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 const quotePath = '/project/quote';
 const editorStore = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
@@ -121,21 +122,21 @@ describe('quote page', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Issue quote' }));
     await userEvent.click(screen.getByRole('button', { name: 'Issue quote' }));
     const status = (n: number) => screen.getByLabelText(`Status of quote ${n}`);
-    expect(status(1)).toHaveValue('superseded');
-    expect(status(2)).toHaveValue('issued');
+    expect(status(1)).toHaveTextContent('Superseded');
+    expect(status(2)).toHaveTextContent('Issued');
 
-    await userEvent.selectOptions(status(1), 'issued');
-    await userEvent.selectOptions(status(2), 'approved');
+    await pickOption(status(1), 'Issued');
+    await pickOption(status(2), 'Approved');
     const dialog = await screen.findByRole('dialog', { name: 'Approve quote 2' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Mark them rejected' }));
-    expect(status(2)).toHaveValue('approved');
-    expect(status(1)).toHaveValue('rejected');
+    expect(status(2)).toHaveTextContent('Approved');
+    expect(status(1)).toHaveTextContent('Rejected');
 
-    await userEvent.selectOptions(status(1), 'approved');
+    await pickOption(status(1), 'Approved');
     expect(
       await screen.findByText('Quote 2 is approved: set it back to Issued first.'),
     ).toBeInTheDocument();
-    expect(status(1)).toHaveValue('rejected');
+    expect(status(1)).toHaveTextContent('Rejected');
 
     await userEvent.type(screen.getByLabelText('Note on quote 2'), 'Signed on site');
     await userEvent.tab();

@@ -233,7 +233,7 @@ Approved: yes (2026-10-27)
 ### Steps
 - [x] 1. Tokens, fonts, theme-aware canvas — `feat: add design tokens, bundled fonts and a theme-aware canvas`
 - [x] 2. Theme preference end to end — `feat: add the theme preference end to end`
-- [ ] 3. UI kit
+- [x] 3. UI kit — `feat: replace native selects and the catalog badge with the UI kit`
 - [ ] 4. Routes and names: Settings and Project
 - [ ] 5. Native menu: Settings and Export
 - [ ] 6. Settings screen
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 3.
+Implement step 4.

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { EditorStore } from '@/stores/editor/editorStore';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 const panelPath = '/project/panel';
 const store = () => (window as unknown as { __epd: { store: EditorStore } }).__epd.store;
@@ -45,7 +46,7 @@ describe('panel designer', () => {
   it('sets the upstream device and applies the suggested enclosure', async () => {
     await renderApp(panelPath, { exposeTestHandle: true });
     await userEvent.click(await screen.findByTestId('device-d_mcb1'));
-    await userEvent.selectOptions(screen.getByLabelText('Upstream device'), 'Main');
+    await pickOption(screen.getByLabelText('Upstream device'), 'Main');
     expect(devices().find((d) => d.id === 'd_mcb1')!.upstreamDeviceId).toBe('d_main');
 
     store()

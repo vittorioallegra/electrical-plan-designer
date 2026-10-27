@@ -18,6 +18,7 @@ import {
   type ProjectCatalog,
 } from '@epd/domain/catalog/types';
 import type { Library } from '@epd/domain/library';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
@@ -259,11 +260,17 @@ export function CatalogPage() {
               >
                 <td className="px-2 py-1">
                   {name}
-                  {item.archived ? <Badge>{t('catalog.archivedBadge')}</Badge> : null}
+                  {item.archived ? (
+                    <Badge className="ml-2">{t('catalog.archivedBadge')}</Badge>
+                  ) : null}
                   {item.missing ? (
-                    <Badge warning>{t('catalog.missingBadge')}</Badge>
+                    <Badge tone="warning" className="ml-2">
+                      {t('catalog.missingBadge')}
+                    </Badge>
                   ) : !builtin && isPriceOnly(item) ? (
-                    <Badge warning>{t('catalog.priceOnlyBadge')}</Badge>
+                    <Badge tone="warning" className="ml-2">
+                      {t('catalog.priceOnlyBadge')}
+                    </Badge>
                   ) : null}
                 </td>
                 <td className="px-2 py-1 text-text-muted">
@@ -374,7 +381,7 @@ export function CatalogPage() {
           <>
             <Button onClick={() => setRemoving(null)}>{t('common.cancel')}</Button>
             <Button
-              variant="danger"
+              variant="danger-ghost"
               onClick={() => {
                 const id = removing?.id;
                 setRemoving(null);
@@ -389,13 +396,5 @@ export function CatalogPage() {
         }
       />
     </div>
-  );
-}
-
-function Badge({ children, warning }: { children: string; warning?: boolean }) {
-  return (
-    <span className={cn('ml-2 text-xs', warning ? 'text-warning' : 'text-text-muted')}>
-      {children}
-    </span>
   );
 }

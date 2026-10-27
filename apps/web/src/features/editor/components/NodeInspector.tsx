@@ -8,6 +8,7 @@ import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { formatLength } from '@/lib/format';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { Select } from '@/components/ui/Select';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
 import { BoxContents } from './BoxContents';
@@ -81,20 +82,12 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
         <>
           <label className="flex flex-col gap-1">
             {t('inspector.node.mounting')}
-            <select
-              className="h-[var(--control-height)] rounded border border-border px-2"
+            <Select
               value={node.mounting ?? 'socket'}
               disabled={readOnly}
-              onChange={(e) =>
-                update('mounting', (n) => void (n.mounting = e.target.value as Mounting))
-              }
-            >
-              {mountings.map((m) => (
-                <option key={m} value={m}>
-                  {t(`mounting.${m}`)}
-                </option>
-              ))}
-            </select>
+              onValueChange={(v) => update('mounting', (n) => void (n.mounting = v as Mounting))}
+              options={mountings.map((m) => ({ value: m, label: t(`mounting.${m}`) }))}
+            />
           </label>
           <label className="flex items-center gap-2">
             <input
@@ -146,24 +139,20 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
       {node.kind === 'terminal_box' || node.kind === 'junction_box' ? (
         <label className="flex flex-col gap-1">
           {t('inspector.node.boxItem')}
-          <select
-            className="h-[var(--control-height)] rounded border border-border px-2"
+          <Select
             value={node.boxItemId ?? ''}
             disabled={readOnly}
-            onChange={(e) =>
+            onValueChange={(v) =>
               update('box item', (n) => {
-                if (e.target.value) n.boxItemId = e.target.value;
+                if (v) n.boxItemId = v;
                 else delete n.boxItemId;
               })
             }
-          >
-            <option value="">{t('inspector.node.noBox')}</option>
-            {boxes.map((b) => (
-              <option key={b.id} value={b.id}>
-                {itemName(b)}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: t('inspector.node.noBox') },
+              ...boxes.map((b) => ({ value: b.id, label: itemName(b) })),
+            ]}
+          />
         </label>
       ) : null}
 
@@ -210,7 +199,7 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
 
       {node.kind === 'terminal_box' ? <BoxContents node={node} /> : null}
 
-      <Button variant="danger" disabled={readOnly} onClick={onDelete}>
+      <Button variant="danger-ghost" disabled={readOnly} onClick={onDelete}>
         <Trash2 size={16} />
         {t('inspector.delete')}
       </Button>

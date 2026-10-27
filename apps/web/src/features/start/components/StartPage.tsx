@@ -206,7 +206,7 @@ export function StartPage() {
           <>
             <Button onClick={() => setDiscarding(null)}>{t('common.cancel')}</Button>
             <Button
-              variant="danger"
+              variant="danger-ghost"
               onClick={() => {
                 setDiscarding(null);
                 void discardRecovery();
