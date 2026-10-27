@@ -751,6 +751,7 @@
   },
   "start": {
     "title": "Start",
+    "version": "Version {{version}}",
     "new": "New project",
     "open": "Open file…",
     "newTitle": "New project",
@@ -792,6 +793,9 @@
       "title": "Recent files",
       "missing": "missing",
       "remove": "Remove from the list",
+      "more": "More actions: {{name}}",
+      "open": "Open",
+      "empty": "No recent files yet. Create a project or open a file to see it here.",
       "gone": "“{{name}}” was moved or deleted. It was removed from the recent files."
     }
   },

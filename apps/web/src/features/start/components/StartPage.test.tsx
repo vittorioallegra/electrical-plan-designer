@@ -194,8 +194,8 @@ describe('start screen', () => {
     expect(
       within(recent)
         .getAllByRole('listitem')
-        .map((li) => li.textContent),
-    ).toEqual(['other.epdother.epd', 'demo.epddemo.epd']);
+        .map((li) => within(li).getByRole('button', { name: /^(other|demo)\.epd$/ }).textContent),
+    ).toEqual(['other.epd', 'demo.epd']);
 
     fileAccess.files.delete('demo.epd');
     await act(() => router.navigate('/elsewhere'));
@@ -217,11 +217,20 @@ describe('start screen', () => {
     await fileAccess.openPath('demo.epd');
     await act(() => router.navigate('/elsewhere'));
     await act(() => router.navigate('/'));
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Remove from the list: demo.epd' }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: 'More actions: demo.epd' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove from the list' }));
     await waitFor(() => expect(screen.queryByRole('region', { name: 'Recent files' })).toBeNull());
     expect(await fileAccess.recent.list()).toEqual([]);
+  });
+
+  // protects=start screen empty state; fails_when=the sidebar actions with their shortcut hints or the empty-recent message are missing; no_claim=the native menu accelerators (menu.test)
+  it('shows the sidebar actions and an empty recent list', async () => {
+    await start();
+    expect(screen.getByText('Electrical Plan Designer')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New project' })).toHaveTextContent('Ctrl+N');
+    expect(screen.getByRole('button', { name: 'Open file…' })).toHaveTextContent('Ctrl+O');
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveTextContent('Ctrl+,');
+    expect(await screen.findByText(/No recent files yet/)).toBeInTheDocument();
   });
 
   // protects=new project from the library defaults, no template; fails_when=a new project does not copy the library's settings and quote rates, there is still a template option, or the project carries library data; no_claim=the library pages

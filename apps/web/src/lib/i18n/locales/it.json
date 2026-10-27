@@ -751,6 +751,7 @@
   },
   "start": {
     "title": "Inizio",
+    "version": "Versione {{version}}",
     "new": "Nuovo progetto",
     "open": "Apri file…",
     "newTitle": "Nuovo progetto",
@@ -792,6 +793,9 @@
       "title": "File recenti",
       "missing": "mancante",
       "remove": "Rimuovi dall’elenco",
+      "more": "Altre azioni: {{name}}",
+      "open": "Apri",
+      "empty": "Ancora nessun file recente. Crea un progetto o apri un file per vederlo qui.",
       "gone": "“{{name}}” è stato spostato o eliminato. È stato rimosso dai file recenti."
     }
   },

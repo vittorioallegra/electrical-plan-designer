@@ -238,7 +238,7 @@ Approved: yes (2026-10-27)
 - [x] 5. Native menu: Settings and Export — `feat: add Settings and Export items to the native menu`
 - [x] 6. Settings screen — `feat: add the Settings screen with sidebar, General section and kit-styled sections`
 - [x] 7. Catalog — `feat: add the catalog table with detail panel, sidebar catalog actions and kit selects`
-- [ ] 8. Start screen
+- [x] 8. Start screen — `feat: add the start screen sidebar layout, app mark and recent file dates`
 - [ ] 9. Editor shell
 - [ ] 10. Plan view
 - [ ] 11. Panel, circuits, BOM, warnings, quote, project details
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 8.
+Implement step 9.

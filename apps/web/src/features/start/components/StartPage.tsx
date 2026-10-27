@@ -1,15 +1,29 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import {
+  Ellipsis,
+  FileText,
+  FolderOpen,
+  Plus,
+  Settings as SettingsIcon,
+  TriangleAlert,
+  X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { newProjectFile } from '@epd/domain/projectFile';
 import { queryKeys } from '@/api/keys';
+import { APP_VERSION } from '@/config/version';
+import { cn } from '@/lib/cn';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibrary } from '@/stores/library/useLibrary';
 import { useProjectOpener } from '@/features/start/hooks/useProjectOpener';
+import { AppMark } from '@/components/AppMark';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { IconButton } from '@/components/ui/IconButton';
+import { Menu } from '@/components/ui/Menu';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 
@@ -97,95 +111,176 @@ export function StartPage() {
   // While a project is open the copy is that project's own.
   const shown = !current && recovered.data ? recovered.data : null;
 
+  const mod = modifierKey();
+  const recentList = recentFiles.data ?? [];
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-4">
-      <h1 className="text-xl font-semibold">{t('start.title')}</h1>
-
-      {current ? (
-        <section
-          className="flex items-center gap-3 rounded border border-border p-3"
-          aria-label={t('start.continue.title')}
-        >
-          <div className="min-w-0 flex-1">
-            <p className="text-text-muted">{t('start.continue.title')}</p>
-            <p className="truncate font-medium">
-              {current.store.getState().data.meta.name}
-              {current.store.getState().readOnly ? ` · ${t('start.continue.readOnly')}` : ''}
+    <div className="flex min-h-screen">
+      <aside className="flex w-64 shrink-0 flex-col gap-1.5 border-r border-border bg-panel p-4">
+        <div className="mx-1 mb-4 flex items-center gap-2.5">
+          <AppMark />
+          <div className="min-w-0">
+            <p className="font-semibold">{t('app.name')}</p>
+            <p className="text-small text-text-faint">
+              {t('start.version', { version: APP_VERSION })}
             </p>
           </div>
-          <Button variant="primary" onClick={() => navigate('/project/plan')}>
-            {t('start.continue.action')}
-          </Button>
-        </section>
-      ) : null}
-
-      {shown ? (
-        <section
-          className="flex items-center gap-3 rounded border border-border p-3"
-          aria-label={t('start.recovery.title')}
+        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          className="w-full justify-start"
+          icon={<Plus size={16} />}
+          onClick={() => guard(() => setCreating(true))}
         >
-          <div className="min-w-0 flex-1">
-            <p className="text-text-muted">{t('start.recovery.title')}</p>
-            <p className="truncate font-medium">{shown.project.meta.name}</p>
-            <p className="text-text-muted">
-              {t('start.recovery.lastChange', {
-                date: dateFormat.format(new Date(shown.savedAt)),
-              })}
-              {shown.file
-                ? ` · ${t('start.recovery.file', { name: shown.file.name })}`
-                : ` · ${t('start.recovery.noFile')}`}
-              {shown.savedToFile ? null : ` · ${t('start.recovery.notInFile')}`}
-            </p>
-          </div>
-          <Button onClick={() => setDiscarding(shown.project.meta.name)}>
-            {t('start.recovery.discard')}
-          </Button>
-          <Button variant="primary" onClick={() => void restore()}>
-            {t('start.recovery.restore')}
-          </Button>
-        </section>
-      ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        <Button variant="primary" onClick={() => guard(() => setCreating(true))}>
           {t('start.new')}
+          <Shortcut className="opacity-70">{`${mod}N`}</Shortcut>
         </Button>
-        <Button onClick={() => opener.openFile()}>{t('start.open')}</Button>
-        <Button onClick={() => navigate('/settings')}>{t('library.open')}</Button>
-      </div>
+        <Button
+          variant="ghost"
+          size="lg"
+          className="w-full justify-start"
+          icon={<FolderOpen size={16} />}
+          onClick={() => opener.openFile()}
+        >
+          {t('start.open')}
+          <Shortcut className="text-text-faint">{`${mod}O`}</Shortcut>
+        </Button>
+        <div className="flex-1" />
+        <Button
+          variant="ghost"
+          size="lg"
+          className="w-full justify-start"
+          icon={<SettingsIcon size={16} />}
+          onClick={() => navigate('/settings')}
+        >
+          {t('library.open')}
+          <Shortcut className="text-text-faint">{`${mod},`}</Shortcut>
+        </Button>
+      </aside>
 
-      {recentFiles.data && recentFiles.data.length > 0 ? (
-        <section aria-label={t('start.recent.title')} className="flex flex-col gap-1">
-          <h2 className="text-text-muted">{t('start.recent.title')}</h2>
-          <ul className="flex flex-col divide-y divide-border rounded border border-border">
-            {recentFiles.data.map((file) => (
-              <li key={file.path} className="flex items-center gap-3 px-3 py-1.5">
-                <button
-                  type="button"
-                  className="min-w-0 flex-1 text-left hover:underline"
-                  onClick={() => opener.openPath(file.path)}
+      <main className="flex min-w-0 flex-1 flex-col gap-5 overflow-auto p-10">
+        <h1 className="sr-only">{t('start.title')}</h1>
+
+        {shown ? (
+          <section
+            className="flex items-center gap-3 rounded-md bg-warning-subtle p-3"
+            aria-label={t('start.recovery.title')}
+          >
+            <TriangleAlert size={16} aria-hidden className="shrink-0 text-warning" />
+            <div className="min-w-0 flex-1">
+              <p className="text-text-muted">{t('start.recovery.title')}</p>
+              <p className="truncate font-medium">{shown.project.meta.name}</p>
+              <p className="text-text-muted">
+                {t('start.recovery.lastChange', {
+                  date: dateFormat.format(new Date(shown.savedAt)),
+                })}
+                {shown.file
+                  ? ` · ${t('start.recovery.file', { name: shown.file.name })}`
+                  : ` · ${t('start.recovery.noFile')}`}
+                {shown.savedToFile ? null : ` · ${t('start.recovery.notInFile')}`}
+              </p>
+            </div>
+            <Button variant="ghost" onClick={() => setDiscarding(shown.project.meta.name)}>
+              {t('start.recovery.discard')}
+            </Button>
+            <Button onClick={() => void restore()}>{t('start.recovery.restore')}</Button>
+          </section>
+        ) : null}
+
+        {current ? (
+          <section
+            className="flex items-center gap-3 rounded-md border border-border bg-panel p-3"
+            aria-label={t('start.continue.title')}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-text-muted">{t('start.continue.title')}</p>
+              <p className="truncate font-medium">
+                {current.store.getState().data.meta.name}
+                {current.store.getState().readOnly ? ` · ${t('start.continue.readOnly')}` : ''}
+              </p>
+            </div>
+            <Button variant="primary" onClick={() => navigate('/project/plan')}>
+              {t('start.continue.action')}
+            </Button>
+          </section>
+        ) : null}
+
+        {recentList.length > 0 ? (
+          <section aria-label={t('start.recent.title')} className="flex flex-col gap-2">
+            <h2 className="text-heading font-semibold">{t('start.recent.title')}</h2>
+            <ul className="flex flex-col">
+              {recentList.map((file) => (
+                <li
+                  key={file.path}
+                  className="flex h-13 items-center gap-3 rounded-md px-3 hover:bg-hover"
                 >
-                  <span className={file.missing ? 'font-medium line-through' : 'font-medium'}>
-                    {file.name}
+                  <span
+                    aria-hidden
+                    className="flex size-7 shrink-0 items-center justify-center rounded-sm border border-border bg-chrome text-text-muted"
+                  >
+                    <FileText size={14} />
                   </span>
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 text-left"
+                    onClick={() => opener.openPath(file.path)}
+                  >
+                    <span
+                      className={cn(
+                        'block truncate font-medium',
+                        file.missing && 'text-text-muted',
+                      )}
+                    >
+                      {file.name}
+                    </span>
+                    <span className="block truncate text-small text-text-faint">
+                      {folderOf(file.path)}
+                    </span>
+                  </button>
                   {file.missing ? (
-                    <span className="ml-2 text-warning">{t('start.recent.missing')}</span>
+                    <Badge tone="warning">{t('start.recent.missing')}</Badge>
+                  ) : file.modifiedAt !== undefined ? (
+                    <span className="shrink-0 text-small text-text-muted tnum">
+                      {dateFormat.format(new Date(file.modifiedAt))}
+                    </span>
                   ) : null}
-                  <span className="block truncate text-text-muted">{file.path}</span>
-                </button>
-                <Button
-                  variant="ghost"
-                  aria-label={`${t('start.recent.remove')}: ${file.name}`}
-                  title={t('start.recent.remove')}
-                  onClick={() => void forget(file.path)}
-                >
-                  <X size={16} />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+                  {file.missing ? (
+                    <IconButton
+                      label={`${t('start.recent.remove')}: ${file.name}`}
+                      icon={<X size={16} />}
+                      onClick={() => void forget(file.path)}
+                    />
+                  ) : (
+                    <Menu
+                      trigger={
+                        <IconButton
+                          label={t('start.recent.more', { name: file.name })}
+                          icon={<Ellipsis size={16} />}
+                        />
+                      }
+                      items={[
+                        {
+                          key: 'open',
+                          label: t('start.recent.open'),
+                          onSelect: () => opener.openPath(file.path),
+                        },
+                        {
+                          key: 'remove',
+                          label: t('start.recent.remove'),
+                          onSelect: () => void forget(file.path),
+                        },
+                      ]}
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : recentFiles.data ? (
+          <p className="text-text-muted">{t('start.recent.empty')}</p>
+        ) : null}
+      </main>
 
       {creating ? (
         <NewProjectDialog
@@ -218,6 +313,25 @@ export function StartPage() {
         }
       />
     </div>
+  );
+}
+
+/** The shortcut modifier shown in hints: Command on macOS, Ctrl elsewhere. */
+function modifierKey(): string {
+  return /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
+}
+
+/** The folder part of a path (empty when it has none). */
+function folderOf(path: string): string {
+  const cut = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+  return cut > 0 ? path.slice(0, cut) : '';
+}
+
+function Shortcut({ className, children }: { className?: string; children: string }) {
+  return (
+    <span aria-hidden className={cn('ml-auto pl-3 text-small font-normal', className)}>
+      {children}
+    </span>
   );
 }
 
