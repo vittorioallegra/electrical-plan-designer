@@ -213,12 +213,10 @@
     outline-offset: 2px;
   }
 
-  /* A field box (input, number input, select trigger) shows one ring around the whole box,
-     whether the box itself or the input inside it has focus. */
-  .field-box:focus-visible,
-  .field-box:has(:focus-visible) {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 1px;
+  /* A field box (input, number input, select trigger) shows focus with its own border colour
+     (`focus-within:border-focus` in `fieldBox`), not with an outline ring. */
+  .field-box:focus-visible {
+    outline: none;
   }
 }
 

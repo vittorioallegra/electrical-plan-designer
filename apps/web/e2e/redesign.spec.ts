@@ -201,54 +201,65 @@ for (const scheme of ['light', 'dark'] as const) {
   test.describe(`keyboard focus in ${scheme}`, () => {
     test.use({ colorScheme: scheme, viewport: { width: 1280, height: 800 } });
 
-    // protects=a visible focus ring on every route; fails_when=Tab reaches an element with no 2px focus-coloured outline (on its field box for an input), an input draws a second ring inside its box, or never leaves the first element; no_claim=the order of the focus
-    test(`Tab shows the focus ring on every route in the ${scheme} theme`, async ({ page }) => {
+    // protects=a visible focus indicator on every route; fails_when=Tab reaches a control with no 2px focus-coloured outline, or a field whose border does not turn the focus colour or that also draws an outline ring, or never leaves the first element; no_claim=the order of the focus
+    test(`Tab shows the focus indicator on every route in the ${scheme} theme`, async ({
+      page,
+    }) => {
       await openDemo(page);
+      let fields = 0;
       for (const path of routes) {
         await go(page, path);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         const seen = new Set<string>();
         for (let i = 0; i < 12; i++) {
           await page.keyboard.press('Tab');
-          const ring = await page.evaluate(() => {
+          const focus = await page.evaluate(() => {
             const el = document.activeElement as HTMLElement;
             if (!el || el === document.body) return null;
-            // A field box draws the ring around the input inside it; the input draws none.
-            const box = el.closest<HTMLElement>('.field-box') ?? el;
-            const style = getComputedStyle(box);
-            const token = getComputedStyle(document.documentElement)
-              .getPropertyValue('--color-focus')
-              .trim();
+            // A field (input, number input, select trigger) shows focus with its box's border.
+            const box = el.closest<HTMLElement>('.field-box');
             return {
               id: `${el.tagName}:${el.getAttribute('aria-label') ?? el.textContent?.slice(0, 20)}`,
               visible: el.matches(':focus-visible'),
-              width: style.outlineWidth,
-              style: style.outlineStyle,
-              color: style.outlineColor,
-              inner: box === el ? 'none' : getComputedStyle(el).outlineStyle,
-              token,
+              field: box !== null,
+              width: getComputedStyle(box ?? el).outlineWidth,
+              style: getComputedStyle(box ?? el).outlineStyle,
+              inner: getComputedStyle(el).outlineStyle,
+              token: getComputedStyle(document.documentElement)
+                .getPropertyValue('--color-focus')
+                .trim(),
             };
           });
-          if (!ring) continue;
-          seen.add(ring.id);
-          expect(ring.visible, `${path} ${ring.id}`).toBe(true);
-          expect(ring.style, `${path} ${ring.id}`).not.toBe('none');
-          expect(ring.width, `${path} ${ring.id}`).toBe('2px');
-          expect(ring.inner, `${path} ${ring.id} draws a second ring`).toBe('none');
-          // Buttons fade the outline colour in over 80 ms: wait for it to settle on the token.
+          if (!focus) continue;
+          const label = `${path} ${focus.id}`;
+          seen.add(focus.id);
+          expect(focus.visible, label).toBe(true);
+          if (focus.field) {
+            fields++;
+            expect(focus.style, `${label} draws an outline ring`).toBe('none');
+            expect(focus.inner, `${label} draws an outline ring`).toBe('none');
+          } else {
+            expect(focus.style, label).not.toBe('none');
+            expect(focus.width, label).toBe('2px');
+          }
+          // Colours fade in over 80 ms: wait for the field border or the outline to settle on the token.
           await expect
             .poll(
               () =>
                 page.evaluate(() => {
                   const el = document.activeElement!;
-                  return getComputedStyle(el.closest('.field-box') ?? el).outlineColor;
+                  const box = el.closest('.field-box');
+                  return box
+                    ? getComputedStyle(box).borderTopColor
+                    : getComputedStyle(el).outlineColor;
                 }),
-              { message: `${path} ${ring.id}` },
+              { message: label },
             )
-            .toBe(rgb(ring.token));
+            .toBe(rgb(focus.token));
         }
         expect(seen.size, path).toBeGreaterThan(3);
       }
+      expect(fields, 'no route tabbed into a field').toBeGreaterThan(0);
     });
   });
 }

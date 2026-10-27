@@ -1,9 +1,9 @@
 import { useId, type InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
-// `field-box` (styles.css) draws the one focus ring of the box, also for an input inside it.
+// Focus turns the box's own border `focus`; `field-box` (styles.css) drops the outline ring.
 export const fieldBox =
-  'field-box h-[var(--control-height,1.75rem)] rounded-sm border bg-chrome px-2 text-body text-text transition-colors duration-[80ms] placeholder:text-text-faint';
+  'field-box h-[var(--control-height,1.75rem)] rounded-sm border bg-chrome px-2 text-body text-text transition-colors duration-[80ms] placeholder:text-text-faint focus-within:border-focus';
 
 export function TextField({
   label,

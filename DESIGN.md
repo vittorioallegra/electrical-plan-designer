@@ -280,7 +280,8 @@ buttons in features.
 - **IconButton**: 28×28, `text-muted`, tooltip with the label and shortcut; required
   `aria-label`.
 - **Input / NumberInput**: 28px, `chrome` fill, `border` hairline, unit suffix in `text-faint`,
-  value in mono. Invalid: `error` border and a message below.
+  value in mono. Invalid: `error` border and a message below. Focus turns the same 1px border
+  `focus` (no outline ring); this also applies to the Select trigger.
 - **Select / Combobox**: Radix-based, same box as Input, menu as a popover.
 - **SegmentedControl**: for 2–5 exclusive options (theme, view switch, category filter).
 - **Tabs**: underline style inside panels; segmented style for top-level view switches.
