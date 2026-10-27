@@ -124,6 +124,12 @@ export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }
   const hint = toolHintKey(tool);
   const left = useSidePanel('leftPanelOpen');
   const right = useSidePanel('inspectorOpen');
+  // Selecting something brings the inspector in (closing it by hand stays until the next selection).
+  const selected = useEditor((s) => s.ui.selection);
+  useEffect(() => {
+    if (selected.length > 0 && !store.getState().ui.inspectorOpen)
+      store.getState().setUi({ inspectorOpen: true });
+  }, [selected, store]);
 
   return (
     <div className="flex h-full">

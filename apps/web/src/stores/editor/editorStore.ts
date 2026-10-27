@@ -171,7 +171,8 @@ export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): Edit
         drawerOpen: false,
         drawerSize: 30,
         leftPanelOpen: true,
-        inspectorOpen: true,
+        // Closed so the canvas gets most of the window; selecting something opens it.
+        inspectorOpen: false,
         hideConnectivity: false,
         focus: null,
       },

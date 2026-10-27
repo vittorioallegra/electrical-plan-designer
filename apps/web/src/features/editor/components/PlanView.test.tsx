@@ -57,6 +57,10 @@ describe('plan view', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Floors panel' }));
     expect(screen.getByRole('tab', { name: 'Ground floor' })).toBeInTheDocument();
 
+    // The inspector starts closed (the canvas gets the room); the toggle opens and closes it.
+    expect(store().getState().ui.inspectorOpen).toBe(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Inspector' }));
+    expect(store().getState().ui.inspectorOpen).toBe(true);
     expect(screen.getByText('Nothing selected.')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Inspector' }));
     expect(store().getState().ui.inspectorOpen).toBe(false);
@@ -65,5 +69,19 @@ describe('plan view', () => {
       'true',
     );
     expect(store().getState().revision).toBe(revision);
+  });
+
+  // protects=the inspector opens on a selection; fails_when=selecting an object leaves the inspector closed, or an empty selection opens it; no_claim=what the inspector shows
+  it('opens the inspector when something is selected', async () => {
+    await openEmptyProject();
+    expect(store().getState().ui.inspectorOpen).toBe(false);
+    store().getState().setUi({ selection: [] });
+    expect(store().getState().ui.inspectorOpen).toBe(false);
+    act(() =>
+      store()
+        .getState()
+        .setUi({ selection: ['n1'] }),
+    );
+    expect(store().getState().ui.inspectorOpen).toBe(true);
   });
 });
