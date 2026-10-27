@@ -613,6 +613,15 @@
     "hideConnectivity": "Hide connectivity warnings while drawing",
     "hiddenCount_one": "{{count}} hidden",
     "hiddenCount_other": "{{count}} hidden",
+    "severity": {
+      "warning": "Warning"
+    },
+    "columns": {
+      "severity": "Severity",
+      "check": "Check",
+      "message": "Message",
+      "location": "Location"
+    },
     "segment": "Conduit segment",
     "titles": {
       "no_rcd": "No RCD protection",

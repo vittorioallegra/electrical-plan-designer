@@ -39,6 +39,7 @@ describe('BOM drawer tab', () => {
     for (const region of within(bom).getAllByRole('region')) {
       const quantities = within(region)
         .getAllByRole('row')
+        .slice(1)
         .map((row) => Number(row.lastElementChild!.textContent!.split(' ')[0]));
       const total = within(region).getByTestId('bom-total').textContent!;
       expect(Number(total.split(' ')[0])).toBe(quantities.reduce((a, b) => a + b, 0));

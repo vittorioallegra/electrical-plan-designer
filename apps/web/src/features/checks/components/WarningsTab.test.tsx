@@ -36,29 +36,27 @@ function addLooseBox() {
 }
 
 describe('warnings tab', () => {
-  // protects=grouping, badge and the connectivity filter; fails_when=warnings are not grouped, the badge miscounts or the filter hides other checks; no_claim=check logic (domain tests)
-  it('groups warnings, counts them and hides connectivity on demand', async () => {
+  // protects=rows, badge and the connectivity filter; fails_when=warnings are missing, the badge miscounts or the filter hides other checks; no_claim=check logic (domain tests)
+  it('lists warnings, counts them and hides connectivity on demand', async () => {
     const tab = await openWarnings();
     expect(screen.getByTestId('warnings-badge')).toHaveTextContent('1');
     expect(
-      within(tab).getByRole('region', { name: 'Boxes without plate or devices' }),
+      within(tab).getByRole('row', { name: /Boxes without plate or devices/ }),
     ).toHaveTextContent('Living light');
 
     addLooseBox();
     expect(screen.getByTestId('warnings-badge')).toHaveTextContent('4');
+    expect(within(tab).getByRole('row', { name: /Not connected to the panel/ })).toHaveTextContent(
+      'Loose box',
+    );
     expect(
-      within(tab).getByRole('region', { name: 'Not connected to the panel' }),
-    ).toHaveTextContent('Loose box');
-    expect(
-      within(tab).getByRole('region', { name: 'Boxes not reached by a circuit' }),
+      within(tab).getByRole('row', { name: /Boxes not reached by a circuit/ }),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByLabelText('Hide connectivity warnings while drawing'));
     expect(screen.getByTestId('warnings-badge')).toHaveTextContent('2');
-    expect(within(tab).queryByRole('region', { name: 'Not connected to the panel' })).toBeNull();
-    expect(
-      within(tab).queryByRole('region', { name: 'Boxes not reached by a circuit' }),
-    ).toBeNull();
+    expect(within(tab).queryByRole('row', { name: /Not connected to the panel/ })).toBeNull();
+    expect(within(tab).queryByRole('row', { name: /Boxes not reached by a circuit/ })).toBeNull();
     expect(tab).toHaveTextContent('2 hidden');
     expect(within(tab).getAllByText('Loose box')).toHaveLength(1);
   });
@@ -67,8 +65,11 @@ describe('warnings tab', () => {
   it('selects the node of a warning and switches to its floor', async () => {
     const tab = await openWarnings();
     addLooseBox();
-    const region = within(tab).getByRole('region', { name: 'Not connected to the panel' });
-    await userEvent.click(within(region).getByRole('button', { name: 'Loose box' }));
+    const row = within(tab).getByRole('row', { name: /Not connected to the panel/ });
+    // Severity badge and the floor the element sits on.
+    expect(row).toHaveTextContent('Warning');
+    expect(row).toHaveTextContent(store().getState().data.doc.floors[0]!.name);
+    await userEvent.click(row);
     expect(ui().selection).toEqual(['n_loose']);
     expect(ui().floorId).toBe('f1');
   });
@@ -83,12 +84,9 @@ describe('warnings tab', () => {
           d.doc.circuits.find((c) => c.id === 'c2')!.crossSection = 1.5;
         });
     });
-    const region = within(tab).getByRole('region', {
-      name: 'Cross-section too small for the circuit type',
-    });
     await userEvent.click(
-      within(region).getByRole('button', {
-        name: 'Sockets GF: 1.5 mm² is below 2.5 mm² for Sockets',
+      within(tab).getByRole('row', {
+        name: /Sockets GF: 1.5 mm² is below 2.5 mm² for Sockets/,
       }),
     );
     expect(ui().activeOwner).toEqual({ kind: 'circuit', id: 'c2' });
@@ -105,9 +103,7 @@ describe('warnings tab', () => {
           d.doc.panels[0]!.devices.find((x) => x.id === 'd_mcb3')!.rail = 3;
         });
     });
-    await userEvent.click(
-      within(tab).getByRole('button', { name: /does not fit on the DIN rails/ }),
-    );
+    await userEvent.click(within(tab).getByRole('row', { name: /does not fit on the DIN rails/ }));
     expect(ui().selection).toEqual(['d_mcb3']);
     expect(await screen.findByTestId('device-inspector')).toBeInTheDocument();
     expect(screen.getByTestId('panel-front')).toBeInTheDocument();

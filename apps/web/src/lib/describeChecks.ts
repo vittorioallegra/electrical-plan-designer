@@ -34,6 +34,20 @@ function elementName(w: Warning, doc: ProjectDoc, t: TFunction): string {
   return device?.label || ref.id;
 }
 
+/** Where a warning lives: the floor of a node or segment, otherwise the view that shows it. */
+export function warningLocation(w: Warning, doc: ProjectDoc, t: TFunction): string {
+  const ref = w.elementRef;
+  const floorName = (floorId: string | undefined) =>
+    doc.floors.find((f) => f.id === floorId)?.name ?? '';
+  if (ref.kind === 'node') return floorName(doc.nodes.find((n) => n.id === ref.id)?.floorId);
+  if (ref.kind === 'segment') {
+    const seg = doc.segments.find((s) => s.id === ref.id);
+    return floorName(doc.nodes.find((n) => n.id === seg?.fromNodeId)?.floorId);
+  }
+  if (ref.kind === 'panel_device') return t('pages.panel');
+  return t('editor.tabs.circuits');
+}
+
 /** One-line message of a warning in the UI language. */
 export function describeWarning(w: Warning, doc: ProjectDoc, t: TFunction, locale: Locale): string {
   const p = w.params;

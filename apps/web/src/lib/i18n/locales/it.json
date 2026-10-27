@@ -613,6 +613,15 @@
     "hideConnectivity": "Nascondi gli avvisi di collegamento mentre disegni",
     "hiddenCount_one": "{{count}} nascosto",
     "hiddenCount_other": "{{count}} nascosti",
+    "severity": {
+      "warning": "Avviso"
+    },
+    "columns": {
+      "severity": "Gravità",
+      "check": "Controllo",
+      "message": "Messaggio",
+      "location": "Posizione"
+    },
     "segment": "Tratto di tubo",
     "titles": {
       "no_rcd": "Senza protezione differenziale",
