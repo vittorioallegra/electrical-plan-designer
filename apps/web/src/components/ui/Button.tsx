@@ -1,13 +1,15 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger-ghost';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'ghost-muted' | 'danger-ghost';
 type Size = 'sm' | 'md' | 'lg' | 'fill';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-hover',
   secondary: 'border border-border-strong bg-panel text-text hover:bg-hover active:bg-pressed',
   ghost: 'text-text hover:bg-hover active:bg-pressed',
+  /** Quiet chrome (status bar, floating panels): muted at rest, full text colour on hover. */
+  'ghost-muted': 'text-text-muted hover:bg-hover hover:text-text active:bg-pressed',
   'danger-ghost': 'text-error hover:bg-error-subtle active:bg-error-subtle',
 };
 

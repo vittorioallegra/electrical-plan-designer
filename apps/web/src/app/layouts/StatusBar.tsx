@@ -43,7 +43,7 @@ export function StatusBar() {
         return (
           <Button
             key={tab}
-            variant="ghost"
+            variant="ghost-muted"
             size="sm"
             pressed={active}
             onClick={() => toggle(tab)}

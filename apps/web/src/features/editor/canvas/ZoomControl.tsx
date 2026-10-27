@@ -31,7 +31,7 @@ export function ZoomControl({ size }: { size: { width: number; height: number } 
         onClick={() => zoom(1 / STEP)}
       />
       <Button
-        variant="ghost"
+        variant="ghost-muted"
         size="sm"
         aria-label={t('editor.zoom.reset')}
         data-testid="zoom-level"

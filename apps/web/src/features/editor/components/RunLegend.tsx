@@ -21,7 +21,7 @@ export function RunLegend() {
       data-testid="run-legend"
     >
       <Button
-        variant="ghost"
+        variant="ghost-muted"
         size="sm"
         aria-expanded={open}
         aria-controls={bodyId}
