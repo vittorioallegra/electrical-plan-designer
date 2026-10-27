@@ -223,7 +223,7 @@ packages/bridge/src/            ThemePreference, preferences API, new menu comma
 
 ## Progress
 
-Phase: implementation
+Phase: verification
 Branch: claude/ui-redesign-e65cb2
 Base: 8850b93
 Spec: docs/specs/ui-redesign.md
@@ -243,7 +243,7 @@ Approved: yes (2026-10-27)
 - [x] 10. Plan view — `feat: restyle the plan view with a tool rail, resizable side panels, zoom control and conduit legend`
 - [x] 11. Panel, circuits, BOM, warnings, quote, project details — `feat: restyle the project details page and settings form with grouped rows and a kit run elevation select`
 - [x] 12. Dialogs and states pass — `feat: restyle dialogs and states with ghost cancel, wide dialogs, shared loading and empty states and reduced motion`
-- [ ] 13. E2E and docs
+- [x] 13. E2E and docs — `test: add web and desktop E2E for the redesign and update the docs for Settings`
 
 ### Verification
 - qa: pending
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 13.
+Run qa, then review (Phase 4)
