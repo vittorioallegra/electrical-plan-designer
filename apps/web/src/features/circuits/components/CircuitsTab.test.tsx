@@ -34,7 +34,7 @@ describe('circuits tab', () => {
   // protects=pick-targets mode; fails_when=the banner does not show or picked targets are not listed; no_claim=canvas hit testing (E2E)
   it('picks targets with a banner and lists them', async () => {
     const tab = await openCircuits();
-    await userEvent.click(within(tab).getByRole('button', { name: /Sockets GF/ }));
+    await userEvent.click(within(tab).getByRole('row', { name: /Sockets GF/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Pick targets on the plan' }));
     expect(screen.getByTestId('pick-banner')).toHaveTextContent('Sockets GF');
 
@@ -52,7 +52,7 @@ describe('circuits tab', () => {
     });
     await openDrawer('Circuits');
     const tab = await screen.findByTestId('circuits-tab');
-    await userEvent.click(within(tab).getByRole('button', { name: /Sockets GF/ }));
+    await userEvent.click(within(tab).getByRole('row', { name: /Sockets GF/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Pick targets on the plan' }));
     expect(router.state.location.pathname).toBe('/project/plan');
     expect(await screen.findByTestId('pick-banner')).toHaveTextContent('Sockets GF');
@@ -61,7 +61,7 @@ describe('circuits tab', () => {
   // protects=manual routing status; fails_when=manual mode does not start from the auto route or a broken route is not flagged; no_claim=every route problem kind
   it('starts manual routing from the auto route and flags a broken one', async () => {
     const tab = await openCircuits();
-    await userEvent.click(within(tab).getByRole('button', { name: /Lights GF/ }));
+    await userEvent.click(within(tab).getByRole('row', { name: /Lights GF/ }));
     await userEvent.click(screen.getByRole('radio', { name: 'Manual' }));
     expect(doc().circuits.find((c) => c.id === 'c1')!.routing).toEqual({
       mode: 'manual',
