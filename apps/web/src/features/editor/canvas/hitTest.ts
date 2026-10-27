@@ -1,6 +1,7 @@
 // Hit testing in world coordinates, so selection and Tab cycling do not depend on Konva.
 import { distance, projectOnPolyline } from '@epd/domain/geometry';
-import type { Point, ProjectDoc } from '@epd/domain/types';
+import type { Point, ProjectDoc, Wall } from '@epd/domain/types';
+import type { WallEnd } from '@epd/domain/walls';
 
 export type HitKind = 'node' | 'segment' | 'wall';
 
@@ -12,6 +13,13 @@ export interface Hit {
 
 export const NODE_HIT_PX = 12;
 export const SEGMENT_HIT_PX = 6;
+/** Smallest radius of the end handles of a selected wall. */
+export const WALL_HANDLE_PX = 7;
+
+/** Radius (m) of a wall's end handles: never smaller than the wall is thick. */
+export function wallHandleRadius(wall: Wall, scale: number): number {
+  return Math.max(WALL_HANDLE_PX / scale, wall.thickness / 2 + 2 / scale);
+}
 
 /** Plan polyline of a same-floor segment (risers have none). */
 export function segmentPolyline(doc: ProjectDoc, segmentId: string): Point[] | null {
@@ -71,4 +79,13 @@ export function boxSelect(doc: ProjectDoc, floorId: string, a: Point, b: Point):
     if (inside(w.a) && inside(w.b)) ids.push(w.id);
   }
   return ids;
+}
+
+/** The end handle of a wall under `p`, the nearer one when both are. */
+export function wallHandleAt(wall: Wall, p: Point, scale: number): WallEnd | null {
+  const da = distance(wall.a, p);
+  const db = distance(wall.b, p);
+  const reach = wallHandleRadius(wall, scale);
+  if (da > reach && db > reach) return null;
+  return da <= db ? 'a' : 'b';
 }

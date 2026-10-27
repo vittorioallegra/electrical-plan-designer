@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import demo from '../../../../../../tests/fixtures/demo-project.json';
 import type { ProjectDoc } from '@epd/domain/types';
-import { boxSelect, hitTest } from './hitTest';
+import { boxSelect, hitTest, wallHandleAt } from './hitTest';
 
 const doc = demo as ProjectDoc;
 
@@ -26,5 +26,13 @@ describe('hitTest', () => {
       'n_s1',
       's02',
     ]);
+  });
+
+  // protects=wall end handles; fails_when=a press near an end misses its handle or a press mid-wall hits one; no_claim=drawing
+  it('finds the end handle of a wall under the pointer', () => {
+    const wall = { id: 'w', a: { x: 0, y: 0 }, b: { x: 4, y: 0 }, thickness: 0.2 };
+    expect(wallHandleAt(wall, { x: 0.05, y: 0.02 }, 100)).toBe('a');
+    expect(wallHandleAt(wall, { x: 3.97, y: 0 }, 100)).toBe('b');
+    expect(wallHandleAt(wall, { x: 2, y: 0 }, 100)).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { backgroundToWorld, worldToBackground } from '@epd/domain/geometry';
 import type { Background } from '@epd/domain/types';
-import { snapPoint } from './snapping';
+import { snapPoint, snapWallMove } from './snapping';
 import { centerOn, fitView, gridStep, screenToWorld, worldToScreen, zoomAt } from './viewport';
 
 describe('viewport', () => {
@@ -80,6 +80,16 @@ describe('snapping', () => {
       point: { x: 1.01, y: 1 },
       kind: 'none',
     });
+  });
+
+  // protects=snapping a dragged wall; fails_when=the end nearest a wall end does not land on it, or a free move leaves the grid; no_claim=—
+  it('snaps a moved wall by its end nearest a target, else its start to the grid', () => {
+    const wall = { a: { x: 0, y: 0 }, b: { x: 2, y: 0 } };
+    const moved = (delta: { x: number; y: number }, enabled = true) =>
+      snapWallMove(wall, delta, { ...targets, nodes: [], vertices: [] }, { ...opts, enabled });
+    expect(moved({ x: 1.04, y: 2.97 })).toEqual({ x: 1, y: 3 });
+    expect(moved({ x: 0.2, y: 0.7 })).toEqual({ x: 0, y: 0.5 });
+    expect(moved({ x: 0.2, y: 0.7 }, false)).toEqual({ x: 0.2, y: 0.7 });
   });
 });
 

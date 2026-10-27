@@ -8,7 +8,7 @@ import { useAnalysis } from '@/hooks/useAnalysis';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { useCanvasColors, useFontsReady } from './canvasColors';
 import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
-import { usePlanPointer, type CanvasPickHandlers } from './hooks/usePlanPointer';
+import { draggedWall, usePlanPointer, type CanvasPickHandlers } from './hooks/usePlanPointer';
 import { useStageSize } from './hooks/useStageSize';
 import { useTouchNavigation } from './hooks/useTouchNavigation';
 import { BackgroundLayer } from './layers/BackgroundLayer';
@@ -48,6 +48,7 @@ export function PlanCanvas({
   const tool = useEditor((s) => s.ui.tool);
   const floorId = useEditor((s) => s.ui.floorId);
   const selection = useEditor((s) => s.ui.selection);
+  const readOnly = useEditor((s) => s.readOnly);
   const doc = useEditor((s) => s.data.doc);
   const settings = useEditor((s) => s.data.settings);
   const floor = doc.floors.find((f) => f.id === floorId);
@@ -105,8 +106,14 @@ export function PlanCanvas({
       ? { x: n.position.x + moving.delta.x, y: n.position.y + moving.delta.y }
       : n.position;
   const segments = floorSegmentsOf(doc, nodeById, floorId);
+  const walls = (floor?.walls ?? []).map((w) => draggedWall(w, drag));
+  const handleWall =
+    tool === 'select' && !readOnly && selection.length === 1
+      ? walls.find((w) => w.id === selection[0])
+      : undefined;
   const scene: PlanScene = {
-    walls: floor?.walls ?? [],
+    walls,
+    handleWall: handleWall ?? null,
     segments,
     nodes: floorNodes,
     nodeById,
@@ -138,7 +145,10 @@ export function PlanCanvas({
         {...touch}
         {...pointer.handlers}
         style={{
-          cursor: tool === 'select' ? (drag?.kind === 'pan' ? 'grabbing' : 'default') : 'crosshair',
+          cursor:
+            tool === 'select'
+              ? selectCursor(drag?.kind, readOnly ? null : pointer.hover)
+              : 'crosshair',
         }}
       >
         <BackgroundLayer
@@ -169,4 +179,10 @@ export function PlanCanvas({
       <ZoomControl size={size} />
     </div>
   );
+}
+
+function selectCursor(drag: string | undefined, hover: 'wall' | 'handle' | null): string {
+  if (drag === 'pan' || drag === 'wall' || drag === 'wall-end') return 'grabbing';
+  if (hover === 'handle') return 'crosshair';
+  return hover === 'wall' ? 'move' : 'default';
 }

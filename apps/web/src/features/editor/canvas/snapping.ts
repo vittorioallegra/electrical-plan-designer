@@ -45,3 +45,31 @@ export function snapPoint(
   const round = (v: number) => Math.round(Math.round(v / g) * g * 1e6) / 1e6;
   return { point: { x: round(raw.x), y: round(raw.y) }, kind: 'grid' };
 }
+
+/**
+ * Snaps a wall moved by `delta`: whichever end lands nearest to a node, vertex or wall end
+ * pulls the wall there; otherwise the start goes on the grid.
+ */
+export function snapWallMove(
+  wall: { a: Point; b: Point },
+  delta: Point,
+  targets: SnapTargets,
+  options: { scale: number; gridStep: number; enabled: boolean },
+): Point {
+  if (!options.enabled) return delta;
+  const moved = (p: Point) => ({ x: p.x + delta.x, y: p.y + delta.y });
+  let best: { from: Point; to: Point; d: number } | null = null;
+  let grid: Point | null = null;
+  for (const end of [wall.a, wall.b]) {
+    const raw = moved(end);
+    const snap = snapPoint(raw, targets, options);
+    if (snap.kind === 'grid') {
+      grid ??= { x: snap.point.x - end.x, y: snap.point.y - end.y };
+      continue;
+    }
+    const d = distance(raw, snap.point);
+    if (!best || d < best.d) best = { from: end, to: snap.point, d };
+  }
+  if (best) return { x: best.to.x - best.from.x, y: best.to.y - best.from.y };
+  return grid ?? delta;
+}

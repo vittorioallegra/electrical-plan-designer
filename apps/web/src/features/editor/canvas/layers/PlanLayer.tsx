@@ -4,11 +4,14 @@ import type { ConduitSegment, PlanNode, Point, Wall } from '@epd/domain/types';
 import { provisionDash, symbolPaths } from '@/components/symbols/symbols';
 import { formatLength, type Locale } from '@/lib/format';
 import { runDash, type CanvasColors } from '../canvasColors';
+import { wallHandleRadius } from '../hitTest';
 import { LABEL_FONT_PX, nodeLabelBox, segmentLabelBox, type LabelBox } from '../labels';
 import { LABEL_MIN_SCALE, symbolOf } from '../planScene';
 
 export interface PlanScene {
   walls: Wall[];
+  /** The selected wall whose end handles are shown, dragged to resize or turn it. */
+  handleWall: Wall | null;
   segments: ConduitSegment[];
   nodes: PlanNode[];
   nodeById: ReadonlyMap<string, PlanNode>;
@@ -154,6 +157,18 @@ export function PlanLayer({
           </Group>
         );
       })}
+      {(scene.handleWall ? [scene.handleWall.a, scene.handleWall.b] : []).map((p, i) => (
+        <Circle
+          key={i}
+          x={p.x}
+          y={p.y}
+          radius={wallHandleRadius(scene.handleWall!, scale)}
+          fill={colors.background}
+          stroke={colors.selection}
+          strokeWidth={2}
+          strokeScaleEnabled={false}
+        />
+      ))}
       {scene.ghost
         ? scene.ghost.nodes.map((n) => (
             <Circle

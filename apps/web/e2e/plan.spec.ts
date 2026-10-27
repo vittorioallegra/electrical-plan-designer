@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import type * as ImportFile from '../src/features/editor/background/importFile';
-import { clickWorld, editorState, fixture, newProject, start } from './helpers';
+import { clickWorld, dragWorld, editorState, fixture, newProject, start } from './helpers';
 
 type ImportFileModule = typeof ImportFile;
 
@@ -144,4 +144,40 @@ test('plan view: one Import plan, collapsible side panels, conduit legend', asyn
   await legend.getByRole('button', { name: 'Conduit runs' }).click();
   await expect(legend.locator('line')).toHaveCount(3);
   await expect(legend.getByText('At floor')).toBeHidden();
+});
+
+// protects=editing walls on the canvas; fails_when=dragging a wall or its end handle does not move it, drags its neighbour, misses the snap to a wall end, or takes more than one undo; no_claim=inspector fields (unit test)
+test('move a wall and drag its end handle on the plan, one undo each', async ({ page }) => {
+  await newProject(page, `Walls ${Date.now()}`);
+  await page.getByTestId('tool-wall').click();
+  await clickWorld(page, { x: 0, y: 0 });
+  await clickWorld(page, { x: 4, y: 0 });
+  await clickWorld(page, { x: 4, y: 3 });
+  await page.keyboard.press('Escape');
+  await page.getByTestId('tool-select').click();
+  const walls = () =>
+    editorState(page, (s) => s.data.doc.floors[0]!.walls.map(({ a, b }) => ({ a, b })));
+  const drawn = await walls();
+  const undoSteps = () => editorState(page, (s) => s.past.length);
+  const steps = await undoSteps();
+
+  // The body: the wall moves alone and ends up selected.
+  await dragWorld(page, { x: 2, y: 0 }, { x: 2, y: 1 });
+  expect(await walls()).toEqual([
+    { a: { x: 0, y: 1 }, b: { x: 4, y: 1 } },
+    { a: { x: 4, y: 0 }, b: { x: 4, y: 3 } },
+  ]);
+  const selected = await editorState(page, (s) => s.ui.selection);
+  expect(selected).toEqual([await editorState(page, (s) => s.data.doc.floors[0]!.walls[0]!.id)]);
+  await expect(page.getByTestId('wall-inspector')).toBeVisible();
+
+  // The end handle: it turns the wall and snaps onto the other wall's end.
+  await dragWorld(page, { x: 4, y: 1 }, { x: 4.05, y: 2.95 });
+  expect((await walls())[0]).toEqual({ a: { x: 0, y: 1 }, b: { x: 4, y: 3 } });
+  expect(await undoSteps()).toBe(steps + 2);
+
+  await page.keyboard.press('ControlOrMeta+z');
+  expect((await walls())[0]).toEqual({ a: { x: 0, y: 1 }, b: { x: 4, y: 1 } });
+  await page.keyboard.press('ControlOrMeta+z');
+  expect(await walls()).toEqual(drawn);
 });

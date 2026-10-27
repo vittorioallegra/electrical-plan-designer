@@ -384,12 +384,16 @@
     "wall": {
       "title": "Muro",
       "length": "Lunghezza",
-      "lengthValue": "Lunghezza {{length}}",
       "thickness": "Spessore",
-      "ax": "Inizio X",
-      "ay": "Inizio Y",
-      "bx": "Fine X",
-      "by": "Fine Y"
+      "dragHint": "Trascina il muro sulla pianta per spostarlo; trascina una delle maniglie alle estremità per cambiarne lunghezza e angolo.",
+      "coordinates": "Coordinate",
+      "coordinatesHint": "Dove inizia e finisce il muro, in metri dall'origine della pianta.",
+      "a": "Punto iniziale",
+      "b": "Punto finale",
+      "ax": "Punto iniziale X",
+      "ay": "Punto iniziale Y",
+      "bx": "Punto finale X",
+      "by": "Punto finale Y"
     },
     "multipleHint": "Trascina per spostarli insieme; Alt+trascina duplica.",
     "node": {

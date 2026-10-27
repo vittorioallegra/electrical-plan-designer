@@ -8,6 +8,8 @@ import {
   moveSelection,
   pasteClipboard,
   placeNode,
+  resizeWall,
+  translateWall,
 } from './commands';
 
 describe('plan commands', () => {
@@ -87,5 +89,26 @@ describe('box presets on placement', () => {
       boxItemId: 'builtin:box_503',
       contents: [{ itemId: 'builtin:switch', qty: 1 }],
     });
+  });
+});
+
+describe('wall drags', () => {
+  // protects=wall drags as single undo steps; fails_when=a move or a resize takes more than one undo or leaves the wall changed; no_claim=pointer handling (browser E2E)
+  it('moves a wall and one of its ends in one undo step each', () => {
+    const { store } = demoStore();
+    const wall = () => store.getState().data.doc.floors[0]!.walls.find((w) => w.id === 'w1')!;
+    const before = structuredClone(wall());
+    translateWall(store, 'w1', { x: 1, y: 2 });
+    expect(wall()).toMatchObject({ a: { x: 0, y: 1 }, b: { x: 8, y: 1 } });
+    resizeWall(store, 'w1', 'b', { x: 4, y: 1 });
+    expect(wall().b).toEqual({ x: 4, y: 1 });
+    expect(store.getState().data.doc.floors[0]!.walls.find((w) => w.id === 'w2')!.a).toEqual({
+      x: 7,
+      y: -1,
+    });
+    store.getState().undo();
+    expect(wall().b).toEqual({ x: 8, y: 1 });
+    store.getState().undo();
+    expect(wall()).toEqual(before);
   });
 });

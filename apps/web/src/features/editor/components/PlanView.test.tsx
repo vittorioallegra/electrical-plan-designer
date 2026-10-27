@@ -84,4 +84,40 @@ describe('plan view', () => {
     );
     expect(store().getState().ui.inspectorOpen).toBe(true);
   });
+
+  // protects=simplified wall inspector; fails_when=coordinates show by default, or the length field takes more than one undo or moves the start; no_claim=canvas drags (browser E2E)
+  it('edits a wall by length and thickness, with coordinates in a closed section', async () => {
+    await openEmptyProject();
+    act(() => {
+      store()
+        .getState()
+        .applyCommand('wall', (d) => {
+          d.doc.floors[0]!.walls.push({
+            id: 'w1',
+            a: { x: 0, y: 0 },
+            b: { x: 4, y: 0 },
+            thickness: 0.2,
+          });
+        });
+      store()
+        .getState()
+        .setUi({ selection: ['w1'] });
+    });
+    const user = userEvent.setup();
+    expect(screen.getByLabelText('Length')).toHaveValue('4');
+    expect(screen.getByLabelText('Thickness')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Start point X')).toBeNull();
+
+    const length = screen.getByLabelText('Length');
+    await user.clear(length);
+    await user.type(length, '2.5{Enter}');
+    const wall = () => store().getState().data.doc.floors[0]!.walls[0]!;
+    expect(wall()).toMatchObject({ a: { x: 0, y: 0 }, b: { x: 2.5, y: 0 } });
+    act(() => store().getState().undo());
+    expect(wall().b).toEqual({ x: 4, y: 0 });
+
+    await user.click(screen.getByRole('button', { name: 'Coordinates' }));
+    expect(screen.getByLabelText('Start point X')).toHaveValue('0');
+    expect(screen.getByLabelText('End point X')).toHaveValue('4');
+  });
 });

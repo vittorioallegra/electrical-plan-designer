@@ -1,10 +1,16 @@
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { distance } from '@epd/domain/geometry';
-import type { Wall } from '@epd/domain/types';
+import type { ProjectDoc, Wall } from '@epd/domain/types';
+import {
+  findWall,
+  MIN_WALL_LENGTH,
+  moveWallEnd,
+  setWallLength,
+  type WallEnd,
+} from '@epd/domain/walls';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
-import { formatLength } from '@/lib/format';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { PanelSection } from '@/components/ui/PanelSection';
@@ -42,51 +48,49 @@ export function Inspector({ onDelete }: { onDelete: (ids: string[]) => void }) {
 }
 
 function WallInspector({ wall }: { wall: Wall }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { store } = useEditorContext();
   const readOnly = useEditor((s) => s.readOnly);
-  const locale = i18n.language === 'it' ? 'it' : 'en';
-  const update = (label: string, fn: (w: Wall) => void) =>
-    store.getState().applyCommand(label, (d) => {
-      for (const f of d.doc.floors) {
-        const w = f.walls.find((x) => x.id === wall.id);
-        if (w) fn(w);
-      }
-    });
-  const length = distance(wall.a, wall.b);
-  const coord = (end: 'a' | 'b', axis: 'x' | 'y') => (
-    <NumberInput
-      aria-label={t(`inspector.wall.${end}${axis}`)}
-      value={wall[end][axis]}
-      unit="m"
-      disabled={readOnly}
-      onValueChange={(v) => update('move wall end', (w) => void (w[end][axis] = v))}
-    />
+  const edit = (label: string, recipe: (doc: ProjectDoc) => void) =>
+    store.getState().applyCommand(label, (d) => recipe(d.doc));
+  const coord = (end: WallEnd, axis: 'x' | 'y') => (
+    <label className="flex items-center gap-2 text-small text-text-muted">
+      <span className="w-3 shrink-0">{axis.toUpperCase()}</span>
+      <NumberInput
+        aria-label={t(`inspector.wall.${end}${axis}`)}
+        value={wall[end][axis]}
+        unit="m"
+        disabled={readOnly}
+        onValueChange={(v) =>
+          edit('move wall end', (doc) =>
+            moveWallEnd(doc, wall.id, end, { ...wall[end], [axis]: v }),
+          )
+        }
+      />
+    </label>
+  );
+  const point = (end: WallEnd) => (
+    <div className="flex flex-col gap-1">
+      <span className="text-small font-medium text-text">{t(`inspector.wall.${end}`)}</span>
+      <div className="grid grid-cols-2 gap-2">
+        {coord(end, 'x')}
+        {coord(end, 'y')}
+      </div>
+    </div>
   );
   return (
     <div data-testid="wall-inspector">
       <PanelSection title={t('inspector.wall.title')}>
         <div className="flex flex-col gap-2">
-          <p className="font-mono tabular-nums" data-testid="wall-length">
-            {t('inspector.wall.lengthValue', { length: formatLength(length, locale) })}
-          </p>
           <label className="flex flex-col gap-1 text-small text-text-muted">
             {t('inspector.wall.length')}
             <NumberInput
               aria-label={t('inspector.wall.length')}
-              value={Math.round(length * 1000) / 1000}
+              value={Math.round(distance(wall.a, wall.b) * 1000) / 1000}
               unit="m"
-              min={0.01}
+              min={MIN_WALL_LENGTH}
               disabled={readOnly}
-              onValueChange={(v) =>
-                update('wall length', (w) => {
-                  const ratio = v / distance(w.a, w.b);
-                  w.b = {
-                    x: w.a.x + (w.b.x - w.a.x) * ratio,
-                    y: w.a.y + (w.b.y - w.a.y) * ratio,
-                  };
-                })
-              }
+              onValueChange={(v) => edit('wall length', (doc) => setWallLength(doc, wall.id, v))}
             />
           </label>
           <label className="flex flex-col gap-1 text-small text-text-muted">
@@ -98,15 +102,22 @@ function WallInspector({ wall }: { wall: Wall }) {
               min={0.01}
               max={2}
               disabled={readOnly}
-              onValueChange={(v) => update('wall thickness', (w) => void (w.thickness = v))}
+              onValueChange={(v) =>
+                edit('wall thickness', (doc) => {
+                  const w = findWall(doc, wall.id);
+                  if (w) w.thickness = v;
+                })
+              }
             />
           </label>
-          <div className="grid grid-cols-2 gap-1">
-            {coord('a', 'x')}
-            {coord('a', 'y')}
-            {coord('b', 'x')}
-            {coord('b', 'y')}
-          </div>
+          <p className="text-small text-text-muted">{t('inspector.wall.dragHint')}</p>
+        </div>
+      </PanelSection>
+      <PanelSection title={t('inspector.wall.coordinates')} collapsible>
+        <div className="flex flex-col gap-3">
+          <p className="text-small text-text-muted">{t('inspector.wall.coordinatesHint')}</p>
+          {point('a')}
+          {point('b')}
         </div>
       </PanelSection>
       <div className="p-3">

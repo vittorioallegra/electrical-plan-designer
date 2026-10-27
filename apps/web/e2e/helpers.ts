@@ -72,6 +72,20 @@ export async function screenOf(page: Page, world: { x: number; y: number }) {
   return { x: box.x + view.x + world.x * view.scale, y: box.y + view.y + world.y * view.scale };
 }
 
+/** Presses at one world point on the plan and releases at another, moving in steps. */
+export async function dragWorld(
+  page: Page,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) {
+  const a = await screenOf(page, from);
+  const b = await screenOf(page, to);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 10 });
+  await page.mouse.up();
+}
+
 export async function clickWorld(page: Page, world: { x: number; y: number }, alt = false) {
   const p = await screenOf(page, world);
   if (alt) await page.keyboard.down('Alt');

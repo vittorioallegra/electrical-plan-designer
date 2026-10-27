@@ -14,6 +14,7 @@ import { distance, projectOnPolyline } from '@epd/domain/geometry';
 import { newId } from '@epd/domain/ids';
 import { splitSegment } from '@epd/domain/routing';
 import type { BoxPreset, NodeKind, PlanNode, Point, ProjectDoc } from '@epd/domain/types';
+import { moveWall, moveWallEnd, type WallEnd } from '@epd/domain/walls';
 import type { EditorStore } from '@/stores/editor/editorStore';
 import { segmentPolyline } from '@/features/editor/canvas/hitTest';
 
@@ -176,6 +177,16 @@ export function moveSelection(
     return;
   }
   s.applyCommand('move', (d) => moveNodes(d.doc, nodeIds, delta));
+}
+
+/** Moves a wall dragged on the canvas; walls it touched stay where they are. */
+export function translateWall(store: EditorStore, wallId: string, delta: Point) {
+  store.getState().applyCommand('move wall', (d) => moveWall(d.doc, wallId, delta));
+}
+
+/** Puts one end of a wall where its handle was dropped. */
+export function resizeWall(store: EditorStore, wallId: string, end: WallEnd, point: Point) {
+  store.getState().applyCommand('move wall end', (d) => moveWallEnd(d.doc, wallId, end, point));
 }
 
 let clipboard: Clipboard | null = null;

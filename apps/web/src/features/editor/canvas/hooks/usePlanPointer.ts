@@ -2,18 +2,21 @@ import type Konva from 'konva';
 import { useRef, useState } from 'react';
 import { backgroundMetersPerPixel } from '@epd/domain/geometry';
 import { newId } from '@epd/domain/ids';
-import type { BoxPreset, Floor, PlanNode, Point, ProjectDoc } from '@epd/domain/types';
+import type { BoxPreset, Floor, PlanNode, Point, ProjectDoc, Wall } from '@epd/domain/types';
+import type { WallEnd } from '@epd/domain/walls';
 import {
   addConduit,
   addConduitToNewJunction,
   moveSelection,
   nodeAt,
   placeNode,
+  resizeWall,
+  translateWall,
 } from '@/features/editor/utils/commands';
 import type { EditorStore } from '@/stores/editor/editorStore';
-import { boxSelect, hitTest, NODE_HIT_PX, type Hit } from '../hitTest';
+import { boxSelect, hitTest, NODE_HIT_PX, wallHandleAt, type Hit } from '../hitTest';
 import { DEFAULT_WALL_THICKNESS, toBackgroundPx, type Pick } from '../planScene';
-import { snapPoint, type SnapResult } from '../snapping';
+import { snapPoint, snapWallMove, type SnapResult } from '../snapping';
 import { screenToWorld, snapStep, zoomAt, type View } from '../viewport';
 
 type PickOwner = { kind: 'circuit' | 'extra'; id: string };
@@ -35,7 +38,25 @@ export type Drag =
       delta: Point;
       duplicate: boolean;
       moved: boolean;
+    }
+  | { kind: 'wall'; wallId: string; start: Point; delta: Point; moved: boolean }
+  | { kind: 'wall-end'; wallId: string; end: WallEnd; start: Point; point: Point; moved: boolean };
+
+/** A wall as a wall drag in progress draws it. */
+export function draggedWall(wall: Wall, drag: Drag | null): Wall {
+  if (drag?.kind === 'wall' && drag.moved && drag.wallId === wall.id) {
+    const { x, y } = drag.delta;
+    return {
+      ...wall,
+      a: { x: wall.a.x + x, y: wall.a.y + y },
+      b: { x: wall.b.x + x, y: wall.b.y + y },
     };
+  }
+  if (drag?.kind === 'wall-end' && drag.moved && drag.wallId === wall.id) {
+    return { ...wall, [drag.end]: drag.point };
+  }
+  return wall;
+}
 
 export interface SnapTargets {
   nodes: { id: string; position: Point }[];
@@ -63,7 +84,8 @@ function pointerScreen(e: Konva.KonvaEventObject<MouseEvent | WheelEvent>): Poin
 }
 
 /**
- * Mouse handling of the plan: pan, zoom, box select, drag to move or duplicate, picking, and
+ * Mouse handling of the plan: pan, zoom, box select, drag to move or duplicate, wall moves and
+ * end handles, picking, and
  * the drawing tools (wall chain, calibration points, conduit with vertices, node placement).
  * Returns the stage handlers and the in-progress state the overlay draws.
  */
@@ -74,6 +96,8 @@ export function usePlanPointer(input: PlanPointerInput) {
   const [calibration, setCalibration] = useState<Point[]>([]);
   const [conduit, setConduit] = useState<{ fromNodeId: string; vertices: Point[] } | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  /** What a select-tool press would grab, for the pointer cursor. */
+  const [hover, setHover] = useState<'wall' | 'handle' | null>(null);
   const suppressClick = useRef(false);
   const lastHits = useRef<{ hits: Hit[]; index: number } | null>(null);
 
@@ -93,6 +117,19 @@ export function usePlanPointer(input: PlanPointerInput) {
       gridStep: snapStep(view.scale),
       enabled: !alt,
     });
+  }
+
+  /** Snap targets for dragging a wall: everything but the wall's own ends. */
+  function targetsWithout(wallId: string) {
+    const others = (floor?.walls ?? []).filter((w) => w.id !== wallId);
+    return { ...snapTargets, wallEnds: others.flatMap((w) => [w.a, w.b]) };
+  }
+
+  /** The single selected wall, whose end handles are shown. */
+  function selectedWall(): Wall | undefined {
+    const selection = store.getState().ui.selection;
+    if (selection.length !== 1) return undefined;
+    return floor?.walls.find((w) => w.id === selection[0]);
   }
 
   function select(ids: string[]) {
@@ -121,8 +158,21 @@ export function usePlanPointer(input: PlanPointerInput) {
       return;
     }
     if (e.evt.button !== 0 || tool !== 'select') return;
+    // Walls stay put while picking circuit targets or a route.
+    const readOnly = store.getState().readOnly || Boolean(pick);
+    const handleOf = selectedWall();
+    const end = handleOf && !readOnly ? wallHandleAt(handleOf, world, view.scale) : null;
+    if (handleOf && end) {
+      const point = handleOf[end];
+      setDrag({ kind: 'wall-end', wallId: handleOf.id, end, start: world, point, moved: false });
+      return;
+    }
     const hits = hitTest(doc, floorId, world, view.scale);
     const top = hits[0];
+    if (top?.kind === 'wall' && !readOnly) {
+      setDrag({ kind: 'wall', wallId: top.id, start: world, delta: { x: 0, y: 0 }, moved: false });
+      return;
+    }
     if (top?.kind === 'node' && !store.getState().readOnly) {
       const current = store.getState().ui.selection;
       const nodeIds = current.includes(top.id)
@@ -163,6 +213,25 @@ export function usePlanPointer(input: PlanPointerInput) {
       setDrag({ ...drag, current: world, moved: true });
       return;
     }
+    if (drag?.kind === 'wall' || drag?.kind === 'wall-end') {
+      const moved =
+        drag.moved || Math.hypot(world.x - drag.start.x, world.y - drag.start.y) * view.scale > 3;
+      const options = {
+        scale: view.scale,
+        gridStep: snapStep(view.scale),
+        enabled: !e.evt.altKey,
+      };
+      const targets = targetsWithout(drag.wallId);
+      if (drag.kind === 'wall-end') {
+        setDrag({ ...drag, point: snapPoint(world, targets, options).point, moved });
+      } else {
+        const wall = floor?.walls.find((w) => w.id === drag.wallId);
+        const raw = { x: world.x - drag.start.x, y: world.y - drag.start.y };
+        const delta = wall ? snapWallMove(wall, raw, targets, options) : raw;
+        setDrag({ ...drag, delta, moved });
+      }
+      return;
+    }
     if (drag?.kind === 'move') {
       const raw = {
         x: drag.anchor.x + world.x - drag.start.x,
@@ -183,7 +252,12 @@ export function usePlanPointer(input: PlanPointerInput) {
       setDrag({ ...drag, delta, moved });
       return;
     }
-    if (tool !== 'select') {
+    if (tool === 'select') {
+      const wall = selectedWall();
+      const overHandle = wall && wallHandleAt(wall, world, view.scale);
+      const overWall = hitTest(doc, floorId, world, view.scale)[0]?.kind === 'wall';
+      setHover(overHandle ? 'handle' : overWall ? 'wall' : null);
+    } else {
       setCursor(
         tool === 'calibrate' ? { point: world, kind: 'none' } : snapped(world, e.evt.altKey),
       );
@@ -196,6 +270,13 @@ export function usePlanPointer(input: PlanPointerInput) {
     if (drag.kind === 'move' && drag.moved && (drag.delta.x !== 0 || drag.delta.y !== 0)) {
       moveSelection(store, drag.nodeIds, drag.delta, drag.duplicate);
       if (!drag.duplicate) select(drag.nodeIds);
+    }
+    if (drag.kind === 'wall' && drag.moved) {
+      if (drag.delta.x !== 0 || drag.delta.y !== 0) translateWall(store, drag.wallId, drag.delta);
+      select([drag.wallId]);
+    }
+    if (drag.kind === 'wall-end' && drag.moved) {
+      resizeWall(store, drag.wallId, drag.end, drag.point);
     }
     if (drag.kind === 'box' && drag.moved) {
       const ids = boxSelect(doc, floorId, drag.start, drag.current);
@@ -336,6 +417,7 @@ export function usePlanPointer(input: PlanPointerInput) {
     calibration,
     conduit,
     drag,
+    hover,
     /** Last select-click hits, cycled with Tab. */
     lastHits,
     select,
@@ -359,6 +441,7 @@ export function usePlanPointer(input: PlanPointerInput) {
       onClick,
       onMouseLeave() {
         setDrag(null);
+        setHover(null);
         setCursor(null);
       },
       onContextMenu(e: Konva.KonvaEventObject<PointerEvent>) {

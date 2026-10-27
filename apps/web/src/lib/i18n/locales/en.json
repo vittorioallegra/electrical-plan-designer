@@ -384,12 +384,16 @@
     "wall": {
       "title": "Wall",
       "length": "Length",
-      "lengthValue": "Length {{length}}",
       "thickness": "Thickness",
-      "ax": "Start X",
-      "ay": "Start Y",
-      "bx": "End X",
-      "by": "End Y"
+      "dragHint": "Drag the wall on the plan to move it; drag one of its end handles to change its length and angle.",
+      "coordinates": "Coordinates",
+      "coordinatesHint": "Where the wall starts and ends, in meters from the plan origin.",
+      "a": "Start point",
+      "b": "End point",
+      "ax": "Start point X",
+      "ay": "Start point Y",
+      "bx": "End point X",
+      "by": "End point Y"
     },
     "multipleHint": "Drag to move them together; Alt-drag duplicates.",
     "node": {
