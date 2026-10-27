@@ -15,18 +15,26 @@ export function QuoteTotals({ quote, locale }: { quote: QuoteResult; locale: Loc
     ['quote.totals.vat', totals.vat],
   ];
   return (
-    <section aria-label={t('quote.totalsTitle')} data-testid="quote-totals">
-      <h2 className="mb-1 font-medium">{t('quote.totalsTitle')}</h2>
-      <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 tabular-nums">
+    <section
+      aria-label={t('quote.totalsTitle')}
+      className="flex flex-col gap-2"
+      data-testid="quote-totals"
+    >
+      <h2 className="text-label font-semibold tracking-wide text-text-muted uppercase">
+        {t('quote.totalsTitle')}
+      </h2>
+      <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 font-mono tabular-nums">
         {rows.map(([key, cents]) => (
           <div key={key} className="contents">
-            <dt className="text-text-muted">{t(key)}</dt>
+            <dt className="font-sans text-text-muted">{t(key)}</dt>
             <dd className="text-right">{formatMoney(cents, locale)}</dd>
           </div>
         ))}
-        <dt className="border-t border-border pt-1 font-semibold">{t('quote.totals.total')}</dt>
+        <dt className="mt-1 border-t border-border pt-2 font-sans font-semibold">
+          {t('quote.totals.total')}
+        </dt>
         <dd
-          className="border-t border-border pt-1 text-right font-semibold"
+          className="mt-1 border-t border-border pt-2 text-right text-heading font-semibold"
           data-testid="quote-total"
         >
           {formatMoney(totals.total, locale)}

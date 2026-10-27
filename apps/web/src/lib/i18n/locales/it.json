@@ -678,6 +678,11 @@
     "complete": "Tutte le fasi completate"
   },
   "quote": {
+    "numberColumn": "Preventivo",
+    "dateColumn": "Emesso il",
+    "statusColumn": "Stato",
+    "noteColumn": "Nota",
+    "downloadsColumn": "Download",
     "issue": "Emetti preventivo",
     "issuedToast": "Preventivo {{number}} emesso",
     "issueFailed": "Impossibile emettere il preventivo. Riprova.",

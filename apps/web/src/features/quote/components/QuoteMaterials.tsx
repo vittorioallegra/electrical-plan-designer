@@ -36,7 +36,11 @@ export function QuoteMaterials({
       rowKey={(l) => l.key}
       rows={quote.lines}
       columns={[
-        { key: 'code', header: t('quote.code'), cell: (l) => l.code ?? '' },
+        {
+          key: 'code',
+          header: t('quote.code'),
+          cell: (l) => <span className="font-mono text-text-muted">{l.code ?? ''}</span>,
+        },
         { key: 'description', header: t('quote.description'), cell: (l) => l.description },
         {
           key: 'quantity',
@@ -64,7 +68,8 @@ export function QuoteMaterials({
           key: 'total',
           header: t('quote.lineTotal'),
           align: 'right',
-          cell: (l) => money(l.total),
+          cell: (l) =>
+            l.total === null ? <span className="text-text-faint">—</span> : money(l.total),
         },
       ]}
     />

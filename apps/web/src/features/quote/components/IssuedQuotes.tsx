@@ -12,7 +12,10 @@ import { quoteStatusSchema } from '@epd/domain/schema';
 import type { IssuedQuote, QuoteStatus } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
+import { Table } from '@/components/ui/Table';
+import { fieldBox } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/cn';
 import { formatMoney, type Locale } from '@/lib/format';
@@ -73,22 +76,40 @@ export function IssuedQuotes({
 
   return (
     <section aria-label={t('quote.issuedTitle')}>
-      <h2 className="mb-1 font-medium">{t('quote.issuedTitle')}</h2>
-      {issued.length === 0 ? (
-        <p className="text-text-muted">{t('quote.noIssued')}</p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {[...issued].reverse().map((q) => (
-            <li
-              key={q.number}
-              data-quote={q.number}
-              className="flex flex-wrap items-center gap-x-4 gap-y-1 py-1"
-            >
-              <span className="font-medium tabular-nums">
+      <h2 className="mb-2 text-label font-semibold tracking-wide text-text-muted uppercase">
+        {t('quote.issuedTitle')}
+      </h2>
+      <Table<IssuedQuote>
+        rowKey={(q) => String(q.number)}
+        rows={[...issued].reverse()}
+        empty={<EmptyState message={t('quote.noIssued')} />}
+        columns={[
+          {
+            key: 'number',
+            header: t('quote.numberColumn'),
+            cell: (q) => (
+              <span className="font-mono font-medium tabular-nums">
                 {t('quote.number', { number: q.number })}
               </span>
+            ),
+          },
+          {
+            key: 'date',
+            header: t('quote.dateColumn'),
+            cell: (q) => (
               <span className="text-text-muted">{dateFormat.format(new Date(q.issuedAt))}</span>
-              <span className="tabular-nums">{money(q.totals.total)}</span>
+            ),
+          },
+          {
+            key: 'total',
+            header: t('quote.totals.total'),
+            align: 'right',
+            cell: (q) => money(q.totals.total),
+          },
+          {
+            key: 'status',
+            header: t('quote.statusColumn'),
+            cell: (q) => (
               <Select
                 aria-label={t('quote.statusFor', { number: q.number })}
                 className={cn('w-36', statusTone[q.status])}
@@ -100,6 +121,12 @@ export function IssuedQuotes({
                   label: t(`quote.status.${s}`),
                 }))}
               />
+            ),
+          },
+          {
+            key: 'note',
+            header: t('quote.noteColumn'),
+            cell: (q) => (
               <NoteField
                 number={q.number}
                 note={q.note}
@@ -110,26 +137,34 @@ export function IssuedQuotes({
                   })
                 }
               />
-              <Button
-                variant="ghost"
-                aria-label={t('quote.exportCsvOf', { number: q.number })}
-                onClick={() => exportCsv(q)}
-              >
-                <FileSpreadsheet size={14} />
-                {t('quote.exportCsv')}
-              </Button>
-              <Button
-                variant="ghost"
-                aria-label={t('quote.exportPdfOf', { number: q.number })}
-                onClick={() => void exportPdf(q)}
-              >
-                <FileText size={14} />
-                {t('quote.exportPdf')}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+            ),
+          },
+          {
+            key: 'downloads',
+            header: <span className="sr-only">{t('quote.downloadsColumn')}</span>,
+            cell: (q) => (
+              <span className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  aria-label={t('quote.exportCsvOf', { number: q.number })}
+                  onClick={() => exportCsv(q)}
+                >
+                  <FileSpreadsheet size={14} />
+                  {t('quote.exportCsv')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  aria-label={t('quote.exportPdfOf', { number: q.number })}
+                  onClick={() => void exportPdf(q)}
+                >
+                  <FileText size={14} />
+                  {t('quote.exportPdf')}
+                </Button>
+              </span>
+            ),
+          },
+        ]}
+      />
       <Dialog
         open={approving !== null}
         onOpenChange={(open) => !open && setApproving(null)}
@@ -185,7 +220,7 @@ function NoteField({
     <input
       aria-label={t('quote.noteFor', { number })}
       placeholder={t('quote.notePlaceholder')}
-      className="h-[var(--control-height)] min-w-48 flex-1 rounded border border-border px-2"
+      className={cn(fieldBox, 'w-full min-w-48 border-border outline-none')}
       value={text}
       disabled={disabled}
       onChange={(e) => setText(e.target.value)}

@@ -678,6 +678,11 @@
     "complete": "All stages done"
   },
   "quote": {
+    "numberColumn": "Quote",
+    "dateColumn": "Issued on",
+    "statusColumn": "Status",
+    "noteColumn": "Note",
+    "downloadsColumn": "Downloads",
     "issue": "Issue quote",
     "issuedToast": "Quote {{number}} issued",
     "issueFailed": "Could not issue the quote. Try again.",

@@ -2,7 +2,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { QuoteSettings } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { fieldBox } from '@/components/ui/TextField';
+import { cn } from '@/lib/cn';
 
 type LaborLine = QuoteSettings['laborLines'][number];
 
@@ -21,7 +24,9 @@ export function LaborLines({
     edit('edit labor line', (s) => fn(s.laborLines[i]!));
   return (
     <section aria-label={t('quote.labor')} className="flex flex-col gap-2">
-      <h2 className="font-medium">{t('quote.labor')}</h2>
+      <h2 className="text-label font-semibold tracking-wide text-text-muted uppercase">
+        {t('quote.labor')}
+      </h2>
       {lines.length === 0 ? <p className="text-text-muted">{t('quote.noLabor')}</p> : null}
       {lines.map((line, i) => (
         <div
@@ -31,7 +36,7 @@ export function LaborLines({
         >
           <input
             aria-label={t('quote.laborDescription')}
-            className="h-[var(--control-height)] min-w-48 flex-1 rounded border border-border px-2"
+            className={cn(fieldBox, 'min-w-48 flex-1 border-border outline-none')}
             defaultValue={line.description}
             disabled={readOnly}
             onBlur={(e) => {
@@ -74,14 +79,12 @@ export function LaborLines({
               />
             </>
           )}
-          <Button
-            variant="ghost"
-            aria-label={t('quote.removeLabor')}
+          <IconButton
+            label={t('quote.removeLabor')}
+            icon={<Trash2 size={14} />}
             disabled={readOnly}
             onClick={() => edit('remove labor line', (s) => void s.laborLines.splice(i, 1))}
-          >
-            <Trash2 size={14} />
-          </Button>
+          />
         </div>
       ))}
       <div className="flex gap-2">

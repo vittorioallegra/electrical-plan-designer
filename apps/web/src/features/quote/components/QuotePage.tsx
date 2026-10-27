@@ -2,6 +2,7 @@ import { FileSpreadsheet, FileText, Stamp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { QuoteDocument } from '@epd/domain/quote';
 import type { IssuedQuote, QuoteSettings } from '@epd/domain/types';
+import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { useIssueQuote } from '@/features/quote/hooks/useIssueQuote';
@@ -47,10 +48,10 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-xl font-semibold">{t('pages.quote')}</h1>
+    <div className="h-full overflow-y-auto bg-panel">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-3">
+        <h1 className="text-heading font-semibold">{t('pages.quote')}</h1>
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2" role="group" aria-label={t('quote.exportLive')}>
             <Button onClick={() => void exporter.csv({ ...quote, settings })}>
               <FileSpreadsheet size={16} />
@@ -66,26 +67,30 @@ export function QuotePage({ exporter }: { exporter: QuoteExporter }) {
             {t('quote.issue')}
           </Button>
         </div>
-        {quote.totals.unpricedCount > 0 ? (
-          <p className="rounded bg-warning-bg px-3 py-1.5 text-warning" role="status">
-            {t('quote.unpriced', { count: quote.totals.unpricedCount })}
-          </p>
-        ) : null}
+      </header>
+      {quote.totals.unpricedCount > 0 ? (
+        <Banner tone="warning">{t('quote.unpriced', { count: quote.totals.unpricedCount })}</Banner>
+      ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-          <section aria-label={t('quote.materials')}>
-            <h2 className="mb-1 font-medium">{t('quote.materials')}</h2>
-            <QuoteMaterials quote={quote} locale={locale} readOnly={readOnly} />
-          </section>
+      <div className="grid lg:grid-cols-[1fr_20rem]">
+        <section aria-label={t('quote.materials')} className="min-w-0 px-6 py-4">
+          <h2 className="mb-2 text-label font-semibold tracking-wide text-text-muted uppercase">
+            {t('quote.materials')}
+          </h2>
+          <QuoteMaterials quote={quote} locale={locale} readOnly={readOnly} />
+        </section>
 
-          <div className="flex flex-col gap-4">
-            <QuoteSettingsForm settings={settings} readOnly={readOnly} edit={editSettings} />
-            <QuoteTotals quote={quote} locale={locale} />
-          </div>
+        <div className="flex flex-col gap-6 border-t border-border px-6 py-4 lg:border-t-0 lg:border-l lg:px-4">
+          <QuoteSettingsForm settings={settings} readOnly={readOnly} edit={editSettings} />
+          <QuoteTotals quote={quote} locale={locale} />
         </div>
+      </div>
 
+      <div className="border-t border-border px-6 py-4">
         <LaborLines lines={settings.laborLines} readOnly={readOnly} edit={editSettings} />
+      </div>
 
+      <div className="border-t border-border px-6 py-4">
         <IssuedQuotes
           issued={issued}
           locale={locale}

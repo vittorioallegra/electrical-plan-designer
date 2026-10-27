@@ -15,8 +15,10 @@ export function QuoteSettingsForm({
   const { t } = useTranslation();
   return (
     <section aria-label={t('quote.settings')} className="flex flex-col gap-2">
-      <h2 className="font-medium">{t('quote.settings')}</h2>
-      <label className="flex items-center justify-between gap-2">
+      <h2 className="text-label font-semibold tracking-wide text-text-muted uppercase">
+        {t('quote.settings')}
+      </h2>
+      <label className="flex items-center justify-between gap-2 text-text-muted">
         {t('quote.adjustment')}
         <NumberInput
           aria-label={t('quote.adjustment')}
@@ -31,7 +33,7 @@ export function QuoteSettingsForm({
           }
         />
       </label>
-      <label className="flex items-center justify-between gap-2">
+      <label className="flex items-center justify-between gap-2 text-text-muted">
         {t('quote.vat')}
         <NumberInput
           aria-label={t('quote.vat')}
