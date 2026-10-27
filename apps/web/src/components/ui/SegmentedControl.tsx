@@ -43,7 +43,7 @@ export function SegmentedControl({
           key={o.value}
           value={o.value}
           aria-label={o.ariaLabel}
-          className="inline-flex h-6 items-center justify-center gap-1 rounded-xs px-2.5 text-small font-medium text-text-muted transition-colors duration-[80ms] hover:text-text focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-45 data-[state=on]:bg-raised data-[state=on]:text-text data-[state=on]:shadow-[0_0_0_1px_var(--color-border)]"
+          className="inline-flex h-6 shrink-0 items-center justify-center gap-1 rounded-xs px-2.5 whitespace-nowrap text-small font-medium text-text-muted transition-colors duration-[80ms] hover:text-text focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-45 data-[state=on]:bg-raised data-[state=on]:text-text data-[state=on]:shadow-[0_0_0_1px_var(--color-border)]"
         >
           {o.label}
         </ToggleGroup.Item>

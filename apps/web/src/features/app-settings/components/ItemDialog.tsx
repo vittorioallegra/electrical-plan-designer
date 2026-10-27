@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cableColorSchema } from '@epd/domain/schema';
-import type {
-  CatalogAttributes,
-  CatalogCategory,
-  CatalogItem,
-  DeviceType,
-  PanelDeviceType,
-} from '@epd/domain/catalog/types';
+import type { CatalogAttributes, CatalogCategory, CatalogItem } from '@epd/domain/catalog/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
+import { AttributeFields } from './AttributeFields';
 
 export const categories: CatalogCategory[] = [
   'device',
@@ -24,25 +19,10 @@ export const categories: CatalogCategory[] = [
   'panel_device',
   'enclosure',
 ];
-const deviceTypes: DeviceType[] = [
-  'socket',
-  'schuko',
-  'universal_socket',
-  'switch',
-  'two_way',
-  'intermediate',
-  'push_button',
-  'dimmer',
-  'usb',
-  'tv',
-  'data',
-  'other',
-];
 /** An item as the dialog edits it; the page gives it its id and catalog. */
 export type ItemDraft = Omit<CatalogItem, 'id'>;
 
-const panelDeviceTypes: PanelDeviceType[] = ['mcb', 'rcd', 'rcbo', 'isolator', 'spd', 'other'];
-const withModules = new Set<CatalogCategory>([
+export const withModules = new Set<CatalogCategory>([
   'device',
   'blanking_cover',
   'plate',
@@ -82,51 +62,6 @@ export function ItemDialog({
       else next[key] = value;
       return next;
     });
-  const num = (
-    key:
-      | 'outerDiameter'
-      | 'innerDiameter'
-      | 'crossSection'
-      | 'ratingA'
-      | 'sensitivityMa'
-      | 'rails'
-      | 'modulesPerRail',
-    unit: string,
-  ) => (
-    <label className="flex flex-col gap-1">
-      {t(`catalog.attr.${key}`)}
-      <NumberInput
-        aria-label={t(`catalog.attr.${key}`)}
-        live
-        value={attributes[key] ?? null}
-        unit={unit}
-        min={0}
-        onValueChange={(v) => attr(key, v)}
-      />
-    </label>
-  );
-  const select = <K extends 'deviceType' | 'panelDeviceType' | 'curve' | 'rcdType' | 'color'>(
-    key: K,
-    options: readonly string[],
-    labelOf: (o: string) => string,
-  ) => (
-    <label className="flex flex-col gap-1">
-      {t(`catalog.attr.${key}`)}
-      <select
-        className="h-[var(--control-height)] rounded border border-border px-2"
-        value={(attributes[key] as string | undefined) ?? ''}
-        onChange={(e) => attr(key, (e.target.value || null) as CatalogAttributes[K] | null)}
-      >
-        <option value="">—</option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {labelOf(o)}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-
   function submit() {
     const enclosureModules =
       category === 'enclosure' && attributes.rails && attributes.modulesPerRail
@@ -154,24 +89,18 @@ export function ItemDialog({
           submit();
         }}
       >
-        <label className="col-span-2 flex flex-col gap-1">
+        <div className="col-span-2 flex flex-col gap-1 text-small text-text-muted">
           {t('catalog.category')}
-          <select
-            className="h-[var(--control-height)] rounded border border-border px-2"
+          <Select
+            aria-label={t('catalog.category')}
             value={category}
-            disabled={initial.id !== undefined}
-            onChange={(e) => {
-              setCategory(e.target.value as CatalogCategory);
+            options={categories.map((c) => ({ value: c, label: t(`catalog.categories.${c}`) }))}
+            onValueChange={(v) => {
+              setCategory(v as CatalogCategory);
               setAttributes({});
             }}
-          >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {t(`catalog.categories.${c}`)}
-              </option>
-            ))}
-          </select>
-        </label>
+          />
+        </div>
         <TextField
           className="col-span-2"
           label={t('catalog.name')}
@@ -184,7 +113,7 @@ export function ItemDialog({
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
-        <label className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1 text-small text-text-muted">
           {t('catalog.price', { unit: t(`catalog.units.${defaultUnit(category)}`) })}
           <NumberInput
             aria-label={t('catalog.priceLabel')}
@@ -196,7 +125,7 @@ export function ItemDialog({
           />
         </label>
         {withModules.has(category) ? (
-          <label className="flex flex-col gap-1">
+          <label className="flex flex-col gap-1 text-small text-text-muted">
             {t('catalog.modules')}
             <NumberInput
               aria-label={t('catalog.modules')}
@@ -209,42 +138,7 @@ export function ItemDialog({
             />
           </label>
         ) : null}
-        {category === 'device'
-          ? select('deviceType', deviceTypes, (o) => t(`catalog.deviceTypes.${o}`))
-          : null}
-        {category === 'conduit' ? (
-          <>
-            {num('outerDiameter', 'mm')}
-            {num('innerDiameter', 'mm')}
-          </>
-        ) : null}
-        {category === 'cable' ? (
-          <>
-            {num('crossSection', 'mm²')}
-            {num('outerDiameter', 'mm')}
-            {select('color', cableColorSchema.options, (o) => t(`colors.${o}`))}
-          </>
-        ) : null}
-        {category === 'panel_device' ? (
-          <>
-            {select('panelDeviceType', panelDeviceTypes, (o) => t(`catalog.panelDeviceTypes.${o}`))}
-            <TextField
-              label={t('catalog.attr.poles')}
-              value={attributes.poles ?? ''}
-              onChange={(e) => attr('poles', e.target.value || null)}
-            />
-            {num('ratingA', 'A')}
-            {select('curve', ['B', 'C', 'D'], (o) => o)}
-            {num('sensitivityMa', 'mA')}
-            {select('rcdType', ['A', 'AC', 'F', 'B'], (o) => o)}
-          </>
-        ) : null}
-        {category === 'enclosure' ? (
-          <>
-            {num('rails', '')}
-            {num('modulesPerRail', '')}
-          </>
-        ) : null}
+        <AttributeFields category={category} attributes={attributes} onChange={attr} live />
         <div className="col-span-2 mt-2 flex justify-end gap-2">
           <Button onClick={onClose}>{t('common.cancel')}</Button>
           <Button type="submit" variant="primary" disabled={name.trim() === ''}>

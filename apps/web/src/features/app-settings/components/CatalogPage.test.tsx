@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import { defaultLibrary } from '@epd/domain/library';
 import { renderApp } from '@/testing/renderApp';
 
 let app: Awaited<ReturnType<typeof renderApp>>;
@@ -21,6 +22,36 @@ const usePreset = (...itemIds: string[]) =>
       contents: itemIds.map((itemId) => ({ itemId, qty: 1 })),
     });
   });
+
+async function pickOption(trigger: HTMLElement, option: string) {
+  await userEvent.click(trigger);
+  await userEvent.click(await screen.findByRole('option', { name: option }));
+}
+
+/** Opens the sidebar menu of an imported catalog and chooses an action. */
+async function catalogAction(catalog: string, action: string) {
+  await userEvent.click(screen.getByRole('button', { name: `Actions for ${catalog}` }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: action }));
+}
+
+const selectRow = (name: string) => userEvent.click(screen.getByRole('cell', { name }));
+
+const item = (id: string, name: string, unitPrice?: number, code = id.toUpperCase()) => ({
+  id: `c1:${id}`,
+  category: 'device' as const,
+  name,
+  code,
+  ...(unitPrice !== undefined ? { unitPrice } : {}),
+  unit: 'pcs' as const,
+  modules: 1,
+  attributes: {},
+});
+const withCatalog = (items: ReturnType<typeof item>[]) => ({
+  library: {
+    ...defaultLibrary(),
+    catalogs: [{ id: 'c1', name: 'Vimar', importedAt: '2026-10-26T10:00:00.000Z', items }],
+  },
+});
 
 async function chooseFile(name: string, content: string) {
   const dialog = await screen.findByRole('dialog');
@@ -50,7 +81,7 @@ describe('library catalog page', () => {
     await userEvent.type(within(dialog).getByLabelText('Code'), 'BR-1');
     await userEvent.type(within(dialog).getByLabelText('Unit price'), '4.50');
     await userEvent.type(within(dialog).getByLabelText('Modules'), '1');
-    await userEvent.selectOptions(within(dialog).getByLabelText('Device type'), 'socket');
+    await pickOption(within(dialog).getByRole('combobox', { name: 'Device type' }), 'Socket');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     const [own] = catalogs();
     expect(own).toMatchObject({ id: 'own', name: 'My items' });
@@ -63,7 +94,8 @@ describe('library catalog page', () => {
         attributes: { deviceType: 'socket' },
       }),
     ]);
-    expect(await screen.findByText('Brand socket')).toBeInTheDocument();
+    // The new item is selected, so its detail opens.
+    expect(await screen.findByRole('heading', { name: 'Brand socket' })).toBeInTheDocument();
     // Written through to the library files, as the one catalog file that changed.
     await waitFor(() => expect(app.libraryRepository.writes).toEqual(['catalog:own']));
   });
@@ -71,22 +103,22 @@ describe('library catalog page', () => {
   // protects=no dangling references; fails_when=archiving deletes the item; no_claim=—
   it('duplicates a built-in and archives the copy instead of deleting it', async () => {
     await openCatalog();
-    await userEvent.click(screen.getByRole('button', { name: 'Duplicate Schuko socket' }));
+    await selectRow('Schuko socket');
+    await userEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
     await userEvent.click(
       within(await screen.findByRole('dialog')).getByRole('button', { name: 'Save' }),
     );
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Archive Schuko socket (copy)' }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Archive' }));
     expect(catalogs()[0]!.items[0]!.archived).toBe(true);
-    expect(screen.queryByText('Schuko socket (copy)')).not.toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Schuko socket (copy)' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Show archived'));
-    expect(screen.getByText('Schuko socket (copy)')).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: /Schuko socket \(copy\)/ })).toBeInTheDocument();
   });
 
   // protects=pricing built-ins in the library; fails_when=a built-in price is not written to the library's price overrides; no_claim=quote math
   it('prices a built-in in the library', async () => {
     await openCatalog();
+    await selectRow('Schuko socket');
     await userEvent.type(screen.getByLabelText('Price of Schuko socket'), '3,90{Enter}');
     await waitFor(() =>
       expect(app.library.getState().library.priceOverrides['builtin:socket_schuko']).toEqual({
@@ -105,10 +137,10 @@ describe('library catalog page', () => {
     const [catalog] = catalogs();
     expect(catalog).toMatchObject({ name: 'Vimar 2026', source: 'vimar.epc' });
     expect(catalog!.items[0]!.id).toBe(`${catalog!.id}:V1`);
-    expect(await screen.findByText('Vimar socket')).toBeInTheDocument();
+    expect(await screen.findByRole('cell', { name: 'Vimar socket' })).toBeInTheDocument();
 
     usePreset(catalog!.items[0]!.id);
-    await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    await catalogAction('Vimar 2026', 'Remove');
     expect(
       await screen.findByText(
         'Vimar 2026 cannot be removed: 1 of its items is used in a box preset.',
@@ -123,9 +155,9 @@ describe('library catalog page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Import catalog…' }));
     const csv = 'Codice;Descrizione;Prezzo\nP1;Placca 3M;2,40\nP2;;1,00\nP3;Placca 4M;3,10\n';
     const dialog = await chooseFile('bticino.csv', csv);
-    expect(within(dialog).getByLabelText('Name')).toHaveValue('1');
+    expect(within(dialog).getByRole('combobox', { name: 'Name' })).toHaveTextContent('Descrizione');
     expect(within(dialog).getByText(/1 row has no name/)).toBeInTheDocument();
-    await userEvent.selectOptions(within(dialog).getByLabelText('Default category'), 'plate');
+    await pickOption(within(dialog).getByRole('combobox', { name: 'Default category' }), 'Plates');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Import 2 items' }));
     const [catalog] = catalogs();
     expect(catalog!.name).toBe('bticino');
@@ -145,7 +177,7 @@ describe('library catalog page', () => {
     const before = catalogs()[0]!;
     usePreset(before.items[0]!.id, before.items[1]!.id);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Replace…' }));
+    await catalogAction('Vimar 2026', 'Replace…');
     dialog = await chooseFile('v2.epc', epc([socket(610)]));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Import 1 item' }));
     const diff = await screen.findByTestId('replace-diff');
@@ -161,7 +193,122 @@ describe('library catalog page', () => {
       [before.items[0]!.id, 610, undefined],
       [before.items[1]!.id, undefined, true],
     ]);
-    await userEvent.click(screen.getByRole('tab', { name: 'Plates' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Plates' }));
     expect(await screen.findByText('not in the new list')).toBeInTheDocument();
+  });
+
+  // protects=catalog search; fails_when=the search ignores the code, ignores the name, or is case sensitive; no_claim=ranking
+  it('filters the table by name and by code', async () => {
+    app = await renderApp('/settings/catalog', {
+      project: null,
+      library: withCatalog([
+        item('a', 'Vimar plus socket', 500, 'ZX-9'),
+        item('b', 'Vimar switch', 700),
+      ]),
+    });
+    const search = await screen.findByRole('textbox', { name: 'Search by name or code' });
+    await userEvent.type(search, 'plus');
+    expect(screen.getByRole('cell', { name: 'Vimar plus socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Vimar switch' })).not.toBeInTheDocument();
+    await userEvent.clear(search);
+    await userEvent.type(search, 'zx-9');
+    expect(screen.getByRole('cell', { name: 'Vimar plus socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Vimar switch' })).not.toBeInTheDocument();
+    await userEvent.clear(search);
+    await userEvent.type(search, 'nothing like this');
+    expect(await screen.findByText('No items match.')).toBeInTheDocument();
+  });
+
+  // protects=the "without price" filter; fails_when=the badge count ignores built-in overrides, the filter keeps priced items, or pressing it again does not clear the filter; no_claim=the wording
+  it('filters to the items without a price', async () => {
+    app = await renderApp('/settings/catalog', {
+      project: null,
+      library: withCatalog([item('a', 'Priced socket', 500), item('b', 'Free socket')]),
+    });
+    await selectRow('Schuko socket');
+    const badge = await screen.findByRole('button', { name: /without price/ });
+    const before = Number(badge.textContent!.match(/\d+/)![0]);
+    await userEvent.type(screen.getByLabelText('Price of Schuko socket'), '3,90{Enter}');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /without price/ })).toHaveTextContent(
+        `${before - 1} without price`,
+      ),
+    );
+    await userEvent.click(screen.getByRole('button', { name: /without price/ }));
+    expect(screen.getByRole('cell', { name: 'Free socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Priced socket' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Schuko socket' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /without price/ }));
+    expect(screen.getByRole('cell', { name: 'Priced socket' })).toBeInTheDocument();
+  });
+
+  // protects=editing in the detail panel; fails_when=a price or field typed in the panel is not written to the item on blur/Enter, or the item is not marked as edited; no_claim=attribute fields
+  it('edits the price and the fields of the selected item in the panel', async () => {
+    app = await renderApp('/settings/catalog', {
+      project: null,
+      library: withCatalog([item('a', 'Vimar socket', 500)]),
+    });
+    await selectRow('Vimar socket');
+    const panel = await screen.findByRole('complementary', { name: 'Item details' });
+    const price = within(panel).getByLabelText('Price of Vimar socket');
+    await userEvent.clear(price);
+    await userEvent.type(price, '6,10{Enter}');
+    await waitFor(() => expect(catalogs()[0]!.items[0]!.unitPrice).toBe(610));
+    expect(catalogs()[0]!.items[0]!.editedAt).toBeDefined();
+    expect(screen.getByRole('cell', { name: '€6.10' })).toBeInTheDocument();
+
+    const name = within(panel).getByLabelText('Name');
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Vimar Plana socket');
+    await userEvent.tab();
+    await waitFor(() => expect(catalogs()[0]!.items[0]!.name).toBe('Vimar Plana socket'));
+    // The panel has no Save button: the dialog is only for new items.
+    expect(within(panel).queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+  });
+
+  // protects=panel follows the filters; fails_when=a selection hidden by a filter keeps showing its fields, or comes back empty when the filter is lifted; no_claim=the layout
+  it('shows the empty state when a filter hides the selected item', async () => {
+    app = await renderApp('/settings/catalog', {
+      project: null,
+      library: withCatalog([item('a', 'Vimar socket', 500), item('b', 'Vimar switch', 700)]),
+    });
+    const panel = () => screen.getByRole('complementary', { name: 'Item details' });
+    expect(await within(panel()).findByText(/Select an item/)).toBeInTheDocument();
+    await selectRow('Vimar socket');
+    expect(within(panel()).getByRole('heading', { name: 'Vimar socket' })).toBeInTheDocument();
+    const search = screen.getByRole('textbox', { name: 'Search by name or code' });
+    await userEvent.type(search, 'switch');
+    expect(await within(panel()).findByText(/hidden by the filters/)).toBeInTheDocument();
+    await userEvent.clear(search);
+    expect(
+      await within(panel()).findByRole('heading', { name: 'Vimar socket' }),
+    ).toBeInTheDocument();
+  });
+
+  // protects=catalog filter from the sidebar; fails_when=choosing a catalog row shows items of other catalogs, or the built-ins row shows imported ones; no_claim=import
+  it('filters by the catalog chosen in the sidebar', async () => {
+    app = await renderApp('/settings/catalog', {
+      project: null,
+      library: withCatalog([item('a', 'Vimar socket', 500)]),
+    });
+    await screen.findByRole('cell', { name: 'Schuko socket' });
+    const list = screen.getByRole('list', { name: 'Catalogs' });
+    await userEvent.click(within(list).getByRole('link', { name: /Vimar/ }));
+    expect(await screen.findByRole('cell', { name: 'Vimar socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Schuko socket' })).not.toBeInTheDocument();
+    await userEvent.click(within(list).getByRole('link', { name: /Built-in/ }));
+    expect(await screen.findByRole('cell', { name: 'Schuko socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('cell', { name: 'Vimar socket' })).not.toBeInTheDocument();
+  });
+
+  // protects=a large catalog without virtualization; fails_when=a 1,300-item catalog does not render every row, or the search over it stops working; no_claim=render time
+  it('renders a catalog of 1,300 items in full and searches it', async () => {
+    const many = Array.from({ length: 1300 }, (_, i) => item(`i${i}`, `Socket ${i}`, 100 + i));
+    app = await renderApp('/settings/catalog', { project: null, library: withCatalog(many) });
+    await screen.findByRole('cell', { name: 'Socket 1299' });
+    expect(screen.getAllByRole('row').length).toBeGreaterThan(1300);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Search by name or code' }), 'I1299');
+    await waitFor(() => expect(screen.queryByRole('cell', { name: 'Socket 7' })).toBeNull());
+    expect(screen.getByRole('cell', { name: 'Socket 1299' })).toBeInTheDocument();
   });
 });

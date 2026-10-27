@@ -237,7 +237,7 @@ Approved: yes (2026-10-27)
 - [x] 4. Routes and names: Settings and Project — `refactor: rename library to app-settings and settings to project-details, with Settings and Project routes`
 - [x] 5. Native menu: Settings and Export — `feat: add Settings and Export items to the native menu`
 - [x] 6. Settings screen — `feat: add the Settings screen with sidebar, General section and kit-styled sections`
-- [ ] 7. Catalog
+- [x] 7. Catalog — `feat: add the catalog table with detail panel, sidebar catalog actions and kit selects`
 - [ ] 8. Start screen
 - [ ] 9. Editor shell
 - [ ] 10. Plan view
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 7.
+Implement step 8.

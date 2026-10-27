@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { FileDropZone } from '@/components/ui/FileDropZone';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
 import { formatMoney } from '@/lib/format';
 import { categories } from './ItemDialog';
@@ -145,23 +146,21 @@ export function ImportDialog({
               </fieldset>
               <fieldset className="grid grid-cols-2 gap-2">
                 <legend className="mb-1 font-medium">{t('catalog.import.defaults')}</legend>
-                <label className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 text-small text-text-muted">
                   {t('catalog.import.defaultCategory')}
-                  <select
-                    className="h-[var(--control-height)] rounded border border-border px-2"
+                  <Select
+                    aria-label={t('catalog.import.defaultCategory')}
                     value={defaults.category}
-                    onChange={(e) =>
-                      setDefaults({ ...defaults, category: e.target.value as CatalogCategory })
+                    options={categories.map((c) => ({
+                      value: c,
+                      label: t(`catalog.categories.${c}`),
+                    }))}
+                    onValueChange={(v) =>
+                      setDefaults({ ...defaults, category: v as CatalogCategory })
                     }
-                  >
-                    {categories.map((c) => (
-                      <option key={c} value={c}>
-                        {t(`catalog.categories.${c}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-1">
+                  />
+                </div>
+                <label className="flex flex-col gap-1 text-small text-text-muted">
                   {t('catalog.import.defaultModules')}
                   <NumberInput
                     aria-label={t('catalog.import.defaultModules')}
@@ -223,20 +222,20 @@ function ColumnSelect({
 }) {
   const { t } = useTranslation();
   return (
-    <label className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 text-small text-text-muted">
       {t(`catalog.import.fields.${field}`)}
-      <select
-        className="h-[var(--control-height)] rounded border border-border px-2"
-        value={value ?? ''}
-        onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-      >
-        <option value="">{t('catalog.import.notMapped')}</option>
-        {header.map((h, i) => (
-          <option key={i} value={i}>
-            {h || t('catalog.import.column', { n: i + 1 })}
-          </option>
-        ))}
-      </select>
-    </label>
+      <Select
+        aria-label={t(`catalog.import.fields.${field}`)}
+        value={value === undefined ? '' : String(value)}
+        options={[
+          { value: '', label: t('catalog.import.notMapped') },
+          ...header.map((h, i) => ({
+            value: String(i),
+            label: h || t('catalog.import.column', { n: i + 1 }),
+          })),
+        ]}
+        onValueChange={(v) => onChange(v === '' ? undefined : Number(v))}
+      />
+    </div>
   );
 }

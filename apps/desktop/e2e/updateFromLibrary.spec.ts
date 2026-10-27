@@ -16,7 +16,8 @@ test('a library price change reaches the project only after the update, and undo
     // Price a built-in box in the library, then come back to the project.
     await page.getByRole('link', { name: 'Settings' }).click();
     await page.getByRole('link', { name: 'Catalog', exact: true }).click();
-    await page.getByRole('tab', { name: 'Wall boxes' }).click();
+    await page.getByRole('radio', { name: 'Wall boxes' }).click();
+    await page.getByRole('cell', { name: 'Wall box 503 (3 modules)' }).click();
     await page.getByLabel('Price of Wall box 503 (3 modules)').fill('2');
     await page.getByLabel('Price of Wall box 503 (3 modules)').blur();
     await page.getByRole('link', { name: 'Back to Demo house' }).click();

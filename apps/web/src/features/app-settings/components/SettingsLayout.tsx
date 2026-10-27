@@ -1,9 +1,9 @@
 import { ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useMatch } from 'react-router';
 import { cn } from '@/lib/cn';
 import { useWorkspace } from '@/stores/editor/EditorContext';
-import { useLibrary } from '@/stores/library/useLibrary';
+import { CatalogList } from './CatalogList';
 import { LibraryTransfer } from './LibraryTransfer';
 
 const sections = [
@@ -24,12 +24,13 @@ const row = 'flex h-7 items-center gap-2 rounded-sm px-2 text-body';
 export function SettingsLayout() {
   const { t } = useTranslation();
   const project = useWorkspace((s) => s.current);
-  const catalogs = useLibrary((s) => s.library.catalogs);
+  // The catalog page fills the area itself (table and detail panel, each scrolling alone).
+  const fillsArea = useMatch('/settings/catalog') !== null;
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
       <nav
         aria-label={t('appSettings.sections')}
-        className="flex w-56 flex-none flex-col gap-0.5 border-r border-border bg-chrome px-2 py-3"
+        className="flex w-56 flex-none flex-col gap-0.5 overflow-y-auto border-r border-border bg-chrome px-2 py-3"
       >
         <Link
           to={project ? '/project/plan' : '/'}
@@ -60,28 +61,14 @@ export function SettingsLayout() {
             >
               {t(section.key)}
             </NavLink>
-            {section.to === 'catalog' && catalogs.length > 0 ? (
-              <ul aria-label={t('catalog.catalogs')} className="flex flex-col gap-0.5">
-                {catalogs.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      to="catalog"
-                      className={cn(row, 'pl-5 text-text-muted hover:bg-hover hover:text-text')}
-                    >
-                      <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                      <span className="font-mono text-small tabular-nums">{c.items.length}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            {section.to === 'catalog' ? <CatalogList /> : null}
           </div>
         ))}
         <div className="mt-auto flex flex-col gap-2 border-t border-border pt-3">
           <LibraryTransfer />
         </div>
       </nav>
-      <main className="min-w-0 flex-1 overflow-auto p-6">
+      <main className={cn('min-w-0 flex-1', fillsArea ? 'overflow-hidden' : 'overflow-auto p-6')}>
         <Outlet />
       </main>
     </div>
