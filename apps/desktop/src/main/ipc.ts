@@ -34,6 +34,7 @@ import {
   parseWindowState,
 } from './ipcValidation';
 import { windowContexts } from './window';
+import { revealWindow } from './revealWindow';
 import { windowTitle } from './windowTitle';
 
 const dialogs: FileDialogs<BrowserWindow> = {
@@ -146,7 +147,10 @@ export function registerIpc({ openWindow }: { openWindow(): void }): void {
   appMenu = createAppMenu({
     recent,
     send: (command: MenuCommand) => {
-      const win = BrowserWindow.getFocusedWindow() ?? mainWindow();
+      const focused = BrowserWindow.getFocusedWindow();
+      const win = focused ?? mainWindow();
+      // No window has focus (all minimized): show the one that gets the command before sending.
+      if (win && !focused) revealWindow(win);
       if (win) win.webContents.send(channels.menuCommand, command);
       else if (command.command === 'settings') {
         pendingCommand = command;

@@ -256,6 +256,7 @@ Approved: yes (2026-10-27)
 ### Follow-ups
 - File > Import JSON stayed enabled in the native menu for a read-only project, where it does nothing — `fix: disable Import JSON in the native menu for a read-only project by reporting the read-only state to main`
 - The window background kept the colour of the theme at creation after a theme change — `fix: repaint every window's background when the theme changes instead of keeping the colour it was created with`
+- A menu command (Settings) sent while all windows were minimized went to a window left hidden — `fix: show and focus the target window before delivering a menu command when no window has focus, so Settings is not opened in a hidden window`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.
