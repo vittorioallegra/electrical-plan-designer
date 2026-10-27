@@ -93,7 +93,7 @@ export function PresetsPage() {
           <>
             <Button onClick={() => setDeleting(null)}>{t('common.cancel')}</Button>
             <Button
-              variant="danger"
+              variant="danger-ghost"
               onClick={() => {
                 const id = deleting?.id;
                 setDeleting(null);

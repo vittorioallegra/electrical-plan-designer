@@ -15,9 +15,9 @@ export function useToast() {
 }
 
 const toneClass: Record<Tone, string> = {
-  info: 'bg-text text-surface',
-  error: 'bg-error text-white',
-  success: 'bg-success text-white',
+  info: 'border-border',
+  error: 'border-error',
+  success: 'border-success',
 };
 
 let nextId = 1;
@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {messages.map((m) => (
           <RadixToast.Root
             key={m.id}
-            className={`rounded px-4 py-2 shadow-lg ${toneClass[m.tone]}`}
+            className={`rounded-md border border-l-4 bg-raised px-4 py-2 text-body shadow-pop ${toneClass[m.tone]}`}
             onOpenChange={(open) => {
               if (!open) setMessages((list) => list.filter((x) => x.id !== m.id));
             }}

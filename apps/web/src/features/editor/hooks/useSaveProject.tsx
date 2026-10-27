@@ -116,7 +116,7 @@ export function useSaveProject(store: EditorStore | null) {
             {t('editor.saveAs')}
           </Button>
           {problem?.kind === 'conflict' ? (
-            <Button variant="danger" onClick={() => asking?.answer('overwrite')}>
+            <Button variant="danger-ghost" onClick={() => asking?.answer('overwrite')}>
               {t('editor.conflict.overwrite')}
             </Button>
           ) : null}

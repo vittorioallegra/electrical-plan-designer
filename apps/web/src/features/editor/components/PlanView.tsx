@@ -170,7 +170,7 @@ export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }
           <>
             <Button onClick={() => setPendingDelete(null)}>{t('common.cancel')}</Button>
             <Button
-              variant="danger"
+              variant="danger-ghost"
               onClick={() => {
                 deleteIds(store, pendingDelete!);
                 setPendingDelete(null);

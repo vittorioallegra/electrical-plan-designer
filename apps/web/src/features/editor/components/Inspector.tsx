@@ -34,7 +34,7 @@ export function Inspector({
       <div className="flex flex-col gap-2">
         <p className="text-text-muted">{t('inspector.multiple', { count: selection.length })}</p>
         <p className="text-text-muted">{t('inspector.multipleHint')}</p>
-        <Button variant="danger" disabled={readOnly} onClick={() => onDelete(selection)}>
+        <Button variant="danger-ghost" disabled={readOnly} onClick={() => onDelete(selection)}>
           <Trash2 size={16} />
           {t('inspector.delete')}
         </Button>
@@ -107,7 +107,7 @@ function WallInspector({ wall }: { wall: Wall }) {
         {coord('b', 'y')}
       </div>
       <Button
-        variant="danger"
+        variant="danger-ghost"
         disabled={readOnly}
         onClick={() =>
           store.getState().applyCommand('delete wall', (d) => {

@@ -38,8 +38,8 @@ export function FileDropZone({ accept, onFile, inputTestId }: FileDropZoneProps)
       data-testid="file-drop-zone"
       data-dragging={dragging || undefined}
       className={cn(
-        'flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center',
-        dragging ? 'border-accent bg-accent/5' : 'border-border',
+        'flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors duration-[80ms]',
+        dragging ? 'border-accent bg-accent-subtle' : 'border-border-strong bg-chrome',
       )}
       onDragOver={(e) => {
         if (!hasFiles(e)) return;
@@ -57,7 +57,7 @@ export function FileDropZone({ accept, onFile, inputTestId }: FileDropZoneProps)
         if (file) onFile(file);
       }}
     >
-      <Upload className="size-6 text-text-muted" aria-hidden />
+      <Upload className="size-5 text-text-muted" aria-hidden />
       <p className="font-medium">{t('fileDrop.drag')}</p>
       <p className="text-text-muted">{t('fileDrop.or')}</p>
       <Button onClick={() => inputRef.current?.click()}>{t('fileDrop.choose')}</Button>

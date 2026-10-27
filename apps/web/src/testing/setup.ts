@@ -18,3 +18,11 @@ vi.mock('react-konva', () => {
     ),
   );
 });
+
+// jsdom lacks the pointer-capture and scroll APIs Radix Select uses.
+if (typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
+  Element.prototype.scrollIntoView ??= () => {};
+}

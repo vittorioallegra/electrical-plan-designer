@@ -15,14 +15,14 @@ export function ErrorState({
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-start gap-3 p-6" role="alert">
-      <p>{t(messageKey)}</p>
+      <p className="text-heading">{t(messageKey)}</p>
       <div className="flex items-center gap-3">
         {onRetry ? (
           <Button variant="primary" onClick={onRetry}>
             {t('common.retry')}
           </Button>
         ) : null}
-        <Link to={backTo} className="text-accent underline">
+        <Link to={backTo} className="text-accent-text underline underline-offset-2">
           {t('nav.start')}
         </Link>
       </div>

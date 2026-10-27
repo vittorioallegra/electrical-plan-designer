@@ -118,7 +118,11 @@ export function ExtraRunEditor({ run }: { run: ExtraConductorRun }) {
         </div>
       </fieldset>
       <RoutingControls owner={{ kind: 'extra', id: run.id }} routing={run.routing} />
-      <Button variant="danger" disabled={readOnly} onClick={() => deleteExtraRun(store, run.id)}>
+      <Button
+        variant="danger-ghost"
+        disabled={readOnly}
+        onClick={() => deleteExtraRun(store, run.id)}
+      >
         <Trash2 size={14} />
         {t('circuits.deleteRun')}
       </Button>

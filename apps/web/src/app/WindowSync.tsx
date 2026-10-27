@@ -113,7 +113,7 @@ export function WindowSync() {
             >
               {t('common.cancel')}
             </Button>
-            <Button variant="danger" onClick={() => void discardAndClose()}>
+            <Button variant="danger-ghost" onClick={() => void discardAndClose()}>
               {t('editor.close.discard')}
             </Button>
             <Button variant="primary" onClick={() => void saveAndClose()}>

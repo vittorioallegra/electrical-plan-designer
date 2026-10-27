@@ -158,7 +158,7 @@ export function FloorsPanel() {
           <>
             <Button onClick={() => setDeleting(null)}>{t('common.cancel')}</Button>
             <Button
-              variant="danger"
+              variant="danger-ghost"
               onClick={() => {
                 const id = deleting!;
                 setDeleting(null);

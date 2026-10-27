@@ -118,7 +118,7 @@ export function SegmentInspector({
           ))}
         </ul>
       </div>
-      <Button variant="danger" disabled={readOnly} onClick={onDelete}>
+      <Button variant="danger-ghost" disabled={readOnly} onClick={onDelete}>
         <Trash2 size={16} />
         {t('inspector.delete')}
       </Button>

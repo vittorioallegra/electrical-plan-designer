@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 describe('app shell', () => {
   // protects=app shell renders per language; fails_when=a route or locale key is broken; no_claim=page content beyond the title
@@ -17,7 +17,7 @@ describe('app shell', () => {
   it('switches visible strings when the language changes', async () => {
     await renderApp('/project/panel');
     expect(await screen.findByRole('heading', { name: 'Panel designer' })).toBeInTheDocument();
-    await userEvent.selectOptions(screen.getByLabelText('Language'), 'it');
+    await pickOption(screen.getByLabelText('Language'), 'Italiano');
     expect(await screen.findByRole('heading', { name: 'Progetto quadro' })).toBeInTheDocument();
   });
 });

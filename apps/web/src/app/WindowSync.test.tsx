@@ -2,6 +2,7 @@ import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 async function openDemo() {
   const app = await renderApp('/project/plan', { exposeTestHandle: true });
@@ -120,7 +121,7 @@ describe('window sync', () => {
   it('gives the menu its labels and updates them with the language', async () => {
     const { windowHost } = await openDemo();
     expect(windowHost.menuLabels).toMatchObject({ file: 'File', saveAs: 'Save As…' });
-    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'it');
+    await pickOption(screen.getByRole('combobox', { name: 'Language' }), 'Italiano');
     await waitFor(() => expect(windowHost.menuLabels).toMatchObject({ saveAs: 'Salva con nome…' }));
   });
 });

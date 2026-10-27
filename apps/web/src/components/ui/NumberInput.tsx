@@ -2,6 +2,7 @@ import { useId, useState, type InputHTMLAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/cn';
 import { formatNumber, parseNumber, type Locale } from '@/lib/format';
+import { fieldBox } from './TextField';
 
 export interface NumberInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -57,7 +58,8 @@ export function NumberInput({
   return (
     <span
       className={cn(
-        'inline-flex h-[var(--control-height,2rem)] items-center rounded border bg-surface px-2',
+        fieldBox,
+        'inline-flex items-center',
         invalid ? 'border-error' : 'border-border',
         className,
       )}
@@ -68,7 +70,7 @@ export function NumberInput({
         type="text"
         inputMode="decimal"
         aria-invalid={invalid || undefined}
-        className="w-full min-w-0 bg-transparent text-right tabular-nums outline-none"
+        className="w-full min-w-0 bg-transparent text-right font-mono tabular-nums outline-none disabled:cursor-not-allowed disabled:opacity-45"
         value={draft ?? show(value)}
         onFocus={() => setDraft((d) => d ?? show(value))}
         onChange={(e) => {
@@ -83,7 +85,7 @@ export function NumberInput({
           if (e.key === 'Enter') commit();
         }}
       />
-      {unit ? <span className="ml-1 text-text-muted">{unit}</span> : null}
+      {unit ? <span className="ml-1 text-text-faint">{unit}</span> : null}
     </span>
   );
 }

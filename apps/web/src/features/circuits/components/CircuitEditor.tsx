@@ -192,7 +192,11 @@ export function CircuitEditor({ circuit }: { circuit: Circuit }) {
         </Button>
       </fieldset>
       <RoutingControls owner={owner} routing={circuit.routing} />
-      <Button variant="danger" disabled={readOnly} onClick={() => deleteCircuit(store, circuit.id)}>
+      <Button
+        variant="danger-ghost"
+        disabled={readOnly}
+        onClick={() => deleteCircuit(store, circuit.id)}
+      >
         <Trash2 size={14} />
         {t('circuits.delete')}
       </Button>
