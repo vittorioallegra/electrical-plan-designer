@@ -6,6 +6,7 @@ import { lifecycle } from './lifecycle';
 import { createCloseGuard, type CloseGuard } from './closeGuard';
 import { isAllowedUrl, originOf } from './ipcValidation';
 import { APP_NAME } from './windowTitle';
+import { followTheme, windowBackground } from './windowTheme';
 
 /** What main keeps per window: the origin its renderer must come from and its close guard. */
 export interface WindowContext {
@@ -26,11 +27,6 @@ function blockForeignRequests(): void {
     const protocolName = new URL(details.url).protocol.replace(':', '');
     callback({ cancel: !['data', 'blob', 'devtools', APP_SCHEME].includes(protocolName) });
   });
-}
-
-/** The chrome colour of DESIGN.md per theme: what the window shows before the page paints. */
-export function windowBackground(dark: boolean): string {
-  return dark ? '#141517' : '#F4F5F6';
 }
 
 export function createWindow(): BrowserWindow {
@@ -84,6 +80,9 @@ export function createWindow(): BrowserWindow {
   win.on('page-title-updated', (event) => event.preventDefault());
   win.on('enter-full-screen', () => win.webContents.send(channels.windowFullScreen, true));
   win.on('leave-full-screen', () => win.webContents.send(channels.windowFullScreen, false));
+  // The background follows the theme for as long as the window lives.
+  const stopFollowing = followTheme(win, nativeTheme);
+  win.once('closed', stopFollowing);
   win.once('ready-to-show', () => win.show());
 
   void win.loadURL(url);
