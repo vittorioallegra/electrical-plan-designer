@@ -115,3 +115,33 @@ test('renders the scanned image of a CCITT-encoded PDF', async ({ page }) => {
   expect(darkShare).toBeGreaterThan(0.4);
   expect(darkShare).toBeLessThan(0.6);
 });
+
+// protects=one "Import plan" per state, panel collapse and the conduit legend in the real layout; fails_when=Import plan shows twice, a side panel does not collapse and give its width to the canvas, or the legend does not show and collapse; no_claim=theme colours
+test('plan view: one Import plan, collapsible side panels, conduit legend', async ({ page }) => {
+  await newProject(page, `View ${Date.now()}`);
+  await expect(page.getByRole('button', { name: 'Import plan' })).toHaveCount(1);
+  await expect(
+    page.getByTestId('empty-canvas').getByRole('button', { name: 'Import plan' }),
+  ).toBeVisible();
+
+  await page.getByTestId('tool-wall').click();
+  await clickWorld(page, { x: 0, y: 0 });
+  await clickWorld(page, { x: 4, y: 0 });
+  await page.keyboard.press('Escape');
+  await page.getByTestId('tool-select').click();
+  await expect(page.getByTestId('empty-canvas')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Import plan' })).toHaveCount(1);
+
+  const canvasWidth = async () => (await page.getByTestId('canvas-area').boundingBox())!.width;
+  const before = await canvasWidth();
+  await page.getByRole('button', { name: 'Floors panel' }).click();
+  await expect.poll(canvasWidth).toBeGreaterThan(before + 150);
+  await page.getByRole('button', { name: 'Floors panel' }).click();
+  await expect.poll(canvasWidth).toBeLessThan(before + 5);
+
+  const legend = page.getByTestId('run-legend');
+  await expect(legend.locator('line')).toHaveCount(3);
+  await legend.getByRole('button', { name: 'Conduit runs' }).click();
+  await expect(legend.locator('line')).toHaveCount(3);
+  await expect(legend.getByText('At floor')).toBeHidden();
+});

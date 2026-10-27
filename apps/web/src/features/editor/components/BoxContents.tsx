@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import type { PlanNode } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { PanelSection } from '@/components/ui/PanelSection';
+import { Select } from '@/components/ui/Select';
 import { cn } from '@/lib/cn';
 import { applyPresetTo } from '@/features/editor/utils/commands';
 import { useCatalog } from '@/hooks/useCatalog';
@@ -47,110 +50,106 @@ export function BoxContents({ node }: { node: PlanNode }) {
     });
 
   return (
-    <div className="flex flex-col gap-2 border-t border-border pt-2" data-testid="box-contents">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium">{t('contents.title')}</h3>
+    <PanelSection
+      title={t('contents.title')}
+      actions={
         <span
-          className={cn('tabular-nums', over ? 'font-medium text-error' : 'text-text-muted')}
+          className={cn(
+            'font-mono tabular-nums',
+            over ? 'font-medium text-error' : 'text-text-muted',
+          )}
           data-testid="modules-counter"
         >
           {box?.modules !== undefined
             ? t('contents.modules', { used, available: box.modules })
             : t('contents.modulesNoBox', { used })}
         </span>
-      </div>
-      {contents.length === 0 ? <p className="text-text-muted">{t('contents.empty')}</p> : null}
-      <ul className="flex flex-col gap-1">
-        {contents.map((c) => (
-          <li key={c.itemId} className="flex items-center gap-1">
-            <span className="min-w-0 flex-1 truncate">{itemName(lookup(c.itemId), c.itemId)}</span>
-            <Button
-              variant="ghost"
-              aria-label={t('contents.less', { name: itemName(lookup(c.itemId), c.itemId) })}
-              disabled={readOnly}
-              onClick={() => setQty(c.itemId, c.qty - 1)}
-            >
-              <Minus size={14} />
-            </Button>
-            <span className="w-6 text-center tabular-nums">{c.qty}</span>
-            <Button
-              variant="ghost"
-              aria-label={t('contents.more', { name: itemName(lookup(c.itemId), c.itemId) })}
-              disabled={readOnly}
-              onClick={() => setQty(c.itemId, c.qty + 1)}
-            >
-              <Plus size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              aria-label={t('contents.remove', { name: itemName(lookup(c.itemId), c.itemId) })}
-              disabled={readOnly}
-              onClick={() => setQty(c.itemId, 0)}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </li>
-        ))}
-      </ul>
-      <div className="flex gap-1">
-        <select
-          aria-label={t('contents.addItem')}
-          className="h-[var(--control-height)] min-w-0 flex-1 rounded border border-border px-1"
-          value={adding}
-          disabled={readOnly}
-          onChange={(e) => setAdding(e.target.value)}
-        >
-          <option value="">{t('contents.choose')}</option>
-          {(
-            [
-              ['device', devices],
-              ['blanking_cover', covers],
-              ['plate', plates],
-            ] as const
-          ).map(([category, items]) => (
-            <optgroup key={category} label={t(`catalog.categories.${category}`)}>
-              {items.map((i) => (
-                <option key={i.id} value={i.id}>
-                  {itemName(i)}
-                </option>
-              ))}
-            </optgroup>
+      }
+    >
+      <div className="flex flex-col gap-2" data-testid="box-contents">
+        {contents.length === 0 ? <p className="text-text-muted">{t('contents.empty')}</p> : null}
+        <ul className="flex flex-col gap-1">
+          {contents.map((c) => (
+            <li key={c.itemId} className="flex items-center gap-1">
+              <span className="min-w-0 flex-1 truncate">
+                {itemName(lookup(c.itemId), c.itemId)}
+              </span>
+              <IconButton
+                label={t('contents.less', { name: itemName(lookup(c.itemId), c.itemId) })}
+                icon={<Minus size={14} />}
+                disabled={readOnly}
+                onClick={() => setQty(c.itemId, c.qty - 1)}
+              />
+              <span className="w-6 text-center font-mono tabular-nums">{c.qty}</span>
+              <IconButton
+                label={t('contents.more', { name: itemName(lookup(c.itemId), c.itemId) })}
+                icon={<Plus size={14} />}
+                disabled={readOnly}
+                onClick={() => setQty(c.itemId, c.qty + 1)}
+              />
+              <IconButton
+                label={t('contents.remove', { name: itemName(lookup(c.itemId), c.itemId) })}
+                icon={<Trash2 size={14} />}
+                disabled={readOnly}
+                onClick={() => setQty(c.itemId, 0)}
+              />
+            </li>
           ))}
-        </select>
-        <Button
-          disabled={readOnly || !adding}
-          onClick={() => {
-            const line = contents.find((c) => c.itemId === adding);
-            setQty(adding, (line?.qty ?? 0) + 1);
-            setAdding('');
-          }}
-        >
-          {t('contents.add')}
-        </Button>
-      </div>
-
-      {boxPresets.length > 0 ? (
-        <div className="flex flex-col gap-1 border-t border-border pt-2">
-          <span>{t('contents.presets')}</span>
-          <select
-            aria-label={t('contents.applyPreset')}
-            className="h-[var(--control-height)] rounded border border-border px-1"
-            value=""
+        </ul>
+        <div className="flex gap-1">
+          <Select
+            aria-label={t('contents.addItem')}
+            className="min-w-0 flex-1"
+            value={adding}
             disabled={readOnly}
-            onChange={(e) => {
-              const preset = boxPresets.find((p) => p.id === e.target.value);
-              if (preset) update('apply preset', (n) => applyPresetTo(n, preset));
+            onValueChange={setAdding}
+            options={[
+              { value: '', label: t('contents.choose') },
+              ...(
+                [
+                  ['device', devices],
+                  ['blanking_cover', covers],
+                  ['plate', plates],
+                ] as const
+              ).flatMap(([category, items]) =>
+                items.map((i) => ({
+                  value: i.id,
+                  label: `${t(`catalog.categories.${category}`)} · ${itemName(i)}`,
+                })),
+              ),
+            ]}
+          />
+          <Button
+            disabled={readOnly || !adding}
+            onClick={() => {
+              const line = contents.find((c) => c.itemId === adding);
+              setQty(adding, (line?.qty ?? 0) + 1);
+              setAdding('');
             }}
           >
-            <option value="">{t('contents.applyPreset')}</option>
-            {boxPresets.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            {t('contents.add')}
+          </Button>
         </div>
-      ) : null}
-    </div>
+
+        {boxPresets.length > 0 ? (
+          <div className="flex flex-col gap-1 border-t border-border pt-2">
+            <span className="text-small text-text-muted">{t('contents.presets')}</span>
+            <Select
+              aria-label={t('contents.applyPreset')}
+              value=""
+              disabled={readOnly}
+              onValueChange={(id) => {
+                const preset = boxPresets.find((p) => p.id === id);
+                if (preset) update('apply preset', (n) => applyPresetTo(n, preset));
+              }}
+              options={[
+                { value: '', label: t('contents.applyPreset') },
+                ...boxPresets.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
+          </div>
+        ) : null}
+      </div>
+    </PanelSection>
   );
 }

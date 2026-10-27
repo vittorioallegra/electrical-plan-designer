@@ -5,6 +5,7 @@ import type { EditorStore } from '@/stores/editor/editorStore';
 import { defaultLibrary } from '@epd/domain/library';
 import type { LibraryData } from '@/lib/repositories/types';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 const planPath = '/project/plan';
 const store = () => (window as unknown as { __epd?: { store: EditorStore } }).__epd;
@@ -29,7 +30,7 @@ describe('box contents', () => {
   it('adds and removes items and counts modules', async () => {
     await openBox('n_s1');
     expect(screen.getByTestId('modules-counter')).toHaveTextContent('3 / 3 modules');
-    await userEvent.selectOptions(screen.getByLabelText('Item to add'), 'builtin:switch');
+    await pickOption(screen.getByRole('combobox', { name: 'Item to add' }), /One-way switch/);
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
     expect(screen.getByTestId('modules-counter')).toHaveTextContent('4 / 3 modules');
     await userEvent.click(screen.getByRole('button', { name: 'Remove One-way switch' }));
@@ -68,7 +69,10 @@ describe('box contents', () => {
         .store.getState()
         .setUi({ selection: ['n_s2'] }),
     );
-    await userEvent.selectOptions(await screen.findByLabelText('Apply a preset…'), 'Schuko 503');
+    await pickOption(
+      await screen.findByRole('combobox', { name: 'Apply a preset…' }),
+      'Schuko 503',
+    );
     const { data } = store()!.store.getState();
     expect(data.doc.nodes.find((n) => n.id === 'n_s2')!.contents?.map((c) => c.itemId)).toEqual([
       'builtin:socket_schuko',

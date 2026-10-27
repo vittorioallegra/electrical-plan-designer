@@ -8,7 +8,9 @@ import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { formatLength } from '@/lib/format';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { PanelSection } from '@/components/ui/PanelSection';
 import { Select } from '@/components/ui/Select';
+import { TextField } from '@/components/ui/TextField';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
 import { BoxContents } from './BoxContents';
@@ -42,167 +44,175 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
   );
 
   return (
-    <div className="flex flex-col gap-2" data-testid="node-inspector">
-      <h2 className="font-medium">{t(`nodeKind.${node.kind}`)}</h2>
-      <label className="flex flex-col gap-1">
-        {t('inspector.node.label')}
-        <input
-          key={node.id}
-          className="h-[var(--control-height)] rounded border border-border px-2"
-          defaultValue={node.label}
-          disabled={readOnly}
-          onBlur={(e) => {
-            const label = e.target.value.trim();
-            if (label !== node.label) update('rename node', (n) => void (n.label = label));
-          }}
-        />
-      </label>
-      <div className="grid grid-cols-2 gap-1">
-        <NumberInput
-          aria-label={t('inspector.node.x')}
-          value={node.position.x}
-          unit="m"
-          disabled={readOnly}
-          onValueChange={(x) =>
-            update('move node', (n) => void (n.position = { ...n.position, x }))
-          }
-        />
-        <NumberInput
-          aria-label={t('inspector.node.y')}
-          value={node.position.y}
-          unit="m"
-          disabled={readOnly}
-          onValueChange={(y) =>
-            update('move node', (n) => void (n.position = { ...n.position, y }))
-          }
-        />
-      </div>
-
-      {node.kind === 'terminal_box' ? (
-        <>
-          <label className="flex flex-col gap-1">
-            {t('inspector.node.mounting')}
-            <Select
-              value={node.mounting ?? 'socket'}
-              disabled={readOnly}
-              onValueChange={(v) => update('mounting', (n) => void (n.mounting = v as Mounting))}
-              options={mountings.map((m) => ({ value: m, label: t(`mounting.${m}`) }))}
-            />
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={node.status === 'provision'}
-              disabled={readOnly}
-              onChange={(e) =>
-                update(
-                  'provision',
-                  (n) => void (n.status = e.target.checked ? 'provision' : 'active'),
-                )
-              }
-            />
-            {t('inspector.node.provision')}
-          </label>
-        </>
-      ) : null}
-
-      {node.kind !== 'riser_point' ? (
-        <label className="flex flex-col gap-1">
-          {t('inspector.node.customHeight')}
-          <div className="flex gap-1">
-            <NumberInput
-              aria-label={t('inspector.node.customHeight')}
-              value={node.customHeight ?? null}
-              placeholder={formatLength(height, locale)}
-              unit="m"
-              min={0}
-              max={20}
-              disabled={readOnly}
-              onValueChange={(v) => update('custom height', (n) => void (n.customHeight = v))}
-            />
-            {node.customHeight !== undefined ? (
-              <Button
-                variant="ghost"
-                disabled={readOnly}
-                onClick={() => update('default height', (n) => void delete n.customHeight)}
-              >
-                {t('inspector.node.useDefault')}
-              </Button>
-            ) : null}
-          </div>
-          <span className="text-text-muted">
-            {t('inspector.node.heightValue', { height: formatLength(height, locale) })}
-          </span>
-        </label>
-      ) : null}
-
-      {node.kind === 'terminal_box' || node.kind === 'junction_box' ? (
-        <label className="flex flex-col gap-1">
-          {t('inspector.node.boxItem')}
-          <Select
-            value={node.boxItemId ?? ''}
+    <div data-testid="node-inspector">
+      <PanelSection title={t(`nodeKind.${node.kind}`)}>
+        <div className="flex flex-col gap-2">
+          <TextField
+            key={node.id}
+            label={t('inspector.node.label')}
+            defaultValue={node.label}
             disabled={readOnly}
-            onValueChange={(v) =>
-              update('box item', (n) => {
-                if (v) n.boxItemId = v;
-                else delete n.boxItemId;
-              })
-            }
-            options={[
-              { value: '', label: t('inspector.node.noBox') },
-              ...boxes.map((b) => ({ value: b.id, label: itemName(b) })),
-            ]}
+            onBlur={(e) => {
+              const label = e.target.value.trim();
+              if (label !== node.label) update('rename node', (n) => void (n.label = label));
+            }}
           />
-        </label>
-      ) : null}
-
-      {node.kind === 'riser_point' ? (
-        <div className="flex flex-col gap-1" data-testid="riser-links">
-          <span>{t('inspector.riser.title')}</span>
-          {(['up', 'down'] as const).map((dir) => {
-            const target = floors[floorIndex + (dir === 'up' ? 1 : -1)];
-            if (!target) return null;
-            const linked = groupFloors.has(target.id);
-            return (
-              <Button
-                key={dir}
-                disabled={readOnly || linked}
-                onClick={() =>
-                  store
-                    .getState()
-                    .applyCommand('link riser', (d) => void linkRiser(d.doc, node.id, dir, newId))
-                }
-              >
-                {dir === 'up' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-                {linked
-                  ? t('inspector.riser.linked', { floor: target.name })
-                  : t('inspector.riser.link', { floor: target.name })}
-              </Button>
-            );
-          })}
-          {groupFloors.size > 0 ? (
-            <Button
-              variant="ghost"
+          <div className="grid grid-cols-2 gap-1">
+            <NumberInput
+              aria-label={t('inspector.node.x')}
+              value={node.position.x}
+              unit="m"
               disabled={readOnly}
-              onClick={() =>
-                store
-                  .getState()
-                  .applyCommand('unlink riser', (d) => void unlinkRiser(d.doc, node.id, newId))
+              onValueChange={(x) =>
+                update('move node', (n) => void (n.position = { ...n.position, x }))
               }
-            >
-              <Link2Off size={16} />
-              {t('inspector.riser.unlink')}
-            </Button>
+            />
+            <NumberInput
+              aria-label={t('inspector.node.y')}
+              value={node.position.y}
+              unit="m"
+              disabled={readOnly}
+              onValueChange={(y) =>
+                update('move node', (n) => void (n.position = { ...n.position, y }))
+              }
+            />
+          </div>
+
+          {node.kind === 'terminal_box' ? (
+            <>
+              <label className="flex flex-col gap-1 text-small text-text-muted">
+                {t('inspector.node.mounting')}
+                <Select
+                  value={node.mounting ?? 'socket'}
+                  disabled={readOnly}
+                  onValueChange={(v) =>
+                    update('mounting', (n) => void (n.mounting = v as Mounting))
+                  }
+                  options={mountings.map((m) => ({ value: m, label: t(`mounting.${m}`) }))}
+                />
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="accent-accent"
+                  checked={node.status === 'provision'}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    update(
+                      'provision',
+                      (n) => void (n.status = e.target.checked ? 'provision' : 'active'),
+                    )
+                  }
+                />
+                {t('inspector.node.provision')}
+              </label>
+            </>
+          ) : null}
+
+          {node.kind !== 'riser_point' ? (
+            <label className="flex flex-col gap-1 text-small text-text-muted">
+              {t('inspector.node.customHeight')}
+              <div className="flex gap-1">
+                <NumberInput
+                  aria-label={t('inspector.node.customHeight')}
+                  value={node.customHeight ?? null}
+                  placeholder={formatLength(height, locale)}
+                  unit="m"
+                  min={0}
+                  max={20}
+                  disabled={readOnly}
+                  onValueChange={(v) => update('custom height', (n) => void (n.customHeight = v))}
+                />
+                {node.customHeight !== undefined ? (
+                  <Button
+                    variant="ghost"
+                    disabled={readOnly}
+                    onClick={() => update('default height', (n) => void delete n.customHeight)}
+                  >
+                    {t('inspector.node.useDefault')}
+                  </Button>
+                ) : null}
+              </div>
+              <span className="font-mono text-text-faint tabular-nums">
+                {t('inspector.node.heightValue', { height: formatLength(height, locale) })}
+              </span>
+            </label>
+          ) : null}
+
+          {node.kind === 'terminal_box' || node.kind === 'junction_box' ? (
+            <label className="flex flex-col gap-1 text-small text-text-muted">
+              {t('inspector.node.boxItem')}
+              <Select
+                value={node.boxItemId ?? ''}
+                disabled={readOnly}
+                onValueChange={(v) =>
+                  update('box item', (n) => {
+                    if (v) n.boxItemId = v;
+                    else delete n.boxItemId;
+                  })
+                }
+                options={[
+                  { value: '', label: t('inspector.node.noBox') },
+                  ...boxes.map((b) => ({ value: b.id, label: itemName(b) })),
+                ]}
+              />
+            </label>
+          ) : null}
+
+          {node.kind === 'riser_point' ? (
+            <div className="flex flex-col gap-1" data-testid="riser-links">
+              <span>{t('inspector.riser.title')}</span>
+              {(['up', 'down'] as const).map((dir) => {
+                const target = floors[floorIndex + (dir === 'up' ? 1 : -1)];
+                if (!target) return null;
+                const linked = groupFloors.has(target.id);
+                return (
+                  <Button
+                    key={dir}
+                    disabled={readOnly || linked}
+                    onClick={() =>
+                      store
+                        .getState()
+                        .applyCommand(
+                          'link riser',
+                          (d) => void linkRiser(d.doc, node.id, dir, newId),
+                        )
+                    }
+                  >
+                    {dir === 'up' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                    {linked
+                      ? t('inspector.riser.linked', { floor: target.name })
+                      : t('inspector.riser.link', { floor: target.name })}
+                  </Button>
+                );
+              })}
+              {groupFloors.size > 0 ? (
+                <Button
+                  variant="ghost"
+                  disabled={readOnly}
+                  onClick={() =>
+                    store
+                      .getState()
+                      .applyCommand('unlink riser', (d) => void unlinkRiser(d.doc, node.id, newId))
+                  }
+                >
+                  <Link2Off size={16} />
+                  {t('inspector.riser.unlink')}
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
-      ) : null}
+      </PanelSection>
 
       {node.kind === 'terminal_box' ? <BoxContents node={node} /> : null}
 
-      <Button variant="danger-ghost" disabled={readOnly} onClick={onDelete}>
-        <Trash2 size={16} />
-        {t('inspector.delete')}
-      </Button>
+      <div className="p-3">
+        <Button variant="danger-ghost" disabled={readOnly} onClick={onDelete}>
+          <Trash2 size={16} />
+          {t('inspector.delete')}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   linkedRisers,
 } from './planScene';
 import { useBackgroundImage } from './useBackgroundImage';
+import { ZoomControl } from './ZoomControl';
 import { centerOn } from './viewport';
 
 export interface PlanCanvasProps {
@@ -165,6 +166,7 @@ export function PlanCanvas({
           runElevation={settings.defaultRunElevation}
         />
       </Stage>
+      <ZoomControl size={size} />
     </div>
   );
 }

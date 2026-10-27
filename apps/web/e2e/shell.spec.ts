@@ -24,7 +24,7 @@ test('the bottom panel opens from the status bar and collapses when dragged shut
   await expect.poll(height).toBeGreaterThan(150);
   expect(await editorState(page, (s) => s.ui.drawerOpen)).toBe(true);
 
-  const separator = page.getByRole('separator');
+  const separator = page.getByTestId('drawer-separator');
   const box = (await separator.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();

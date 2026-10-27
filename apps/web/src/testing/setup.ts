@@ -36,3 +36,13 @@ if (typeof window !== 'undefined') {
     disconnect() {}
   };
 }
+
+// With every rect at 0,0,0,0 a panel separator would claim every pointer event at (0, 0) and
+// swallow clicks meant for buttons; park the separators far away instead.
+if (typeof Element !== 'undefined') {
+  const rect = Element.prototype.getBoundingClientRect;
+  Element.prototype.getBoundingClientRect = function (this: Element) {
+    if (this.hasAttribute('data-separator')) return new DOMRect(-10000, -10000, 1, 1);
+    return rect.call(this);
+  };
+}

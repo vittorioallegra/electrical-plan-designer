@@ -74,7 +74,8 @@
       "moveDown": "Sposta piano giù",
       "delete": "Elimina piano",
       "deleteTitle": "Eliminare {{name}}?",
-      "deleteBody": "Rimuove $t(counts.elements, {\"count\": {{nodes}}}) e $t(counts.segments, {\"count\": {{segments}}}); circuiti coinvolti: {{circuits}}. Annulla li ripristina."
+      "deleteBody": "Rimuove $t(counts.elements, {\"count\": {{nodes}}}) e $t(counts.segments, {\"count\": {{segments}}}); circuiti coinvolti: {{circuits}}. Annulla li ripristina.",
+      "properties": "Piano"
     },
     "emptyCanvas": "Parti dalla pianta: importa un PDF o un'immagine, oppure disegna i muri.",
     "deleteConfirm": {
@@ -107,7 +108,17 @@
     },
     "projectMenu": "Menu del progetto",
     "closePanel": "Chiudi pannello",
-    "statusBar": "Pannelli"
+    "statusBar": "Pannelli",
+    "leftPanel": "Pannello piani",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Ingrandisci",
+      "out": "Riduci",
+      "reset": "Reimposta zoom al 100%"
+    },
+    "legend": {
+      "title": "Tubi"
+    }
   },
   "catalog": {
     "builtin": {

@@ -28,7 +28,8 @@ test('place a panel and a socket box, draw a conduit, see its length with drops'
   // Panel 1.50 m + 5.00 m plan + socket 0.30 m.
   await clickWorld(page, { x: 3.5, y: 1 });
   await expect(page.getByTestId('segment-length')).toHaveText('6.80 m');
-  await page.getByLabel('Run elevation').selectOption('ceiling');
+  await page.getByLabel('Run elevation').click();
+  await page.getByRole('option', { name: 'At ceiling' }).click();
   // 5.00 + (2.70 − 1.50) + (2.70 − 0.30)
   await expect(page.getByTestId('segment-length')).toHaveText('8.60 m');
   await expect(page.getByTestId('save-status')).toHaveText('Draft', { timeout: 5000 });

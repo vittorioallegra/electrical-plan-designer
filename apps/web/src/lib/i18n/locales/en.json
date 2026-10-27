@@ -74,7 +74,8 @@
       "moveDown": "Move floor down",
       "delete": "Delete floor",
       "deleteTitle": "Delete {{name}}?",
-      "deleteBody": "Removes $t(counts.elements, {\"count\": {{nodes}}}) and $t(counts.segments, {\"count\": {{segments}}}), affecting $t(counts.circuits, {\"count\": {{circuits}}}). Undo restores them."
+      "deleteBody": "Removes $t(counts.elements, {\"count\": {{nodes}}}) and $t(counts.segments, {\"count\": {{segments}}}), affecting $t(counts.circuits, {\"count\": {{circuits}}}). Undo restores them.",
+      "properties": "Floor"
     },
     "emptyCanvas": "Start from the floor plan: import a PDF or image, or draw the walls.",
     "deleteConfirm": {
@@ -107,7 +108,17 @@
     },
     "projectMenu": "Project menu",
     "closePanel": "Close panel",
-    "statusBar": "Panels"
+    "statusBar": "Panels",
+    "leftPanel": "Floors panel",
+    "zoom": {
+      "label": "Zoom",
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "reset": "Reset zoom to 100%"
+    },
+    "legend": {
+      "title": "Conduit runs"
+    }
   },
   "catalog": {
     "builtin": {

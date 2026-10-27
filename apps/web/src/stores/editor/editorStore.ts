@@ -55,6 +55,9 @@ export interface EditorUi {
   drawerOpen: boolean;
   /** Height of the open bottom panel, % of the editor area. */
   drawerSize: number;
+  /** Plan view side panels (floors and background on the left, inspector on the right) open. */
+  leftPanelOpen: boolean;
+  inspectorOpen: boolean;
   /** Hides connectivity warnings while drawing (presentation only). */
   hideConnectivity: boolean;
   /** World point (m) the plan canvas should center on, consumed by the canvas. */
@@ -167,6 +170,8 @@ export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): Edit
         drawerTab: 'circuits',
         drawerOpen: false,
         drawerSize: 30,
+        leftPanelOpen: true,
+        inspectorOpen: true,
         hideConnectivity: false,
         focus: null,
       },

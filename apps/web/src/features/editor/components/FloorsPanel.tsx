@@ -6,12 +6,17 @@ import { cascadeOf, deleteFloor, moveFloor } from '@epd/domain/edits';
 import { newId } from '@epd/domain/ids';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { PanelSection } from '@/components/ui/PanelSection';
+import { TextField } from '@/components/ui/TextField';
+import { formatLength } from '@/lib/format';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { cn } from '@/lib/cn';
 
 export function FloorsPanel() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'it' ? 'it' : 'en';
   const { store } = useEditorContext();
   const rawFloors = useEditor((s) => s.data.doc.floors);
   const floors = useMemo(() => [...rawFloors].sort((a, b) => a.order - b.order), [rawFloors]);
@@ -42,41 +47,83 @@ export function FloorsPanel() {
     : null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <h2 className="font-medium">{t('editor.floors')}</h2>
-        <Button
-          variant="ghost"
-          aria-label={t('editor.floor.add')}
-          onClick={addFloor}
-          disabled={readOnly}
-        >
-          <Plus size={16} />
-        </Button>
-      </div>
-      <div role="tablist" aria-label={t('editor.floors')} className="flex flex-col gap-0.5">
-        {[...floors].reverse().map((f) => (
-          <button
-            key={f.id}
-            role="tab"
-            aria-selected={f.id === activeId}
-            className={cn(
-              'truncate rounded px-2 py-1 text-left',
-              f.id === activeId ? 'bg-surface-muted font-medium' : 'hover:bg-surface-muted',
-            )}
-            onClick={() => store.getState().setUi({ floorId: f.id, selection: [] })}
-          >
-            {f.name}
-          </button>
-        ))}
-      </div>
+    <>
+      <PanelSection
+        title={t('editor.floors')}
+        actions={
+          <IconButton
+            label={t('editor.floor.add')}
+            icon={<Plus size={16} />}
+            onClick={addFloor}
+            disabled={readOnly}
+          />
+        }
+      >
+        <div role="tablist" aria-label={t('editor.floors')} className="flex flex-col gap-0.5">
+          {[...floors].reverse().map((f) => (
+            <button
+              key={f.id}
+              role="tab"
+              type="button"
+              aria-selected={f.id === activeId}
+              title={f.name}
+              aria-label={f.name}
+              className={cn(
+                'flex h-7 items-center gap-2 rounded-sm px-2 text-left focus-visible:outline-2 focus-visible:outline-offset-1',
+                f.id === activeId
+                  ? 'bg-accent-subtle font-medium text-accent-text'
+                  : 'hover:bg-hover',
+              )}
+              onClick={() => store.getState().setUi({ floorId: f.id, selection: [] })}
+            >
+              <span className="min-w-0 flex-1 truncate">{f.name}</span>
+              <span className="font-mono text-small text-text-faint tabular-nums">
+                {formatLength(f.height, locale)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </PanelSection>
       {active ? (
-        <div className="flex flex-col gap-2 border-t border-border pt-2">
-          <label className="flex flex-col gap-1">
-            {t('editor.floor.name')}
-            <input
+        <PanelSection
+          title={t('editor.floor.properties')}
+          actions={
+            <>
+              <IconButton
+                label={t('editor.floor.moveUp')}
+                icon={<ArrowUp size={16} />}
+                disabled={readOnly || active.order === floors.length - 1}
+                onClick={() =>
+                  apply(
+                    'move floor',
+                    (d) => void moveFloor(d.doc, active.id, active.order + 1, newId),
+                  )
+                }
+              />
+              <IconButton
+                label={t('editor.floor.moveDown')}
+                icon={<ArrowDown size={16} />}
+                disabled={readOnly || active.order === 0}
+                onClick={() =>
+                  apply(
+                    'move floor',
+                    (d) => void moveFloor(d.doc, active.id, active.order - 1, newId),
+                  )
+                }
+              />
+              <IconButton
+                label={t('editor.floor.delete')}
+                icon={<Trash2 size={16} />}
+                disabled={readOnly || floors.length === 1}
+                onClick={() => setDeleting(active.id)}
+              />
+            </>
+          }
+        >
+          <div className="flex flex-col gap-2">
+            <TextField
               key={active.id}
-              className="h-[var(--control-height)] rounded border border-border px-2"
+              label={t('editor.floor.name')}
               defaultValue={active.name}
               disabled={readOnly}
               onBlur={(e) => {
@@ -88,60 +135,24 @@ export function FloorsPanel() {
                 }
               }}
             />
-          </label>
-          <label className="flex flex-col gap-1">
-            {t('editor.floor.height')}
-            <NumberInput
-              aria-label={t('editor.floor.height')}
-              value={active.height}
-              unit="m"
-              min={0.5}
-              max={20}
-              disabled={readOnly}
-              onValueChange={(height) =>
-                apply('floor height', (d) => {
-                  d.doc.floors.find((f) => f.id === active.id)!.height = height;
-                })
-              }
-            />
-          </label>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              aria-label={t('editor.floor.moveUp')}
-              disabled={readOnly || active.order === floors.length - 1}
-              onClick={() =>
-                apply(
-                  'move floor',
-                  (d) => void moveFloor(d.doc, active.id, active.order + 1, newId),
-                )
-              }
-            >
-              <ArrowUp size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              aria-label={t('editor.floor.moveDown')}
-              disabled={readOnly || active.order === 0}
-              onClick={() =>
-                apply(
-                  'move floor',
-                  (d) => void moveFloor(d.doc, active.id, active.order - 1, newId),
-                )
-              }
-            >
-              <ArrowDown size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              aria-label={t('editor.floor.delete')}
-              disabled={readOnly || floors.length === 1}
-              onClick={() => setDeleting(active.id)}
-            >
-              <Trash2 size={16} />
-            </Button>
+            <label className="flex flex-col gap-1 text-small text-text-muted">
+              {t('editor.floor.height')}
+              <NumberInput
+                aria-label={t('editor.floor.height')}
+                value={active.height}
+                unit="m"
+                min={0.5}
+                max={20}
+                disabled={readOnly}
+                onValueChange={(height) =>
+                  apply('floor height', (d) => {
+                    d.doc.floors.find((f) => f.id === active.id)!.height = height;
+                  })
+                }
+              />
+            </label>
           </div>
-        </div>
+        </PanelSection>
       ) : null}
       <Dialog
         open={deleting !== null}
@@ -170,6 +181,6 @@ export function FloorsPanel() {
           </>
         }
       />
-    </div>
+    </>
   );
 }

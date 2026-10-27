@@ -39,6 +39,7 @@ export function ProjectBody({ children }: { children: ReactNode }) {
         {children}
       </Panel>
       <Separator
+        data-testid="drawer-separator"
         disabled={!open}
         className={cn(
           'bg-border transition-colors data-[separator=active]:bg-accent data-[separator=hover]:bg-accent',

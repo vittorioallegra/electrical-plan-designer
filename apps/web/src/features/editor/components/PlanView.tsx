@@ -1,9 +1,13 @@
+import { PanelLeft, PanelRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import type { Point } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { IconButton } from '@/components/ui/IconButton';
 import { useToast } from '@/components/ui/Toast';
 import { BackgroundImportDialog } from '@/features/editor/background/BackgroundImportDialog';
 import { CalibrationDialog } from '@/features/editor/background/CalibrationDialog';
@@ -15,14 +19,45 @@ import {
   deleteIds,
   pasteClipboard,
 } from '@/features/editor/utils/commands';
+import { useCanvasEmpty } from '@/features/editor/hooks/useCanvasEmpty';
+import { cn } from '@/lib/cn';
+import { BackgroundSection } from './BackgroundSection';
 import { FloorsPanel } from './FloorsPanel';
 import { Inspector } from './Inspector';
-import { ToolPalette, toolHintKey, toolShortcuts } from './ToolPalette';
+import { RunLegend } from './RunLegend';
+import { PresetPicker, ToolRail, toolHintKey, toolShortcuts } from './ToolRail';
 
 function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   return !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
 }
+
+type SideKey = 'leftPanelOpen' | 'inspectorOpen';
+
+/** Keeps a collapsible side panel in step with its open flag in the editor store. */
+function useSidePanel(key: SideKey) {
+  const { store } = useEditorContext();
+  const open = useEditor((s) => s.ui[key]);
+  const ref = usePanelRef();
+  // Read once: later size changes come from the panel itself.
+  const [initial] = useState(open);
+  useEffect(() => {
+    const handle = ref.current;
+    if (!handle) return;
+    if (open) {
+      if (handle.isCollapsed()) handle.expand();
+    } else if (!handle.isCollapsed()) handle.collapse();
+  }, [open, ref]);
+  // Dragging below the minimum collapses the panel; the store follows.
+  const onResize = (size: { inPixels: number }) => {
+    if (size.inPixels === 0 && ref.current?.isCollapsed() && store.getState().ui[key])
+      store.getState().setUi({ [key]: false });
+  };
+  return { open, ref, initial, onResize };
+}
+
+const separatorClass =
+  'relative bg-border transition-colors after:absolute after:inset-y-0 after:-right-1 after:-left-1 after:content-[""] data-[separator=active]:bg-accent data-[separator=hover]:bg-accent';
 
 /** Plan view: floor tabs + tools on the left, canvas, inspector on the right. */
 export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }) {
@@ -34,15 +69,7 @@ export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }
   const [pendingDelete, setPendingDelete] = useState<string[] | null>(null);
   const readOnly = useEditor((s) => s.readOnly);
   const doc = useEditor((s) => s.data.doc);
-  const empty = useEditor((s) => {
-    const floor = s.data.doc.floors.find((f) => f.id === s.ui.floorId);
-    return (
-      !!floor &&
-      !floor.background &&
-      floor.walls.length === 0 &&
-      !s.data.doc.nodes.some((n) => n.floorId === floor.id)
-    );
-  });
+  const empty = useCanvasEmpty();
   const tool = useEditor((s) => s.ui.tool);
   const pick = useEditor((s) => s.ui.pick);
   const pickName = useEditor((s) =>
@@ -95,67 +122,131 @@ export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }
     ? doc.circuits.filter((c) => summary.circuitIds.includes(c.id)).map((c) => c.name)
     : [];
   const hint = toolHintKey(tool);
+  const left = useSidePanel('leftPanelOpen');
+  const right = useSidePanel('inspectorOpen');
 
   return (
     <div className="flex h-full">
-      <aside
-        className="flex w-52 flex-col gap-4 overflow-y-auto border-r border-border p-2"
-        aria-label={t('editor.tools')}
-      >
-        <h1 className="sr-only">{t('pages.plan')}</h1>
-        <FloorsPanel />
-        <ToolPalette />
-      </aside>
-      <div className="relative min-w-0 flex-1 bg-canvas-bg" data-testid="canvas-area">
-        <PlanCanvas
-          onCalibrationPoints={(p1, p2) => setCalibration([p1, p2])}
-          onDeleteRequest={requestDelete}
-          pickHandlers={pickHandlers}
+      <ToolRail />
+      <Group orientation="horizontal" className="min-w-0 flex-1">
+        <Panel
+          id="plan-left"
+          panelRef={left.ref}
+          collapsible
+          collapsedSize="0px"
+          minSize="200px"
+          maxSize="400px"
+          defaultSize={left.initial ? '248px' : '0px'}
+          onResize={left.onResize}
+        >
+          <aside
+            aria-label={t('editor.leftPanel')}
+            aria-hidden={!left.open}
+            inert={!left.open}
+            className="h-full w-full min-w-0 overflow-y-auto bg-panel"
+          >
+            <h1 className="sr-only">{t('pages.plan')}</h1>
+            <FloorsPanel />
+            <BackgroundSection onImport={() => setImporting(true)} />
+          </aside>
+        </Panel>
+        <Separator
+          disabled={!left.open}
+          className={cn(separatorClass, left.open ? 'w-px' : 'w-0 after:hidden')}
         />
-        {pick ? (
-          <div
-            className="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded bg-accent px-3 py-1 text-accent-contrast"
-            role="status"
-            data-testid="pick-banner"
-          >
-            <span>{t(`circuits.pickBanner.${pick.mode}`, { name: pickName })}</span>
-            <Button onClick={() => store.getState().setUi({ pick: null })}>
-              {t('circuits.done')}
-            </Button>
-          </div>
-        ) : hint ? (
-          <p
-            className="pointer-events-none absolute top-2 left-1/2 max-w-[90%] -translate-x-1/2 rounded bg-text px-3 py-1 text-center text-surface"
-            role="status"
-          >
-            {t(hint)}
-          </p>
-        ) : null}
-        {empty && tool === 'select' && !readOnly ? (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            data-testid="empty-canvas"
-          >
-            <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-surface p-6 shadow">
-              <p className="text-text-muted">{t('editor.emptyCanvas')}</p>
-              <div className="flex gap-2">
-                <Button variant="primary" onClick={() => setImporting(true)}>
-                  {t('background.import')}
-                </Button>
-                <Button onClick={() => store.getState().setUi({ tool: 'wall' })}>
-                  {t('tools.drawWalls')}
+        <Panel id="plan-center" minSize="320px">
+          <div className="relative h-full w-full min-w-0 bg-canvas-bg" data-testid="canvas-area">
+            <PlanCanvas
+              onCalibrationPoints={(p1, p2) => setCalibration([p1, p2])}
+              onDeleteRequest={requestDelete}
+              pickHandlers={pickHandlers}
+            />
+            {pick ? (
+              <div
+                className="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded bg-accent px-3 py-1 text-small text-on-accent shadow-pop"
+                role="status"
+                data-testid="pick-banner"
+              >
+                <span>{t(`circuits.pickBanner.${pick.mode}`, { name: pickName })}</span>
+                <Button onClick={() => store.getState().setUi({ pick: null })}>
+                  {t('circuits.done')}
                 </Button>
               </div>
+            ) : hint ? (
+              <p
+                className="pointer-events-none absolute top-2 left-1/2 max-w-[90%] -translate-x-1/2 rounded-md bg-text px-3 py-1 text-center text-small text-panel"
+                role="status"
+              >
+                {t(hint)}
+              </p>
+            ) : null}
+            {empty && tool === 'select' && !readOnly ? (
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                data-testid="empty-canvas"
+              >
+                <EmptyState
+                  className="rounded-lg border border-border bg-raised shadow-pop"
+                  message={t('editor.emptyCanvas')}
+                  action={
+                    <div className="flex gap-2">
+                      <Button variant="primary" onClick={() => setImporting(true)}>
+                        {t('background.import')}
+                      </Button>
+                      <Button onClick={() => store.getState().setUi({ tool: 'wall' })}>
+                        {t('tools.drawWalls')}
+                      </Button>
+                    </div>
+                  }
+                />
+              </div>
+            ) : null}
+            <div className="absolute top-2 left-2 flex flex-col items-start gap-2">
+              <div className="rounded-md border border-border bg-raised p-0.5 shadow-pop">
+                <IconButton
+                  label={t('editor.leftPanel')}
+                  icon={<PanelLeft size={16} />}
+                  pressed={left.open}
+                  onClick={() => store.getState().setUi({ leftPanelOpen: !left.open })}
+                />
+              </div>
+              <PresetPicker />
             </div>
+            <div className="absolute top-2 right-2 rounded-md border border-border bg-raised p-0.5 shadow-pop">
+              <IconButton
+                label={t('editor.inspector')}
+                icon={<PanelRight size={16} />}
+                pressed={right.open}
+                onClick={() => store.getState().setUi({ inspectorOpen: !right.open })}
+              />
+            </div>
+            <RunLegend />
           </div>
-        ) : null}
-      </div>
-      <aside
-        className="w-64 overflow-y-auto border-l border-border p-2"
-        aria-label={t('editor.inspector')}
-      >
-        <Inspector onImport={() => setImporting(true)} onDelete={requestDelete} />
-      </aside>
+        </Panel>
+        <Separator
+          disabled={!right.open}
+          className={cn(separatorClass, right.open ? 'w-px' : 'w-0 after:hidden')}
+        />
+        <Panel
+          id="plan-inspector"
+          panelRef={right.ref}
+          collapsible
+          collapsedSize="0px"
+          minSize="200px"
+          maxSize="400px"
+          defaultSize={right.initial ? '280px' : '0px'}
+          onResize={right.onResize}
+        >
+          <aside
+            aria-label={t('editor.inspector')}
+            aria-hidden={!right.open}
+            inert={!right.open}
+            className="h-full w-full min-w-0 overflow-y-auto bg-panel"
+          >
+            <Inspector onDelete={requestDelete} />
+          </aside>
+        </Panel>
+      </Group>
       <BackgroundImportDialog open={importing} onClose={() => setImporting(false)} />
       <CalibrationDialog points={calibration} onClose={() => setCalibration(null)} />
       <Dialog
