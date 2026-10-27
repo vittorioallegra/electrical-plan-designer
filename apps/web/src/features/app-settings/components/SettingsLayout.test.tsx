@@ -18,7 +18,7 @@ describe('settings frame', () => {
   it('is reachable from the start screen and the project, and links back', async () => {
     const app = await renderApp('/project/plan');
     await userEvent.click(await screen.findByRole('link', { name: 'Settings' }));
-    expect(await screen.findByRole('heading', { name: 'Company' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'General' })).toBeInTheDocument();
     expect(app.workspace.getState().current).not.toBeNull();
     await userEvent.click(screen.getByRole('link', { name: 'Back to Demo house' }));
     expect(await screen.findByTestId('project-name')).toHaveTextContent('Demo house');
@@ -27,6 +27,29 @@ describe('settings frame', () => {
     const start = await renderApp('/', { project: null });
     await userEvent.click(await within(start.container).findByRole('button', { name: 'Settings' }));
     expect(await screen.findByRole('link', { name: 'Back to start' })).toBeInTheDocument();
+  });
+
+  // protects=Settings sidebar; fails_when=a section link does not open its page, the active section is not marked, or the imported catalogs are not listed; no_claim=the catalog page itself
+  it('navigates between the sections and lists the imported catalogs', async () => {
+    await renderApp('/settings/general', { project: null, library: { library: filled() } });
+    const nav = await screen.findByRole('navigation', { name: 'Settings sections' });
+    expect(within(nav).getByRole('link', { name: 'General' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(nav).getByRole('list', { name: 'Catalogs' })).toHaveTextContent('Vimar');
+    for (const [link, heading] of [
+      ['Company', 'Company'],
+      ['Presets', 'Box presets'],
+      ['New projects', 'New projects'],
+    ] as const) {
+      await userEvent.click(within(nav).getByRole('link', { name: link }));
+      expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+    }
+    expect(within(nav).getByRole('link', { name: 'New projects' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
   // protects=AC 10 notice for invalid files; fails_when=files set aside at start are not announced, or the notice cannot be dismissed; no_claim=the renaming itself (main tests)

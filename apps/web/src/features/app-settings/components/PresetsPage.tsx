@@ -5,10 +5,12 @@ import { newId } from '@epd/domain/ids';
 import type { BoxPreset } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
 import { useItemName } from '@/hooks/useItemName';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
+import { PageHeader } from './PageHeader';
 
 const contentCategories = ['device', 'blanking_cover', 'plate'] as const;
 
@@ -28,20 +30,22 @@ export function PresetsPage() {
     });
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t('pages.presets')}</h1>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setName('');
-            setCreating(true);
-          }}
-        >
-          {t('library.presets.new')}
-        </Button>
-      </div>
-      <p className="text-text-muted">{t('library.presets.hint')}</p>
+    <div className="flex max-w-3xl flex-col gap-4">
+      <PageHeader
+        title={t('pages.presets')}
+        hint={t('library.presets.hint')}
+        actions={
+          <Button
+            variant="primary"
+            onClick={() => {
+              setName('');
+              setCreating(true);
+            }}
+          >
+            {t('library.presets.new')}
+          </Button>
+        }
+      />
       {boxPresets.length === 0 ? (
         <p className="text-text-muted">{t('library.presets.empty')}</p>
       ) : null}
@@ -160,26 +164,24 @@ function PresetCard({
           {t('library.presets.delete')}
         </Button>
       </div>
-      <label className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <span className="w-24">{t('library.presets.box')}</span>
-        <select
-          className="h-[var(--control-height)] min-w-0 flex-1 rounded border border-border px-1"
+        <Select
+          aria-label={t('library.presets.box')}
+          className="min-w-0 flex-1"
           value={preset.boxItemId ?? ''}
-          onChange={(e) =>
+          onValueChange={(value) =>
             edit((p) => {
-              if (e.target.value) p.boxItemId = e.target.value;
+              if (value) p.boxItemId = value;
               else delete p.boxItemId;
             })
           }
-        >
-          <option value="">{t('contents.plainBox')}</option>
-          {boxes.map((i) => (
-            <option key={i.id} value={i.id}>
-              {itemName(i)}
-            </option>
-          ))}
-        </select>
-      </label>
+          options={[
+            { value: '', label: t('contents.plainBox') },
+            ...boxes.map((i) => ({ value: i.id, label: itemName(i) })),
+          ]}
+        />
+      </div>
       {preset.contents.length === 0 ? (
         <p className="text-text-muted">{t('contents.empty')}</p>
       ) : null}
@@ -216,23 +218,21 @@ function PresetCard({
         })}
       </ul>
       <div className="flex gap-1">
-        <select
+        <Select
           aria-label={t('contents.addItem')}
-          className="h-[var(--control-height)] min-w-0 flex-1 rounded border border-border px-1"
+          className="min-w-0 flex-1"
           value={adding}
-          onChange={(e) => setAdding(e.target.value)}
-        >
-          <option value="">{t('contents.choose')}</option>
-          {contentCategories.map((category) => (
-            <optgroup key={category} label={t(`catalog.categories.${category}`)}>
-              {available(category).map((i) => (
-                <option key={i.id} value={i.id}>
-                  {itemName(i)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+          onValueChange={setAdding}
+          options={[
+            { value: '', label: t('contents.choose') },
+            ...contentCategories.flatMap((category) =>
+              available(category).map((i) => ({
+                value: i.id,
+                label: `${t(`catalog.categories.${category}`)} · ${itemName(i)}`,
+              })),
+            ),
+          ]}
+        />
         <Button
           disabled={!adding}
           onClick={() => {

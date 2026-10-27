@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { defaultLibrary } from '@epd/domain/library';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 describe('library presets page', () => {
   // protects=box presets in the library; fails_when=a preset cannot be created, renamed, given a box and contents, or deleted (after a confirmation), or the changes are not written to the library; no_claim=placing boxes with a preset (step 6)
@@ -16,11 +17,8 @@ describe('library presets page', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Create' }));
 
     const card = await screen.findByRole('region', { name: 'Kitchen' });
-    await userEvent.selectOptions(within(card).getByLabelText('Box'), 'builtin:box_504');
-    await userEvent.selectOptions(
-      within(card).getByLabelText('Item to add'),
-      'builtin:socket_schuko',
-    );
+    await pickOption(within(card).getByRole('combobox', { name: 'Box' }), /504/);
+    await pickOption(within(card).getByRole('combobox', { name: 'Item to add' }), /Schuko socket/);
     await userEvent.click(within(card).getByRole('button', { name: 'Add' }));
     await userEvent.click(within(card).getByRole('button', { name: 'One more Schuko socket' }));
     expect(app.library.getState().library.boxPresets).toEqual([
@@ -63,7 +61,7 @@ describe('library presets page', () => {
     });
     await renderApp('/settings/presets', { library: { library }, project: null });
     const card = await screen.findByRole('region', { name: 'Bedroom' });
-    expect(within(card).getByLabelText('Box')).toHaveValue('builtin:box_503');
+    expect(within(card).getByRole('combobox', { name: 'Box' })).toHaveTextContent(/503/);
     expect(within(within(card).getByRole('list')).getByText('One-way switch')).toBeInTheDocument();
   });
 });

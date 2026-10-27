@@ -7,6 +7,7 @@ import { useLibrary } from '@/stores/library/useLibrary';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
+import { PageHeader } from './PageHeader';
 
 const fields = ['businessName', 'vatNumber', 'address', 'phone', 'email'] as const;
 
@@ -36,9 +37,8 @@ export function CompanyPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-3">
-      <h1 className="text-xl font-semibold">{t('pages.company')}</h1>
-      <p className="text-text-muted">{t('company.hint')}</p>
+    <div className="flex max-w-lg flex-col gap-3">
+      <PageHeader title={t('pages.company')} hint={t('company.hint')} />
       {fields.map((field) => (
         <CommitField
           key={field}

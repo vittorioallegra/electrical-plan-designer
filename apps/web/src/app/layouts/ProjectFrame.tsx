@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Menu } from '@/components/ui/Menu';
 import { Tabs } from '@/components/ui/Tabs';
 import { cn } from '@/lib/cn';
-import { LanguageSwitch } from '@/components/ui/LanguageSwitch';
 import { BomTab } from '@/features/bom/components/BomTab';
 import { WarningsBadge, WarningsTab } from '@/features/checks/components/WarningsTab';
 import { UpdateFromCatalogDialog } from '@/features/app-settings/components/UpdateFromCatalogDialog';
@@ -153,7 +152,7 @@ export function ProjectFrame() {
           <Library size={16} />
           {t('library.update.open')}
         </Button>
-        <NavLink to="/settings/company" className="text-text-muted hover:text-text">
+        <NavLink to="/settings" className="text-text-muted hover:text-text">
           {t('library.open')}
         </NavLink>
         <Menu
@@ -191,7 +190,6 @@ export function ProjectFrame() {
             if (file) void importJson(file);
           }}
         />
-        <LanguageSwitch />
       </header>
 
       {narrow ? (

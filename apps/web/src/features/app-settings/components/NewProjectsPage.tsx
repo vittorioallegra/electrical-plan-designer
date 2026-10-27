@@ -5,6 +5,7 @@ import { QuoteSettingsForm } from '@/components/quote/QuoteSettingsForm';
 import { ProjectSettingsForm } from '@/components/settings/ProjectSettingsForm';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibrary } from '@/stores/library/useLibrary';
+import { PageHeader } from './PageHeader';
 
 /** `/settings/new-projects`: the project and quote settings a new project starts with. */
 export function NewProjectsPage() {
@@ -18,11 +19,8 @@ export function NewProjectsPage() {
       fn(d.defaults.quote);
     });
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-6">
-      <div>
-        <h1 className="mb-1 text-xl font-semibold">{t('pages.newProjects')}</h1>
-        <p className="text-text-muted">{t('library.defaults.hint')}</p>
-      </div>
+    <div className="flex max-w-xl flex-col gap-6">
+      <PageHeader title={t('pages.newProjects')} hint={t('library.defaults.hint')} />
       <section aria-label={t('pages.projectSettings')} className="flex flex-col gap-2">
         <h2 className="font-medium">{t('pages.projectSettings')}</h2>
         <ProjectSettingsForm

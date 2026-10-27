@@ -919,5 +919,15 @@
   "appSettings": {
     "title": "Settings",
     "sections": "Settings sections"
+  },
+  "general": {
+    "appearance": "Appearance",
+    "theme": {
+      "label": "Theme",
+      "hint": "System follows the operating system.",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
   }
 }

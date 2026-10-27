@@ -98,7 +98,7 @@ export function StartPage() {
   const shown = !current && recovered.data ? recovered.data : null;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-4">
       <h1 className="text-xl font-semibold">{t('start.title')}</h1>
 
       {current ? (
@@ -151,7 +151,7 @@ export function StartPage() {
           {t('start.new')}
         </Button>
         <Button onClick={() => opener.openFile()}>{t('start.open')}</Button>
-        <Button onClick={() => navigate('/settings/company')}>{t('library.open')}</Button>
+        <Button onClick={() => navigate('/settings')}>{t('library.open')}</Button>
       </div>
 
       {recentFiles.data && recentFiles.data.length > 0 ? (

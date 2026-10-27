@@ -121,7 +121,8 @@ describe('window sync', () => {
   it('gives the menu its labels and updates them with the language', async () => {
     const { windowHost } = await openDemo();
     expect(windowHost.menuLabels).toMatchObject({ file: 'File', saveAs: 'Save As…' });
-    await pickOption(screen.getByRole('combobox', { name: 'Language' }), 'Italiano');
+    await userEvent.click(screen.getByRole('link', { name: 'Settings' }));
+    await pickOption(await screen.findByRole('combobox', { name: 'Language' }), 'Italiano');
     await waitFor(() => expect(windowHost.menuLabels).toMatchObject({ saveAs: 'Salva con nome…' }));
   });
 });

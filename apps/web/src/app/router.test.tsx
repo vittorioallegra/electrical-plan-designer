@@ -15,10 +15,10 @@ describe('app shell', () => {
 
   // protects=language switch (AC 16); fails_when=switching keeps old strings; no_claim=persistence across reloads
   it('switches visible strings when the language changes', async () => {
-    await renderApp('/project/panel');
-    expect(await screen.findByRole('heading', { name: 'Panel designer' })).toBeInTheDocument();
-    await pickOption(screen.getByLabelText('Language'), 'Italiano');
-    expect(await screen.findByRole('heading', { name: 'Progetto quadro' })).toBeInTheDocument();
+    await renderApp('/settings/general', { project: null });
+    expect(await screen.findByRole('heading', { name: 'General' })).toBeInTheDocument();
+    await pickOption(screen.getByRole('combobox', { name: 'Language' }), 'Italiano');
+    expect(await screen.findByRole('heading', { name: 'Generale' })).toBeInTheDocument();
   });
 });
 
