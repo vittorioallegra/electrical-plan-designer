@@ -6,6 +6,7 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  nativeTheme,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
 } from 'electron';
@@ -14,6 +15,7 @@ import { createAppMenu, type AppMenu } from './appMenu';
 import { createOpenRequests, type OpenRequests } from './openRequests';
 import { createRecentService, type RecentService } from './recent';
 import { createLibraryService, type LibraryService } from './library';
+import { createPreferencesService, type PreferencesService } from './preferences';
 import { createRecoveryService, type RecoveryService } from './recovery';
 import { createFileService, type FileDialogs, type FileService } from './files';
 import {
@@ -27,6 +29,7 @@ import {
   parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
+  parseThemePreference,
   parseWindowState,
 } from './ipcValidation';
 import { windowContexts } from './window';
@@ -87,6 +90,9 @@ export let recovery: RecoveryService;
 /** The library (company, catalogs, prices, presets, defaults) in the app data folder. */
 export let library: LibraryService;
 
+/** The app preferences (theme) in the app data folder. */
+export let preferences: PreferencesService;
+
 /** The recent project files and the application menu built from them. */
 export let recent: RecentService;
 export let appMenu: AppMenu;
@@ -107,6 +113,24 @@ function mainWindow(): BrowserWindow | undefined {
 export function openFileFromOs(path: string): void {
   if (openRequests) openRequests.push(path);
   else early.push(path);
+}
+
+/**
+ * Reads the preferences and applies the theme to `nativeTheme` (so the CSS media query, native
+ * menus and dialogs follow). Call before the first window is created. The theme is applied again
+ * on every change, and every open window is told about it.
+ */
+export async function initPreferences(): Promise<void> {
+  preferences = createPreferencesService({
+    file: join(app.getPath('userData'), 'preferences.json'),
+  });
+  await preferences.load();
+  nativeTheme.themeSource = preferences.theme();
+  preferences.onThemeChange((theme) => {
+    nativeTheme.themeSource = theme;
+    for (const win of BrowserWindow.getAllWindows())
+      win.webContents.send(channels.preferencesThemeChanged, theme);
+  });
 }
 
 export function registerIpc(): void {
@@ -164,6 +188,11 @@ export function registerIpc(): void {
   invoke(channels.libraryRemoveCatalog, (_win, [id]) => library.removeCatalog(id as string));
   invoke(channels.librarySetLogo, (_win, [logo]) => library.setLogo(parseLibraryLogo(logo)));
   invoke(channels.libraryReplace, (_win, args) => library.replace(parseLibraryReplacement(args)));
+
+  invoke(channels.preferencesGetTheme, () => preferences.theme());
+  invoke(channels.preferencesSetTheme, (_win, args) =>
+    preferences.setTheme(parseThemePreference(args[0])),
+  );
 
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);

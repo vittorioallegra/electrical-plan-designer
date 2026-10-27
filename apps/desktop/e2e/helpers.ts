@@ -30,7 +30,10 @@ export async function launchApp(
   const app = await _electron.launch({
     args: [appDir, '--lang=en-US', `--user-data-dir=${userData}`, ...extraArgs],
     cwd: appDir,
-    env: env as Record<string, string>,
+    // Playwright forces a light colour scheme by default; the app's own theme must show.
+    colorScheme: null,
+    // Test hooks let a test open a second window (see main/index.ts).
+    env: { ...env, EPD_TEST_HOOKS: '1' } as Record<string, string>,
   });
   const page = await app.firstWindow();
   return {

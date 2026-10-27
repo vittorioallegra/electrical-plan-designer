@@ -94,6 +94,10 @@ export interface RecentFile {
   missing: boolean;
 }
 
+/** The app's colour theme: follow the OS, or force light or dark. */
+export const themePreferences = ['system', 'light', 'dark'] as const;
+export type ThemePreference = (typeof themePreferences)[number];
+
 /** The company logo of the library: a PNG or JPEG file. */
 export interface LibraryLogo {
   mimeType: 'image/png' | 'image/jpeg';
@@ -215,6 +219,14 @@ export interface EpdBridge {
      */
     replace(replacement: LibraryReplacement): Promise<void>;
   };
+  preferences: {
+    /** The stored theme preference (`system` until the user picks one). */
+    getTheme(): Promise<ThemePreference>;
+    /** Stores the preference and applies it to the whole app; every window is told. */
+    setTheme(theme: ThemePreference): Promise<void>;
+    /** The preference changed (from any window), so a control showing it does not go stale. */
+    onThemeChanged(listener: (theme: ThemePreference) => void): Unsubscribe;
+  };
   window: {
     /** Tells main the open project's name and whether it has unsaved changes. */
     setState(state: WindowState): void;
@@ -249,6 +261,9 @@ export const channels = {
   libraryRemoveCatalog: 'library:remove-catalog',
   librarySetLogo: 'library:set-logo',
   libraryReplace: 'library:replace',
+  preferencesGetTheme: 'preferences:get-theme',
+  preferencesSetTheme: 'preferences:set-theme',
+  preferencesThemeChanged: 'preferences:theme-changed',
   windowState: 'window:state',
   closeRequested: 'window:close-requested',
   closeAck: 'window:close-ack',

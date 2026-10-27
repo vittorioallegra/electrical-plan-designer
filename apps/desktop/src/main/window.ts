@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { BrowserWindow, session } from 'electron';
+import { BrowserWindow, nativeTheme, session } from 'electron';
 import { channels } from '@epd/bridge/bridge';
 import { APP_ORIGIN, APP_SCHEME } from './appProtocol';
 import { lifecycle } from './lifecycle';
@@ -28,6 +28,11 @@ function blockForeignRequests(): void {
   });
 }
 
+/** The chrome colour of DESIGN.md per theme: what the window shows before the page paints. */
+export function windowBackground(dark: boolean): string {
+  return dark ? '#141517' : '#F4F5F6';
+}
+
 export function createWindow(): BrowserWindow {
   const url = rendererUrl();
   const origin = originOf(url);
@@ -42,6 +47,7 @@ export function createWindow(): BrowserWindow {
     minWidth: 960,
     minHeight: 640,
     show: false,
+    backgroundColor: windowBackground(nativeTheme.shouldUseDarkColors),
     title: APP_NAME,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

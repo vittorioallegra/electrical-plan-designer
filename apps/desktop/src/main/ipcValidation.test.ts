@@ -12,6 +12,7 @@ import {
   parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
+  parseThemePreference,
   parseWindowState,
 } from './ipcValidation';
 
@@ -120,5 +121,13 @@ describe('library arguments', () => {
     expect(parseLibraryReplacement([{ library: {} }]).logo).toBeNull();
     expect(() => parseLibraryReplacement([{ library: null }])).toThrow(InvalidArgument);
     expect(() => parseLibraryReplacement([])).toThrow(InvalidArgument);
+  });
+
+  // protects=main only stores a known theme; fails_when=an unknown string, a non-string or nothing is accepted as a theme; no_claim=who may send it (the sender check)
+  it('accepts only the three theme values', () => {
+    for (const theme of ['system', 'light', 'dark'] as const)
+      expect(parseThemePreference(theme)).toBe(theme);
+    for (const value of ['Dark', 'auto', '', 1, null, undefined, { theme: 'dark' }])
+      expect(() => parseThemePreference(value)).toThrow(InvalidArgument);
   });
 });

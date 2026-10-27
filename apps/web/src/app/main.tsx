@@ -21,6 +21,10 @@ import {
   createMemoryLibraryRepository,
   type MemoryLibraryRepository,
 } from '@/lib/repositories/library';
+import {
+  createDesktopPreferencesRepository,
+  createMemoryPreferencesRepository,
+} from '@/lib/repositories/preferences';
 import { createDesktopWindowHost, createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
 import { createLibraryStore } from '@/stores/library/libraryStore';
@@ -39,6 +43,15 @@ i18n.on('languageChanged', (lng) => {
 // The desktop app (`window.epd`) opens and saves real files and keeps the recovery copy on disk.
 // In a browser (dev, browser E2E) both are in memory, where the tests fill and read them back (`window.__epd.files`).
 const bridge = window.epd;
+
+/** `localStorage` can throw on access (blocked site data): the preference is then in memory only. */
+function localStorageOrUndefined(): Storage | undefined {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
 const fakeFiles = bridge ? null : createMemoryFileAccess();
 if (fakeFiles && config.testHandle) window.__epd = { ...window.__epd, files: fakeFiles };
 
@@ -49,6 +62,13 @@ const services = {
   recovery,
   fileAccess: bridge ? createDesktopFileAccess(bridge.files) : fakeFiles!,
   recent: bridge ? createDesktopRecentRepository(bridge.recent) : fakeFiles!.recent,
+  // Without the bridge the theme is kept in localStorage and set as `data-theme` on <html>.
+  preferences: bridge
+    ? createDesktopPreferencesRepository(bridge.preferences)
+    : createMemoryPreferencesRepository({
+        storage: localStorageOrUndefined(),
+        root: document.documentElement,
+      }),
   windowHost: bridge
     ? createDesktopWindowHost(bridge.window, bridge.menu, bridge.files)
     : createMemoryWindowHost(),

@@ -1,6 +1,6 @@
 // Validation of everything the renderer sends to main. Pure functions, tested in plain Node.
 import { isAbsolute } from 'node:path';
-import { menuLabelKeys } from '@epd/bridge/bridge';
+import { menuLabelKeys, themePreferences } from '@epd/bridge/bridge';
 import type {
   CloseChoice,
   ExportFilter,
@@ -10,6 +10,7 @@ import type {
   MenuLabels,
   RecoveryMeta,
   RecoverySaveArgs,
+  ThemePreference,
   WindowState,
 } from '@epd/bridge/bridge';
 
@@ -224,4 +225,10 @@ export function parseLibraryReplacement(args: unknown[]): LibraryReplacement {
   )
     fail('library');
   return { library: value.library, logo: parseLibraryLogo(value.logo ?? null) };
+}
+
+/** The theme preference to store: one of the three known values. */
+export function parseThemePreference(value: unknown): ThemePreference {
+  if (!themePreferences.includes(value as ThemePreference)) fail('theme');
+  return value as ThemePreference;
 }

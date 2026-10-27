@@ -226,11 +226,10 @@ Base: 8850b93
 Spec: docs/specs/ui-redesign.md
 Architecture: agreed
 Approved: yes (2026-10-27)
-Next: Implement step 2
 
 ### Steps
 - [x] 1. Tokens, fonts, theme-aware canvas — `feat: add design tokens, bundled fonts and a theme-aware canvas`
-- [ ] 2. Theme preference end to end
+- [x] 2. Theme preference end to end — `feat: add the theme preference end to end`
 - [ ] 3. UI kit
 - [ ] 4. Routes and names: Settings and Project
 - [ ] 5. Native menu: Settings and Export
@@ -271,4 +270,4 @@ Next: Implement step 2
 - (none)
 
 ### Next
-Implement step 1 (first docs commit done).
+Implement step 3.

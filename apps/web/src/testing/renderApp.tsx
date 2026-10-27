@@ -9,6 +9,7 @@ import { AppProviders } from '@/app/provider';
 import { createI18n, type Language } from '@/lib/i18n';
 import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
 import { createMemoryLibraryRepository } from '@/lib/repositories/library';
+import { createMemoryPreferencesRepository } from '@/lib/repositories/preferences';
 import { createMemoryRecoveryRepository } from '@/lib/repositories/recovery';
 import { createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
@@ -35,6 +36,7 @@ export async function renderApp(
   const recovery = createMemoryRecoveryRepository();
   const fileAccess = createMemoryFileAccess();
   const windowHost = createMemoryWindowHost();
+  const preferences = createMemoryPreferencesRepository();
   const libraryRepository = createMemoryLibraryRepository(librarySeed);
   const library = await createLibraryStore(libraryRepository);
   const workspace = createWorkspace({ recovery, library, exposeTestHandle });
@@ -45,7 +47,15 @@ export async function renderApp(
     <AppProviders
       queryClient={queryClient}
       i18n={createI18n(lng)}
-      services={{ recovery, fileAccess, recent: fileAccess.recent, windowHost, workspace, library }}
+      services={{
+        recovery,
+        fileAccess,
+        recent: fileAccess.recent,
+        windowHost,
+        preferences,
+        workspace,
+        library,
+      }}
     >
       <RouterProvider router={router} />
     </AppProviders>,
@@ -70,6 +80,7 @@ export async function renderApp(
     recovery,
     fileAccess,
     windowHost,
+    preferences,
     workspace,
     queryClient,
     library,

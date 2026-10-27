@@ -17,6 +17,7 @@ export type {
   SaveAsResult,
   SaveResult,
   SavedFile,
+  ThemePreference,
   WindowState,
 } from '@epd/bridge/bridge';
 import type {
@@ -32,6 +33,7 @@ import type {
   SaveAsResult,
   SaveResult,
   SavedFile,
+  ThemePreference,
   WindowState,
 } from '@epd/bridge/bridge';
 
@@ -76,6 +78,14 @@ export interface WindowHost {
   onMenuCommand(listener: (command: MenuCommand) => void): () => void;
   /** The OS asks to open a project file (double-click, a second launch). */
   onOpenRequest(listener: (path: string) => void): () => void;
+}
+
+/** The app preferences, kept per user (the desktop app: main applies them to every window). */
+export interface PreferencesRepository {
+  getTheme(): Promise<ThemePreference>;
+  setTheme(theme: ThemePreference): Promise<void>;
+  /** The theme changed, from this window or another; returns the unsubscribe function. */
+  onThemeChanged(listener: (theme: ThemePreference) => void): () => void;
 }
 
 /** The open project as autosave keeps it in the recovery copy. */

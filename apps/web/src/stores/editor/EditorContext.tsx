@@ -2,6 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import type {
   FileAccess,
+  PreferencesRepository,
   RecentRepository,
   RecoveryRepository,
   WindowHost,
@@ -17,6 +18,7 @@ export interface EditorServices {
   fileAccess: FileAccess;
   recent: RecentRepository;
   windowHost: WindowHost;
+  preferences: PreferencesRepository;
   workspace: Workspace;
   /** The app library, loaded before the first render. */
   library: LibraryStore;

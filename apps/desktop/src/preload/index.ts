@@ -46,6 +46,15 @@ const bridge: EpdBridge = {
     setLogo: (logo) => ipcRenderer.invoke(channels.librarySetLogo, logo),
     replace: (replacement) => ipcRenderer.invoke(channels.libraryReplace, replacement),
   },
+  preferences: {
+    getTheme: () => ipcRenderer.invoke(channels.preferencesGetTheme),
+    setTheme: (theme) => ipcRenderer.invoke(channels.preferencesSetTheme, theme),
+    onThemeChanged: (listener) => {
+      const handler = (_event: unknown, theme: Parameters<typeof listener>[0]) => listener(theme);
+      ipcRenderer.on(channels.preferencesThemeChanged, handler);
+      return () => ipcRenderer.removeListener(channels.preferencesThemeChanged, handler);
+    },
+  },
   window: {
     setState: (state) => ipcRenderer.send(channels.windowState, state),
     onCloseRequested: (listener) => {

@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { app, BrowserWindow } from 'electron';
 import { registerAppScheme, serveRenderer } from './appProtocol';
-import { appMenu, openFileFromOs, openRequests, registerIpc } from './ipc';
+import { appMenu, initPreferences, openFileFromOs, openRequests, registerIpc } from './ipc';
 import { lifecycle } from './lifecycle';
 import { epdPathsFromArgv } from './openRequests';
 import { createWindow } from './window';
@@ -57,10 +57,16 @@ if (!app.requestSingleInstanceLock()) {
     showWindow();
   });
 
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
     // In dev the renderer comes from the Vite dev server; otherwise from the built files.
     if (!process.env['ELECTRON_RENDERER_URL']) serveRenderer(join(__dirname, '../renderer'));
     registerIpc();
+    // The theme is in place before the first window exists: no flash of the wrong one.
+    await initPreferences();
+    // The E2E tests open a second window to see a preference reach every window.
+    if (process.env['EPD_TEST_HOOKS']) {
+      (globalThis as { epdOpenWindow?: () => void }).epdOpenWindow = () => void openWindow();
+    }
     openWindow();
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) openWindow();
