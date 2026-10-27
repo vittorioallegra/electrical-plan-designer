@@ -109,4 +109,17 @@ describe('circuits tab', () => {
     expect(occupancy).toHaveTextContent('Conductors inside: 4');
     expect(occupancy).toHaveTextContent('Lights GF');
   });
+
+  // protects=keyboard operation of circuit rows; fails_when=a focused row does not open its editor on Space; no_claim=mouse selection (other tests)
+  it('selects a circuit row with the keyboard', async () => {
+    const tab = await openCircuits();
+    const row = within(tab).getByRole('row', { name: /Sockets GF/ });
+    expect(row).toHaveAttribute('tabindex', '0');
+    row.focus();
+    await userEvent.keyboard(' ');
+    expect(row).toHaveAttribute('aria-selected', 'true');
+    expect(within(await screen.findByTestId('circuit-editor')).getByLabelText('Name')).toHaveValue(
+      'Sockets GF',
+    );
+  });
 });

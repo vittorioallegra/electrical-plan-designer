@@ -112,4 +112,15 @@ describe('warnings tab', () => {
     expect(await screen.findByTestId('device-inspector')).toBeInTheDocument();
     expect(screen.getByTestId('panel-front')).toBeInTheDocument();
   });
+
+  // protects=keyboard operation of warning rows; fails_when=a focused row does not select its element on Enter; no_claim=mouse selection (other tests)
+  it('selects the warned element with Enter on a focused row', async () => {
+    const tab = await openWarnings();
+    addLooseBox();
+    const row = within(tab).getByRole('row', { name: /Not connected to the panel/ });
+    expect(row).toHaveAttribute('tabindex', '0');
+    row.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(ui().selection).toEqual(['n_loose']);
+  });
 });

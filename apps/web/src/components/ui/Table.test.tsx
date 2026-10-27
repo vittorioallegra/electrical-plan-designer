@@ -18,7 +18,7 @@ const rows: Row[] = [
 ];
 
 describe('Table', () => {
-  // protects=keyboard-selectable rows and selected state; fails_when=Enter or click does not report the row or aria-selected is missing; no_claim=hover styling
+  // protects=keyboard-selectable rows and selected state; fails_when=Enter, Space or click does not report the row or aria-selected is missing; no_claim=hover styling
   it('selects rows by click and Enter and marks the selected one', async () => {
     const onRowClick = vi.fn();
     render(
@@ -38,6 +38,8 @@ describe('Table', () => {
     socket!.focus();
     await userEvent.keyboard('{Enter}');
     expect(onRowClick).toHaveBeenCalledTimes(2);
+    await userEvent.keyboard(' ');
+    expect(onRowClick).toHaveBeenCalledTimes(3);
   });
 
   // protects=empty state inside the frame and numeric alignment; fails_when=no rows renders nothing or numbers are not right-aligned; no_claim=sticky offset
