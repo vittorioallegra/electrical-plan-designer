@@ -125,7 +125,9 @@ export function useProjectOpener() {
       description={t('start.replaceDraft.body', { name: confirm?.name ?? '' })}
       footer={
         <>
-          <Button onClick={() => setConfirm(null)}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={() => setConfirm(null)}>
+            {t('common.cancel')}
+          </Button>
           <Button
             variant="danger-ghost"
             onClick={() => {

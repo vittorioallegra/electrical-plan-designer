@@ -259,7 +259,9 @@ export function PlanView({ pickHandlers }: { pickHandlers?: CanvasPickHandlers }
         })}
         footer={
           <>
-            <Button onClick={() => setPendingDelete(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setPendingDelete(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button
               variant="danger-ghost"
               onClick={() => {

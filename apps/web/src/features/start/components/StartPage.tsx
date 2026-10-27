@@ -22,6 +22,7 @@ import { AppMark } from '@/components/AppMark';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { IconButton } from '@/components/ui/IconButton';
 import { Menu } from '@/components/ui/Menu';
 import { TextField } from '@/components/ui/TextField';
@@ -279,7 +280,7 @@ export function StartPage() {
             </ul>
           </section>
         ) : recentFiles.data ? (
-          <p className="text-text-muted">{t('start.recent.empty')}</p>
+          <EmptyState message={t('start.recent.empty')} />
         ) : null}
       </main>
 
@@ -300,7 +301,9 @@ export function StartPage() {
         description={t('start.recovery.discardBody', { name: discarding ?? '' })}
         footer={
           <>
-            <Button onClick={() => setDiscarding(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setDiscarding(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button
               variant="danger-ghost"
               onClick={() => {
@@ -371,7 +374,7 @@ function NewProjectDialog({
           onChange={(e) => setAddress(e.target.value)}
         />
         <div className="flex justify-end gap-2">
-          <Button type="button" onClick={onClose}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             {t('common.cancel')}
           </Button>
           <Button type="submit" variant="primary">

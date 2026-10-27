@@ -89,12 +89,15 @@ export function ImportDialog({
   return (
     <Dialog
       open
+      wide
       onOpenChange={(o) => !o && onClose()}
       title={title}
       description={t('catalog.import.hint')}
       footer={
         <>
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
           {step.kind !== 'pick' ? (
             <Button
               variant="primary"

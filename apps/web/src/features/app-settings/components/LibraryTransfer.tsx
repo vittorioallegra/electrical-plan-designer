@@ -80,7 +80,9 @@ export function LibraryTransfer() {
         }
         footer={
           <>
-            <Button onClick={() => setIncoming(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setIncoming(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button variant="danger-ghost" disabled={replacing} onClick={() => void replace()}>
               {t('library.import.confirm')}
             </Button>

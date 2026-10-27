@@ -120,13 +120,17 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
       footer={
         step.kind === 'pages' ? (
           <>
-            <Button onClick={onClose}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
             <Button variant="primary" onClick={() => void pickPage(step.pdf, step.selected)}>
               {t('background.usePage', { page: step.selected })}
             </Button>
           </>
         ) : (
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
         )
       }
     >

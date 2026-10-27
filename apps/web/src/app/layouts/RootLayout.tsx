@@ -25,7 +25,7 @@ function NavigationPending() {
   return (
     <p
       role="status"
-      className="navigation-pending fixed top-2 left-1/2 z-50 -translate-x-1/2 rounded border border-border bg-surface px-3 py-1 text-sm text-text-muted shadow"
+      className="navigation-pending fixed top-2 left-1/2 z-50 -translate-x-1/2 rounded-md border border-border bg-raised px-3 py-1 text-small text-text-muted shadow-pop"
     >
       {t('common.loading')}
     </p>

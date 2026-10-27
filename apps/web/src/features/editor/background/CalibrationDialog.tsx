@@ -38,7 +38,9 @@ export function CalibrationDialog({
       description={t('background.calibrateHint')}
       footer={
         <>
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
           <Button variant="primary" disabled={!distance} onClick={confirm}>
             {t('background.calibrate')}
           </Button>

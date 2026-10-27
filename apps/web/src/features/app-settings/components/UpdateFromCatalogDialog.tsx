@@ -73,11 +73,12 @@ export function UpdateFromCatalogDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog
       open
+      wide
       onOpenChange={(o) => !o && onClose()}
       title={t('library.update.title')}
       footer={
         <>
-          <Button onClick={onClose}>
+          <Button variant="ghost" onClick={onClose}>
             {upToDate ? t('library.update.close') : t('common.cancel')}
           </Button>
           {diff.updates.length > 0 ? (

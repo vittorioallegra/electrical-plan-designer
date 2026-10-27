@@ -5,6 +5,7 @@ import { newId } from '@epd/domain/ids';
 import type { BoxPreset } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
 import { useItemName } from '@/hooks/useItemName';
@@ -46,9 +47,7 @@ export function PresetsPage() {
           </Button>
         }
       />
-      {boxPresets.length === 0 ? (
-        <p className="text-text-muted">{t('library.presets.empty')}</p>
-      ) : null}
+      {boxPresets.length === 0 ? <EmptyState message={t('library.presets.empty')} /> : null}
       {boxPresets.map((preset) => (
         <PresetCard
           key={preset.id}
@@ -79,7 +78,7 @@ export function PresetsPage() {
             autoFocus
           />
           <div className="flex justify-end gap-2">
-            <Button type="button" onClick={() => setCreating(false)}>
+            <Button type="button" variant="ghost" onClick={() => setCreating(false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" variant="primary">
@@ -95,7 +94,9 @@ export function PresetsPage() {
         description={t('library.presets.deleteBody')}
         footer={
           <>
-            <Button onClick={() => setDeleting(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button
               variant="danger-ghost"
               onClick={() => {

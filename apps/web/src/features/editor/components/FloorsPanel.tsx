@@ -167,7 +167,9 @@ export function FloorsPanel() {
         })}
         footer={
           <>
-            <Button onClick={() => setDeleting(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button
               variant="danger-ghost"
               onClick={() => {

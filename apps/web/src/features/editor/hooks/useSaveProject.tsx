@@ -108,7 +108,9 @@ export function useSaveProject(store: EditorStore | null) {
       }
       footer={
         <>
-          <Button onClick={() => asking?.answer('cancel')}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={() => asking?.answer('cancel')}>
+            {t('common.cancel')}
+          </Button>
           <Button
             variant={problem?.kind === 'failed' ? 'primary' : 'secondary'}
             onClick={() => asking?.answer('saveAs')}

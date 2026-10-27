@@ -1,14 +1,13 @@
-import { useTranslation } from 'react-i18next';
 import { Navigate, useParams, type RouteObject } from 'react-router';
 import { AppShell } from '@/app/layouts/AppShell';
 import { RootLayout } from '@/app/layouts/RootLayout';
 import { PlaceholderPage } from '@/app/routes/PlaceholderPage';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { RouteError } from '@/components/ui/RouteError';
 import { StartPage } from '@/features/start/components/StartPage';
 
 function Loading() {
-  const { t } = useTranslation();
-  return <p className="p-4 text-text-muted">{t('common.loading')}</p>;
+  return <LoadingState />;
 }
 
 const legacyLibrarySections: Record<string, string> = { defaults: 'new-projects' };

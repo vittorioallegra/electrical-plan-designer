@@ -188,7 +188,9 @@ export function CatalogList() {
         description={t('catalog.removeBody')}
         footer={
           <>
-            <Button onClick={() => setRemoving(null)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={() => setRemoving(null)}>
+              {t('common.cancel')}
+            </Button>
             <Button
               variant="danger-ghost"
               onClick={() => {

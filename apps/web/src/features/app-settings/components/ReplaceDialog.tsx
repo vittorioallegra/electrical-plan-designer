@@ -43,11 +43,14 @@ export function ReplaceDialog({
   return (
     <Dialog
       open
+      wide
       onOpenChange={(o) => !o && onClose()}
       title={t('catalog.replace.title', { name: catalog.name })}
       footer={
         <>
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
           <Button variant="primary" onClick={() => onReplace(keep)}>
             {t('catalog.replace.confirm')}
           </Button>

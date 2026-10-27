@@ -246,3 +246,16 @@
     transition: none;
   }
 }
+
+/* Reduced motion: every transition and animation drops to zero (DESIGN.md Motion). The
+   navigation notice keeps its delay, so it still does not flash on fast navigations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

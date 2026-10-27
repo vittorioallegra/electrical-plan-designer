@@ -103,3 +103,12 @@ describe('design tokens', () => {
     });
   }
 });
+
+describe('motion', () => {
+  // protects=reduced-motion rule; fails_when=styles.css loses the prefers-reduced-motion block that zeroes transitions and animations; no_claim=individual durations
+  it('drops transitions and animations under prefers-reduced-motion', () => {
+    const block = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce) {\n  *,'));
+    expect(block).toContain('transition-duration: 0.01ms !important');
+    expect(block).toContain('animation-duration: 0.01ms !important');
+  });
+});

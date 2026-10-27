@@ -140,7 +140,9 @@ export function ItemDialog({
         ) : null}
         <AttributeFields category={category} attributes={attributes} onChange={attr} live />
         <div className="col-span-2 mt-2 flex justify-end gap-2">
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
           <Button type="submit" variant="primary" disabled={name.trim() === ''}>
             {t('common.save')}
           </Button>
