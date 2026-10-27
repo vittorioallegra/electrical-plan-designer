@@ -37,8 +37,8 @@
   --color-border: #e1e3e6;
   --color-border-strong: #cdd1d6;
   --color-text: #1a1c1f;
-  --color-text-muted: #646a73;
-  --color-text-faint: #8b9099;
+  --color-text-muted: #636871;
+  --color-text-faint: #888d97;
   --color-accent: #0f766e;
   --color-accent-hover: #0c635c;
   --color-on-accent: #ffffff;
@@ -47,21 +47,21 @@
   --color-focus: #0f766e;
   --color-error: #c2342b;
   --color-error-subtle: #fbeae8;
-  --color-warning: #a86a12;
+  --color-warning: #9a6111;
   --color-warning-subtle: #fbf1df;
-  --color-success: #2f7d3b;
+  --color-success: #2e7a3a;
   --color-success-subtle: #e6f2e7;
   --color-canvas-bg: #ffffff;
   --color-canvas-grid: #d5d9de;
   --color-canvas-wall: #2b2e33;
   --color-canvas-wall-fill: #f1f2f4;
   --color-canvas-node: #1a1c1f;
-  --color-canvas-label: #646a73;
+  --color-canvas-label: #636871;
   --color-canvas-selection: #0f766e;
   --color-canvas-run: #5b6470;
   --color-canvas-riser: #be185d;
-  --color-canvas-warning: #a86a12;
-  --color-canvas-highlight: #2f7d3b;
+  --color-canvas-warning: #9a6111;
+  --color-canvas-highlight: #2e7a3a;
 
   /* Legacy names of the previous palette, mapped to the new tokens so existing components keep
      rendering; they disappear as the redesign steps rewrite those components. */

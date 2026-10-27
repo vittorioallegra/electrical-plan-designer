@@ -4,10 +4,10 @@
 :root {
   --chrome: #F4F5F6; --panel: #FFFFFF; --raised: #FFFFFF; --hover: #EEF0F2; --pressed: #E6E8EB;
   --border: #E1E3E6; --border-strong: #CDD1D6;
-  --text: #1A1C1F; --text-muted: #646A73; --text-faint: #8B9099;
+  --text: #1A1C1F; --text-muted: #636871; --text-faint: #888d97;
   --accent: #0F766E; --accent-hover: #0C635C; --on-accent: #FFFFFF; --accent-subtle: #E3F3F1; --accent-text: #0B6B63;
-  --error: #C2342B; --error-subtle: #FBEAE8; --warning: #A86A12; --warning-subtle: #FBF1DF; --success: #2F7D3B; --success-subtle: #E6F2E7;
-  --canvas-bg: #FFFFFF; --canvas-grid: #D5D9DE; --canvas-wall: #2B2E33; --canvas-node: #1A1C1F; --canvas-label: #646A73;
+  --error: #C2342B; --error-subtle: #FBEAE8; --warning: #9a6111; --warning-subtle: #FBF1DF; --success: #2e7a3a; --success-subtle: #E6F2E7;
+  --canvas-bg: #FFFFFF; --canvas-grid: #D5D9DE; --canvas-wall: #2B2E33; --canvas-node: #1A1C1F; --canvas-label: #636871;
   --run-floor: #5B6470; --run-ceiling: #5B6470; --run-direct: #5B6470; --riser: #BE185D;
   --shadow-pop: 0 1px 2px rgb(16 18 20 / .06), 0 8px 24px -4px rgb(16 18 20 / .14);
   --shadow-dialog: 0 2px 4px rgb(16 18 20 / .06), 0 24px 48px -12px rgb(16 18 20 / .24);

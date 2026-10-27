@@ -66,24 +66,6 @@ const pairs: [string, string[], number][] = [
   ['canvas-highlight', ['canvas-bg'], 3],
 ];
 
-/**
- * Pairs of the agreed DESIGN.md palette that miss their target by a few hundredths to a few tenths.
- * They are recorded, not hidden: the test fails when one is fixed (remove it here) or a new one
- * appears. Resolve them with the design owner; the palette is not changed in code.
- */
-const knownGaps: Record<'light' | 'dark', string[]> = {
-  light: [
-    'text-muted on pressed',
-    'text-faint on chrome',
-    'warning on chrome',
-    'warning on panel',
-    'warning on raised',
-    'warning on warning-subtle',
-    'success on success-subtle',
-  ],
-  dark: [],
-};
-
 describe('design tokens', () => {
   // protects=DESIGN.md as the source of the palette; fails_when=a color in DESIGN.md front matter differs from, or is missing in, styles.css (light or dark); no_claim=non-color tokens
   it('matches the DESIGN.md front-matter colors', () => {
@@ -107,10 +89,9 @@ describe('design tokens', () => {
     ['dark', () => ({ ...light, ...darkMedia })],
   ] as const) {
     // protects=readable text and indicators in both themes; fails_when=a text/surface or indicator/surface pair drops below 4.5:1 (3:1 for faint text, accents, focus and canvas strokes); no_claim=hover/pressed combinations of the accent
-    it(`meets contrast on every text and surface pair except the known gaps (${theme})`, () => {
+    it(`meets contrast on every text and surface pair (${theme})`, () => {
       const t = tokens();
       const failing: string[] = [];
-      const gaps = knownGaps[theme];
       for (const [fg, bgs, min] of pairs)
         for (const bg of bgs) {
           expect(t[fg], fg).toBeDefined();
@@ -118,7 +99,7 @@ describe('design tokens', () => {
           const ratio = contrast(t[fg]!, t[bg]!);
           if (ratio < min) failing.push(`${fg} on ${bg}`);
         }
-      expect(failing).toEqual(gaps);
+      expect(failing).toEqual([]);
     });
   }
 });

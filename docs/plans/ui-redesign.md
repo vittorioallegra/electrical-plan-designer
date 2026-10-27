@@ -137,8 +137,11 @@ accurate) and leaves typecheck, lint and the touched tests green.
     + floor properties section + Background section; right inspector (resizable) restyled with
     `PanelSection`s (Node, Segment, Box contents); floating zoom control on the canvas; the empty
     canvas `EmptyState` is the only "Import plan" while the floor has no background, the
-    Background section offers it only when the canvas is not empty. Canvas check in both themes.
-    Tests: "Import plan" rendered once (unit + E2E), panel collapse; web E2E plan flows updated.
+    Background section offers it only when the canvas is not empty. A small, collapsible
+    on-canvas legend in a canvas corner shows the three conduit run dash patterns (floor,
+    ceiling, direct); labels via i18n. Canvas check in both themes.
+    Tests: "Import plan" rendered once (unit + E2E), panel collapse; the legend shows the three
+    patterns (unit) and collapses; web E2E plan flows updated.
 
 11. **Panel, circuits, BOM, warnings, quote, project details.** Restyle PanelView (palette,
     front, inspectors), CircuitsTab/CircuitEditor, BomTab, WarningsTab (rows with severity
@@ -265,6 +268,8 @@ Approved: yes (2026-10-27)
 - Catalog price edits commit as today (blur/Enter), no Save button.
 - 'Close project' in the project overflow menu replaces the Home button.
 - Per-project view folder: features/project-details.
+- Light theme: text-faint, text-muted, warning, success darkened (same hue) so every pair meets 4.5:1 / 3:1 (user choice).
+- Plan view gets a small collapsible on-canvas legend of the conduit dash patterns (step 10; user choice).
 
 ### Open questions
 - (none)
