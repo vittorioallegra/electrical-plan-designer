@@ -74,10 +74,7 @@ test('first project: follow the progress control from walls to BOM', async ({ pa
 
   // The new box has no plate or devices: its warning brings it to the middle of the canvas.
   await page.getByRole('tab', { name: /^Warnings/ }).click();
-  await page
-    .getByRole('region', { name: 'Boxes without plate or devices' })
-    .getByRole('button')
-    .click();
+  await page.getByRole('row', { name: /Boxes without plate or devices/ }).click();
   const boxId = await editorState(
     page,
     (s) => s.data.doc.nodes.find((n) => n.kind === 'terminal_box')!.id,
