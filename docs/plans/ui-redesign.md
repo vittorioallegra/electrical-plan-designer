@@ -242,7 +242,7 @@ Approved: yes (2026-10-27)
 - [x] 9. Editor shell — `feat: add the editor shell with title bar, status bar, bottom panel and progress control`
 - [x] 10. Plan view — `feat: restyle the plan view with a tool rail, resizable side panels, zoom control and conduit legend`
 - [x] 11. Panel, circuits, BOM, warnings, quote, project details — `feat: restyle the project details page and settings form with grouped rows and a kit run elevation select`
-- [ ] 12. Dialogs and states pass
+- [x] 12. Dialogs and states pass — `feat: restyle dialogs and states with ghost cancel, wide dialogs, shared loading and empty states and reduced motion`
 - [ ] 13. E2E and docs
 
 ### Verification
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 12.
+Implement step 13.
