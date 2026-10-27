@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPD Design System</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/ibm-plex-sans@5.3.0/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.3.0/500.css">
+<style>
+:root {
+  --chrome: #F4F5F6; --panel: #FFFFFF; --raised: #FFFFFF; --hover: #EEF0F2; --pressed: #E6E8EB;
+  --border: #E1E3E6; --border-strong: #CDD1D6;
+  --text: #1A1C1F; --text-muted: #646A73; --text-faint: #8B9099;
+  --accent: #0F766E; --accent-hover: #0C635C; --on-accent: #FFFFFF; --accent-subtle: #E3F3F1; --accent-text: #0B6B63;
+  --error: #C2342B; --error-subtle: #FBEAE8; --warning: #A86A12; --warning-subtle: #FBF1DF; --success: #2F7D3B; --success-subtle: #E6F2E7;
+  --focus: #0F766E;
+  --canvas-bg: #FFFFFF; --canvas-grid: #D5D9DE; --canvas-wall: #2B2E33; --canvas-wall-fill: #F1F2F4; --canvas-node: #1A1C1F;
+  --canvas-label: #646A73; --run-floor: #C2410C; --run-ceiling: #2563EB; --run-direct: #9333EA; --riser: #BE185D;
+  --shadow-pop: 0 1px 2px rgb(16 18 20 / .06), 0 8px 24px -4px rgb(16 18 20 / .14);
+  --shadow-dialog: 0 2px 4px rgb(16 18 20 / .06), 0 24px 48px -12px rgb(16 18 20 / .24);
+  --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --dark: 1; } }
+:root[data-theme="dark"], :root.dark {
+  --chrome: #141517; --panel: #1B1C1F; --raised: #232529; --hover: #26282C; --pressed: #2E3135;
+  --border: #2A2D32; --border-strong: #3A3E44;
+  --text: #E4E6E9; --text-muted: #9AA0A9; --text-faint: #6E747D;
+  --accent: #2DB3A6; --accent-hover: #45C2B6; --on-accent: #062320; --accent-subtle: #163633; --accent-text: #5CCFC3;
+  --error: #EF6A60; --error-subtle: #3A1F1D; --warning: #E0A23F; --warning-subtle: #3A2D17; --success: #5DB36A; --success-subtle: #1D3220;
+  --focus: #2DB3A6;
+  --canvas-bg: #111214; --canvas-grid: #2A2D31; --canvas-wall: #C9CDD3; --canvas-wall-fill: #1C1E21; --canvas-node: #E4E6E9;
+  --canvas-label: #9AA0A9; --run-floor: #F0844A; --run-ceiling: #6B9BFF; --run-direct: #C084FC; --riser: #F472B6;
+  --shadow-pop: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px -4px rgb(0 0 0 / .5);
+  --shadow-dialog: 0 2px 4px rgb(0 0 0 / .4), 0 24px 48px -12px rgb(0 0 0 / .6);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--chrome); color: var(--text); font: 400 13px/1.45 "IBM Plex Sans Variable", sans-serif; -webkit-font-smoothing: antialiased; }
+.mono, .num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+.page { max-width: 1520px; margin: 0 auto; padding: 32px 16px 64px; }
+.page > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+h1 { font-size: 24px; font-weight: 600; letter-spacing: -.01em; margin: 0 0 4px; }
+h2 { font-size: 15px; font-weight: 600; margin: 48px 0 14px; }
+.lead { color: var(--text-muted); margin: 0; max-width: 64ch; }
+.seg { display: inline-flex; background: var(--hover); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+.seg button { border: 0; background: transparent; color: var(--text-muted); font: inherit; font-weight: 500; height: 24px; padding: 0 10px; border-radius: 5px; cursor: default; }
+.seg button[aria-pressed="true"] { background: var(--raised); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 0 0 1px var(--border); }
+
+/* ---------- App window ---------- */
+.window { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-strong); box-shadow: var(--shadow-dialog); background: var(--chrome); height: 760px; display: grid; grid-template-rows: 40px 1fr 28px; }
+.titlebar { display: flex; align-items: center; gap: 12px; padding: 0 10px 0 14px; border-bottom: 1px solid var(--border); background: var(--chrome); }
+.lights { display: flex; gap: 8px; width: 64px; } .lights i { width: 12px; height: 12px; border-radius: 50%; background: #FF5F57; } .lights i:nth-child(2){background:#FEBC2E} .lights i:nth-child(3){background:#28C840}
+.doc { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.doc b { font-weight: 600; white-space: nowrap; } .doc .sep { color: var(--text-faint); }
+.saved { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 12px; }
+.saved::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+.spacer { flex: 1; }
+.iconbtn { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: var(--r-sm); color: var(--text-muted); border: 0; background: transparent; }
+.iconbtn:hover { background: var(--hover); color: var(--text); }
+.iconbtn svg, .tool svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.btn { height: 28px; padding: 0 12px; border-radius: var(--r-sm); font: inherit; font-weight: 500; border: 1px solid var(--border-strong); background: var(--raised); color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--text-muted); }
+.btn.ghost:hover { background: var(--hover); color: var(--text); }
+.btn.danger { color: var(--error); }
+.btn:focus-visible, .iconbtn:focus-visible, .input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+.body { display: grid; grid-template-columns: 44px 248px 1fr 280px; min-height: 0; }
+.rail { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 2px; }
+.tool { width: 32px; height: 32px; border-radius: var(--r-sm); display: grid; place-items: center; color: var(--text-muted); position: relative; }
+.tool:hover { background: var(--hover); color: var(--text); }
+.tool.on { background: var(--accent-subtle); color: var(--accent-text); }
+.rail hr { width: 20px; border: 0; border-top: 1px solid var(--border); margin: 6px 0; }
+.side { background: var(--panel); border-right: 1px solid var(--border); overflow: auto; }
+.inspector { background: var(--panel); border-left: 1px solid var(--border); overflow: auto; }
+.sect { padding: 10px 12px 12px; border-bottom: 1px solid var(--border); }
+.sect-h { display: flex; align-items: center; justify-content: space-between; height: 24px; margin-bottom: 4px; }
+.sect-h span { font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--text-muted); text-transform: uppercase; }
+.row { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; border-radius: var(--r-sm); color: var(--text); }
+.row:hover { background: var(--hover); }
+.row.sel { background: var(--accent-subtle); color: var(--accent-text); font-weight: 500; }
+.row .meta { margin-left: auto; color: var(--text-faint); font-size: 12px; }
+.row svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; flex: none; }
+.field { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; min-height: 30px; }
+.field label { color: var(--text-muted); font-size: 12px; }
+.input { height: 28px; width: 100%; border: 1px solid var(--border); background: var(--chrome); color: var(--text); border-radius: var(--r-sm); padding: 0 8px; font: inherit; display: flex; align-items: center; justify-content: space-between; }
+.input:hover { border-color: var(--border-strong); }
+.input .unit { color: var(--text-faint); font-family: "IBM Plex Sans Variable"; font-size: 12px; }
+.ins-title { padding: 12px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+.ins-title .sym { width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--chrome); border: 1px solid var(--border); display: grid; place-items: center; }
+.ins-title b { display: block; font-size: 13px; font-weight: 600; } .ins-title small { color: var(--text-muted); font-size: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 7px; border-radius: 4px; font-size: 11.5px; font-weight: 500; background: var(--hover); color: var(--text-muted); }
+.chip.warn { background: var(--warning-subtle); color: var(--warning); }
+.chip.err { background: var(--error-subtle); color: var(--error); }
+.chip.ok { background: var(--success-subtle); color: var(--success); }
+.chip.acc { background: var(--accent-subtle); color: var(--accent-text); }
+.dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+.canvaswrap { position: relative; background: var(--canvas-bg); background-image: radial-gradient(var(--canvas-grid) 1px, transparent 1px); background-size: 20px 20px; min-width: 0; overflow: hidden; }
+.canvaswrap svg.plan { position: absolute; inset: 0; width: 100%; height: 100%; }
+.floating { position: absolute; background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-pop); display: flex; align-items: center; gap: 2px; padding: 3px; }
+.floating.zoom { right: 12px; bottom: 12px; }
+.floating.zoom span { padding: 0 8px; font-size: 12px; }
+.floating.ctx { left: 50%; top: 14px; transform: translateX(-50%); }
+
+.status { display: flex; align-items: center; gap: 4px; padding: 0 8px; border-top: 1px solid var(--border); background: var(--panel); font-size: 12px; color: var(--text-muted); }
+.status .tab { height: 22px; padding: 0 8px; border-radius: 5px; display: inline-flex; align-items: center; gap: 6px; }
+.status .tab:hover { background: var(--hover); color: var(--text); }
+.status .tab b { font-weight: 500; color: var(--text); }
+
+/* ---------- Specimens ---------- */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.panelbox { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.sw { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--panel); }
+.sw i { display: block; height: 44px; }
+.sw div { padding: 6px 8px; font-size: 11.5px; } .sw div b { display: block; font-weight: 500; } .sw div span { color: var(--text-muted); font-family: "IBM Plex Mono"; }
+.type-row { display: grid; grid-template-columns: 110px 1fr; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.type-row:last-child { border-bottom: 0; }
+.type-row small { color: var(--text-faint); font-size: 11.5px; font-family: "IBM Plex Mono"; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 500; font-size: 12px; color: var(--text-muted); height: 32px; border-bottom: 1px solid var(--border); padding: 0 10px; position: sticky; top: 0; background: var(--panel); }
+td { height: 36px; border-bottom: 1px solid var(--border); padding: 0 10px; }
+tr:hover td { background: var(--hover); }
+tr.sel td { background: var(--accent-subtle); }
+td.r, th.r { text-align: right; }
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+.search { flex: 1; min-width: 180px; height: 28px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--chrome); display: flex; align-items: center; gap: 6px; padding: 0 8px; color: var(--text-faint); }
+.search svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.dialog { background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-dialog); max-width: 420px; }
+.dialog header { padding: 16px 16px 4px; } .dialog header b { font-size: 15px; font-weight: 600; } .dialog header p { color: var(--text-muted); margin: 4px 0 0; }
+.dialog .content { padding: 12px 16px; display: grid; gap: 8px; }
+.dialog footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.menu { background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-pop); padding: 4px; width: 220px; }
+.menu .mi { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; border-radius: 5px; }
+.menu .mi:hover, .menu .mi.hl { background: var(--accent); color: var(--on-accent); }
+.menu .mi kbd { font: 12px "IBM Plex Sans Variable"; color: inherit; opacity: .6; }
+.menu hr { border: 0; border-top: 1px solid var(--border); margin: 4px 0; }
+.note { color: var(--text-muted); font-size: 12px; margin-top: 10px; }
+@media (max-width: 1100px) { .body { grid-template-columns: 44px 1fr; } .side, .inspector { display: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <h1>Electrical Plan Designer — design system</h1>
+      <p class="lead">Strumento moderno, semplice e funzionale: grafite freddo, un solo accento teal (l'unica tinta che non è il colore di un conduttore), IBM Plex Sans per la UI e Plex Mono per i numeri.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Tema">
+      <button data-t="system" aria-pressed="true">Sistema</button>
+      <button data-t="light" aria-pressed="false">Chiaro</button>
+      <button data-t="dark" aria-pressed="false">Scuro</button>
+    </div>
+  </header>
+
+  <!-- ================= EDITOR ================= -->
+  <div class="window">
+    <div class="titlebar">
+      <div class="lights"><i></i><i></i><i></i></div>
+      <div class="doc"><b>Casa Rossi</b><span class="sep">/</span><span>Piano terra</span><span class="saved">Salvato</span></div>
+      <div class="spacer"></div>
+      <div class="seg" role="tablist" aria-label="Viste">
+        <button aria-pressed="true">Pianta</button><button aria-pressed="false">Quadro</button><button aria-pressed="false">Preventivo</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn ghost">Libreria</button>
+      <button class="btn">Esporta</button>
+      <button class="iconbtn" title="Impostazioni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+
+    <div class="body">
+      <nav class="rail" aria-label="Strumenti">
+        <div class="tool on" title="Seleziona (V)"><svg viewBox="0 0 24 24"><path d="M4 3l7 17 2.5-7.5L21 10z"/></svg></div>
+        <div class="tool" title="Muro (W)"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="6" rx="1"/></svg></div>
+        <hr>
+        <div class="tool" title="Presa (P)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10v4M15 10v4"/></svg></div>
+        <div class="tool" title="Punto luce (L)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M7 7l10 10M17 7L7 17"/></svg></div>
+        <div class="tool" title="Interruttore (S)"><svg viewBox="0 0 24 24"><circle cx="8" cy="16" r="3"/><path d="M10 14l8-8"/></svg></div>
+        <hr>
+        <div class="tool" title="Tubo (C)"><svg viewBox="0 0 24 24"><path d="M4 18c4 0 4-12 8-12s4 12 8 12"/></svg></div>
+        <div class="tool" title="Scatola (B)"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M6 12h12"/></svg></div>
+        <div class="tool" title="Misura (M)"><svg viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg></div>
+      </nav>
+
+      <aside class="side">
+        <div class="sect">
+          <div class="sect-h"><span>Piani</span><button class="iconbtn" title="Aggiungi piano"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="row sel"><svg viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg>Piano terra<span class="meta mono">82 m²</span></div>
+          <div class="row"><svg viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg>Primo piano<span class="meta mono">64 m²</span></div>
+        </div>
+        <div class="sect">
+          <div class="sect-h"><span>Circuiti</span><span class="chip">6</span></div>
+          <div class="row"><span class="dot" style="background:#C2410C"></span>C1 Luci zona giorno<span class="meta mono">1.5</span></div>
+          <div class="row"><span class="dot" style="background:#2563EB"></span>C2 Luci zona notte<span class="meta mono">1.5</span></div>
+          <div class="row sel"><span class="dot" style="background:#0F766E"></span>C3 Prese cucina<span class="meta mono">2.5</span></div>
+          <div class="row"><span class="dot" style="background:#9333EA"></span>C4 Prese soggiorno<span class="meta mono">2.5</span></div>
+          <div class="row"><span class="dot" style="background:#BE185D"></span>C5 Forno<span class="meta mono">4</span></div>
+          <div class="row"><span class="dot" style="background:#646A73"></span>C6 Lavatrice<span class="meta mono">2.5</span></div>
+        </div>
+        <div class="sect">
+          <div class="sect-h"><span>Sfondo</span></div>
+          <div class="row">pianta-terra.pdf<span class="meta mono">1:50</span></div>
+        </div>
+      </aside>
+
+      <main class="canvaswrap">
+        <svg class="plan" viewBox="0 0 800 640" preserveAspectRatio="xMidYMid meet">
+          <g fill="var(--canvas-wall-fill)" stroke="var(--canvas-wall)" stroke-width="2">
+            <path d="M90 80h620v480H90z" fill="none" stroke-width="10"/>
+            <path d="M90 300h250M420 300h290M380 80v220M520 300v260M300 300v260" fill="none" stroke-width="6"/>
+          </g>
+          <g fill="var(--canvas-label)" font-family="IBM Plex Sans Variable" font-size="12">
+            <text x="200" y="190">Soggiorno</text><text x="530" y="190">Cucina</text><text x="170" y="440">Camera</text><text x="390" y="440">Bagno</text><text x="590" y="440">Camera 2</text>
+          </g>
+          <g fill="none" stroke-width="2" stroke-dasharray="6 4">
+            <path d="M560 96 V140 H460 V250" stroke="var(--run-floor)"/>
+            <path d="M380 96 V140 H230 V250" stroke="var(--run-ceiling)"/>
+            <path d="M640 140 V250" stroke="var(--accent)" stroke-dasharray="none" stroke-width="2.5"/>
+          </g>
+          <g stroke="var(--canvas-node)" fill="var(--canvas-bg)" stroke-width="1.6">
+            <circle cx="230" cy="250" r="9"/><path d="M224 244l12 12M236 244l-12 12"/>
+            <circle cx="460" cy="250" r="9"/><path d="M454 244l12 12M466 244l-12 12"/>
+            <path d="M120 286a10 10 0 0 1 20 0z"/><path d="M200 286a10 10 0 0 1 20 0z"/>
+            <path d="M600 286a10 10 0 0 1 20 0z"/>
+            <circle cx="350" cy="110" r="5" fill="var(--canvas-node)"/>
+          </g>
+          <g>
+            <path d="M630 286a10 10 0 0 1 20 0z" fill="var(--canvas-bg)" stroke="var(--accent)" stroke-width="2"/>
+            <rect x="622" y="268" width="36" height="26" rx="3" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 2"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="11" fill="var(--canvas-label)">
+            <text x="648" y="200">4.20 m</text>
+          </g>
+          <rect x="560" y="88" width="16" height="16" rx="2" fill="var(--canvas-bg)" stroke="var(--canvas-node)" stroke-width="1.6"/>
+        </svg>
+        <div class="floating ctx">
+          <button class="btn ghost" style="height:24px">Allinea</button>
+          <button class="btn ghost" style="height:24px">Duplica</button>
+          <button class="btn ghost danger" style="height:24px">Elimina</button>
+        </div>
+        <div class="floating zoom">
+          <button class="iconbtn"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+          <span class="mono">100%</span>
+          <button class="iconbtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="ins-title">
+          <div class="sym"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z" fill="none" stroke="var(--text)" stroke-width="1.6"/></svg></div>
+          <div><b>Presa 10/16A</b><small>Cucina · Piano terra</small></div>
+        </div>
+        <div class="sect">
+          <div class="sect-h"><span>Posizione</span></div>
+          <div class="field"><label>Altezza</label><div class="input"><span class="num">0.30</span><span class="unit">m</span></div></div>
+          <div class="field"><label>Stanza</label><div class="input">Cucina<span class="unit">▾</span></div></div>
+        </div>
+        <div class="sect">
+          <div class="sect-h"><span>Impianto</span></div>
+          <div class="field"><label>Circuito</label><div class="input">C3 Prese cucina<span class="unit">▾</span></div></div>
+          <div class="field"><label>Sezione</label><div class="input"><span class="num">2.5</span><span class="unit">mm²</span></div></div>
+          <div class="field"><label>Tubo</label><div class="input"><span class="num">20</span><span class="unit">mm</span></div></div>
+          <div class="field"><label>Scatola</label><div class="input">503 · 3 moduli<span class="unit">▾</span></div></div>
+        </div>
+        <div class="sect">
+          <div class="sect-h"><span>Verifiche</span></div>
+          <p style="margin:2px 0 0"><span class="chip warn">⚠ Caduta di tensione 3.1%</span></p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="status">
+      <span class="tab"><b>Circuiti</b> <span class="mono">6</span></span>
+      <span class="tab"><b>Distinta</b> <span class="mono">42</span></span>
+      <span class="tab"><b>Avvisi</b> <span class="chip warn" style="height:18px">2</span></span>
+      <span class="spacer"></span>
+      <span class="mono">x 6.40  y 3.85 m</span>
+    </footer>
+  </div>
+  <p class="note">Editor: titolo del progetto nella barra della finestra, una sola navigazione (Pianta / Quadro / Preventivo), strumenti in un rail verticale, pannello inferiore ridotto a barra di stato finché non serve. Il layout definitivo si sceglie coi mockup.</p>
+
+  <!-- ================= TOKENS ================= -->
+  <h2>Colori</h2>
+  <div class="swatches">
+    <div class="sw"><i style="background:var(--accent)"></i><div><b>Accento</b><span class="hex" data-v="--accent"></span></div></div>
+    <div class="sw"><i style="background:var(--accent-subtle)"></i><div><b>Accento tenue</b><span class="hex" data-v="--accent-subtle"></span></div></div>
+    <div class="sw"><i style="background:var(--chrome)"></i><div><b>Chrome</b><span class="hex" data-v="--chrome"></span></div></div>
+    <div class="sw"><i style="background:var(--panel)"></i><div><b>Pannello</b><span class="hex" data-v="--panel"></span></div></div>
+    <div class="sw"><i style="background:var(--border)"></i><div><b>Bordo</b><span class="hex" data-v="--border"></span></div></div>
+    <div class="sw"><i style="background:var(--text)"></i><div><b>Testo</b><span class="hex" data-v="--text"></span></div></div>
+    <div class="sw"><i style="background:var(--text-muted)"></i><div><b>Testo secondario</b><span class="hex" data-v="--text-muted"></span></div></div>
+    <div class="sw"><i style="background:var(--error)"></i><div><b>Errore</b><span class="hex" data-v="--error"></span></div></div>
+    <div class="sw"><i style="background:var(--warning)"></i><div><b>Avviso</b><span class="hex" data-v="--warning"></span></div></div>
+    <div class="sw"><i style="background:var(--success)"></i><div><b>Successo</b><span class="hex" data-v="--success"></span></div></div>
+    <div class="sw"><i style="background:var(--run-floor)"></i><div><b>Tubo a pavimento</b><span class="hex" data-v="--run-floor"></span></div></div>
+    <div class="sw"><i style="background:var(--run-ceiling)"></i><div><b>Tubo a soffitto</b><span class="hex" data-v="--run-ceiling"></span></div></div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panelbox">
+      <div class="sect-h"><span style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.02em">Tipografia</span></div>
+      <div class="type-row"><small>24 / 600</small><span style="font-size:24px;font-weight:600;letter-spacing:-.01em">Progetti recenti</span></div>
+      <div class="type-row"><small>18 / 600</small><span style="font-size:18px;font-weight:600">Catalogo materiali</span></div>
+      <div class="type-row"><small>15 / 600</small><span style="font-size:15px;font-weight:600">Aggiorna dalla libreria</span></div>
+      <div class="type-row"><small>13 / 400</small><span>Il circuito alimenta 6 prese e supera la caduta di tensione ammessa.</span></div>
+      <div class="type-row"><small>12 / 400</small><span style="font-size:12px;color:var(--text-muted)">Ultima modifica 27 ott 2026, 08:14</span></div>
+      <div class="type-row"><small>11 / 600</small><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:var(--text-muted)">Proprietà del piano</span></div>
+      <div class="type-row"><small>Mono 13</small><span class="mono">12.45 m · 2.5 mm² · 16 A · € 1.284,50</span></div>
+    </div>
+    <div class="panelbox">
+      <div class="sect-h"><span style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.02em">Controlli</span></div>
+      <div class="toolbar"><button class="btn primary">Nuovo progetto</button><button class="btn">Apri…</button><button class="btn ghost">Annulla</button><button class="btn danger">Elimina</button></div>
+      <div class="toolbar"><span class="chip acc">Selezionato</span><span class="chip ok">✓ Verificato</span><span class="chip warn">⚠ 2 avvisi</span><span class="chip err">✕ Errore</span><span class="chip">Archiviato</span></div>
+      <div class="toolbar"><div class="seg"><button aria-pressed="true">Tutti</button><button aria-pressed="false">Prese</button><button aria-pressed="false">Luci</button><button aria-pressed="false">Quadro</button></div></div>
+      <div class="field" style="max-width:320px"><label>Ricarico</label><div class="input"><span class="num">25</span><span class="unit">%</span></div></div>
+      <div style="display:flex;gap:16px;margin-top:14px;align-items:flex-start;flex-wrap:wrap">
+        <div class="menu">
+          <div class="mi">Nuovo<kbd>⌘N</kbd></div><div class="mi hl">Apri…<kbd>⌘O</kbd></div><hr><div class="mi">Esporta PDF<kbd>⇧⌘E</kbd></div><div class="mi">Esporta JSON</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Libreria — catalogo</h2>
+  <div class="panelbox" style="padding:12px">
+    <div class="toolbar">
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca per nome o codice</div>
+      <div class="seg"><button aria-pressed="true">Tutte</button><button aria-pressed="false">Prese</button><button aria-pressed="false">Interruttori</button><button aria-pressed="false">Protezioni</button><button aria-pressed="false">Cavi</button></div>
+      <button class="btn">Importa catalogo</button><button class="btn primary">Nuovo articolo</button>
+    </div>
+    <table>
+      <thead><tr><th>Articolo</th><th>Catalogo</th><th>Codice</th><th class="r">Moduli</th><th class="r">Prezzo</th></tr></thead>
+      <tbody>
+        <tr><td>Presa bipasso 10/16A</td><td>BTicino Living Now</td><td class="mono">K4180</td><td class="r mono">1</td><td class="r mono">€ 6,40</td></tr>
+        <tr class="sel"><td>Interruttore magnetotermico 1P+N 16A</td><td>ABB System pro M</td><td class="mono">S201-C16NA</td><td class="r mono">2</td><td class="r mono">€ 18,90</td></tr>
+        <tr><td>Differenziale 2P 25A 30mA tipo A</td><td>ABB System pro M</td><td class="mono">F202A-25/0.03</td><td class="r mono">2</td><td class="r mono" style="color:var(--text-faint)">—</td></tr>
+        <tr><td>Deviatore 1P 16A</td><td>BTicino Living Now</td><td class="mono">K4003</td><td class="r mono">1</td><td class="r mono">€ 7,15</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Il prezzo si legge in tabella e si modifica nel pannello di dettaglio dell'articolo; "—" indica un prezzo mancante, senza un campo vuoto su ogni riga.</p>
+  </div>
+
+  <h2>Dialog</h2>
+  <div class="dialog">
+    <header><b>Aggiorna dalla libreria</b><p>3 articoli del progetto sono cambiati nella libreria. Scegli quali aggiornare.</p></header>
+    <div class="content">
+      <div class="row"><input type="checkbox" checked> Presa bipasso 10/16A<span class="meta mono">€ 6,10 → 6,40</span></div>
+      <div class="row"><input type="checkbox" checked> Deviatore 1P 16A<span class="meta mono">€ 6,90 → 7,15</span></div>
+    </div>
+    <footer><button class="btn ghost">Annulla</button><button class="btn primary">Aggiorna 2 articoli</button></footer>
+  </div>
+</div>
+<script>
+const root = document.documentElement;
+const mq = matchMedia('(prefers-color-scheme: dark)');
+let mode = 'system';
+function apply() {
+  const dark = mode === 'dark' || (mode === 'system' && mq.matches);
+  root.dataset.theme = dark ? 'dark' : 'light';
+  document.querySelectorAll('[data-t]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === mode)));
+  const cs = getComputedStyle(root);
+  document.querySelectorAll('.hex').forEach(s => s.textContent = cs.getPropertyValue(s.dataset.v).trim());
+}
+document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { mode = b.dataset.t; apply(); }));
+mq.addEventListener('change', apply);
+apply();
+</script>
+</body>
+</html>

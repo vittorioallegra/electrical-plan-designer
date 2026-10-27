@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup libreria</title><link rel="stylesheet" href="base.css">
+<style>
+.window { height: 820px; }
+.lnav { width: 220px; flex: none; background: var(--chrome); border-right: 1px solid var(--border); padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+.lnav .grp { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .02em; padding: 12px 8px 4px; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--panel); }
+.pagehead { padding: 16px 20px 12px; display: flex; align-items: center; gap: 12px; }
+.tbar { padding: 0 20px 12px; display: flex; gap: 8px; align-items: center; }
+.tablewrap { flex: 1; overflow: auto; border-top: 1px solid var(--border); }
+.detail { width: 320px; flex: none; border-left: 1px solid var(--border); background: var(--panel); display: flex; flex-direction: column; }
+.detail .sect { padding: 14px 16px; }
+.detail-foot { margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.drawer { position: absolute; right: 12px; top: 12px; bottom: 12px; width: 340px; background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-dialog); display: flex; flex-direction: column; }
+.catlist .row { height: 40px; }
+.catlist .row small { display: block; font-size: 11.5px; color: var(--text-faint); font-weight: 400; }
+.price-missing { color: var(--text-faint); }
+.backlink { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); height: 28px; padding: 0 8px; border-radius: var(--r-sm); font-weight: 500; }
+</style></head>
+<body>
+<div class="board">
+  <b>Libreria · catalogo</b>
+  <div class="seg"><button data-v-btn="A">A · Sezioni + dettaglio fisso</button><button data-v-btn="B">B · Tabella piena + pannello</button><button data-v-btn="C">C · Tre colonne</button></div>
+  <span class="desc" id="desc"></span>
+  <div class="seg"><button data-theme-btn="light">Chiaro</button><button data-theme-btn="dark">Scuro</button></div>
+</div>
+<div class="stage">
+
+<div class="variant" data-v="A" data-desc="Come le impostazioni di macOS e Linear: a sinistra le sezioni della libreria (Azienda, Catalogo, Preset, Predefiniti) e i cataloghi importati. Al centro la tabella con ricerca e filtro per categoria. A destra il dettaglio dell'articolo selezionato, dove si modifica il prezzo.">
+<div class="window"><div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><span class="backlink"><svg class="i s" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Casa Rossi</span><div class="doc"><b>Libreria</b></div></div>
+<div style="flex:1;display:flex;min-height:0">
+  <nav class="lnav">
+    <div class="row">Azienda</div><div class="row sel">Catalogo<span class="meta mono">1.284</span></div><div class="row">Preset</div><div class="row">Predefiniti</div>
+    <div class="grp">Cataloghi</div>
+    <div class="row"><span class="dot" style="background:var(--text-faint)"></span>BTicino Living Now<span class="meta mono">412</span></div>
+    <div class="row"><span class="dot" style="background:var(--text-faint)"></span>ABB System pro M<span class="meta mono">688</span></div>
+    <div class="row"><span class="dot" style="background:var(--text-faint)"></span>Articoli personali<span class="meta mono">184</span></div>
+    <div class="row muted"><svg class="i s" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Importa catalogo…</div>
+  </nav>
+  <div class="main">
+    <div class="pagehead"><h2>Catalogo</h2><span class="spacer"></span><button class="btn">Esporta</button><button class="btn primary"><svg class="i s" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nuovo articolo</button></div>
+    <div class="tbar"><div class="search" style="width:280px"><svg class="i s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca per nome o codice</div><div class="seg"><button aria-pressed="true">Tutte</button><button>Prese</button><button>Comandi</button><button>Protezioni</button><button>Cavi</button><button>Scatole</button></div><span class="spacer"></span><span class="chip warn">37 senza prezzo</span></div>
+    <div class="tablewrap"><table><thead><tr><th>Articolo</th><th>Catalogo</th><th>Codice</th><th class="r">Moduli</th><th class="r">Prezzo</th></tr></thead><tbody>
+      <tr><td>Presa bipasso 10/16A</td><td class="muted">BTicino Living Now</td><td class="mono">K4180</td><td class="r mono">1</td><td class="r mono">€ 6,40</td></tr>
+      <tr class="sel"><td>Magnetotermico 1P+N C16</td><td class="muted">ABB System pro M</td><td class="mono">S201-C16NA</td><td class="r mono">2</td><td class="r mono">€ 18,90</td></tr>
+      <tr><td>Differenziale 2P 25A 30mA A</td><td class="muted">ABB System pro M</td><td class="mono">F202A-25</td><td class="r mono">2</td><td class="r mono price-missing">—</td></tr>
+      <tr><td>Deviatore 1P 16A</td><td class="muted">BTicino Living Now</td><td class="mono">K4003</td><td class="r mono">1</td><td class="r mono">€ 7,15</td></tr>
+      <tr><td>Presa Schuko 16A</td><td class="muted">BTicino Living Now</td><td class="mono">K4141</td><td class="r mono">2</td><td class="r mono">€ 9,80</td></tr>
+      <tr><td>Scatola da incasso 503</td><td class="muted">Articoli personali</td><td class="mono">503E</td><td class="r mono">3</td><td class="r mono">€ 0,62</td></tr>
+      <tr><td>Cavo FS17 1×2.5 mm²</td><td class="muted">Articoli personali</td><td class="mono">FS17-2.5</td><td class="r mono faint">—</td><td class="r mono">€ 0,48 /m</td></tr>
+    </tbody></table></div>
+  </div>
+  <aside class="detail">
+    <div class="sect"><div class="faint" style="font-size:12px">ABB System pro M · Protezioni</div><h3 style="margin-top:2px">Magnetotermico 1P+N C16</h3></div>
+    <div class="sect"><div class="sect-h"><span>Prezzo</span></div>
+      <div class="field"><label>Listino</label><div class="input"><span class="mono">18,90</span><span class="unit">€</span></div></div>
+      <div class="field"><label>Aggiornato</label><span class="muted">12 set 2026</span></div></div>
+    <div class="sect"><div class="sect-h"><span>Dati</span></div>
+      <div class="field"><label>Codice</label><div class="input mono">S201-C16NA</div></div>
+      <div class="field"><label>Moduli DIN</label><div class="input"><span class="mono">2</span></div></div>
+      <div class="field"><label>Corrente</label><div class="input"><span class="mono">16</span><span class="unit">A</span></div></div>
+      <div class="field"><label>Curva</label><div class="input">C<span class="unit">▾</span></div></div></div>
+    <div class="detail-foot"><button class="btn ghost">Archivia</button><button class="btn">Duplica</button></div>
+  </aside>
+</div></div></div>
+
+<div class="variant" data-v="B" data-desc="Sezioni come schede in alto, tabella a tutta larghezza (più colonne visibili), catalogo come filtro a tendina. Il dettaglio si apre in un pannello flottante solo quando si clicca un articolo.">
+<div class="window"><div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><span class="backlink"><svg class="i s" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Casa Rossi</span><div class="spacer"></div><div class="seg"><button>Azienda</button><button aria-pressed="true">Catalogo</button><button>Preset</button><button>Predefiniti</button></div><div class="spacer"></div><span style="width:120px"></span></div>
+<div class="main" style="position:relative">
+  <div class="pagehead"><h2>Catalogo</h2><span class="muted mono">1.284 articoli</span><span class="spacer"></span><button class="btn">Importa…</button><button class="btn primary">Nuovo articolo</button></div>
+  <div class="tbar"><div class="search" style="width:280px"><svg class="i s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca per nome o codice</div><div class="input" style="width:200px">Tutti i cataloghi<span class="unit">▾</span></div><div class="input" style="width:170px">Tutte le categorie<span class="unit">▾</span></div><label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox"> Solo senza prezzo</label></div>
+  <div class="tablewrap"><table><thead><tr><th>Articolo</th><th>Catalogo</th><th>Categoria</th><th>Codice</th><th class="r">Moduli</th><th class="r">Prezzo</th><th class="r">Aggiornato</th></tr></thead><tbody>
+    <tr><td>Presa bipasso 10/16A</td><td class="muted">BTicino Living Now</td><td class="muted">Prese</td><td class="mono">K4180</td><td class="r mono">1</td><td class="r mono">€ 6,40</td><td class="r muted">12 set</td></tr>
+    <tr class="sel"><td>Magnetotermico 1P+N C16</td><td class="muted">ABB System pro M</td><td class="muted">Protezioni</td><td class="mono">S201-C16NA</td><td class="r mono">2</td><td class="r mono">€ 18,90</td><td class="r muted">12 set</td></tr>
+    <tr><td>Differenziale 2P 25A 30mA A</td><td class="muted">ABB System pro M</td><td class="muted">Protezioni</td><td class="mono">F202A-25</td><td class="r mono">2</td><td class="r mono faint">—</td><td class="r faint">—</td></tr>
+    <tr><td>Deviatore 1P 16A</td><td class="muted">BTicino Living Now</td><td class="muted">Comandi</td><td class="mono">K4003</td><td class="r mono">1</td><td class="r mono">€ 7,15</td><td class="r muted">2 ago</td></tr>
+  </tbody></table></div>
+  <div class="drawer">
+    <div class="sect" style="display:flex;align-items:flex-start;gap:8px"><div style="flex:1"><div class="faint" style="font-size:12px">ABB System pro M</div><h3>Magnetotermico 1P+N C16</h3></div><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sect"><div class="field"><label>Prezzo</label><div class="input"><span class="mono">18,90</span><span class="unit">€</span></div></div><div class="field"><label>Codice</label><div class="input mono">S201-C16NA</div></div><div class="field"><label>Moduli</label><div class="input mono">2</div></div></div>
+    <div class="detail-foot" style="margin-top:auto"><button class="btn ghost">Archivia</button><button class="btn primary">Fatto</button></div>
+  </div>
+</div></div></div>
+
+<div class="variant" data-v="C" data-desc="Tre colonne come Mail/Finder: cataloghi, categorie con conteggi, articoli. Il dettaglio si apre in una finestra di dialogo. Molto navigabile, ma la tabella resta stretta.">
+<div class="window"><div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><span class="backlink"><svg class="i s" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>Casa Rossi</span><div class="doc"><b>Libreria</b><span class="sep">/</span><span class="muted">Catalogo</span></div></div>
+<div style="flex:1;display:flex;min-height:0">
+  <nav class="lnav catlist" style="width:240px">
+    <div class="grp">Cataloghi</div>
+    <div class="row sel"><span><span>Tutti</span><small>1.284 articoli</small></span></div>
+    <div class="row"><span><span>BTicino Living Now</span><small>412 · importato 12 set</small></span></div>
+    <div class="row"><span><span>ABB System pro M</span><small>688 · importato 2 ago</small></span></div>
+    <div class="row"><span><span>Articoli personali</span><small>184</small></span></div>
+  </nav>
+  <nav class="lnav" style="width:200px;background:var(--panel)">
+    <div class="grp">Categorie</div>
+    <div class="row">Tutte<span class="meta mono">1.284</span></div><div class="row">Prese<span class="meta mono">214</span></div><div class="row">Comandi<span class="meta mono">188</span></div><div class="row sel">Protezioni<span class="meta mono">301</span></div><div class="row">Cavi<span class="meta mono">96</span></div><div class="row">Scatole<span class="meta mono">74</span></div>
+  </nav>
+  <div class="main">
+    <div class="tbar" style="padding-top:12px"><div class="search" style="flex:1"><svg class="i s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca in Protezioni</div><button class="btn primary">Nuovo</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Articolo</th><th>Codice</th><th class="r">Prezzo</th></tr></thead><tbody>
+      <tr class="sel"><td>Magnetotermico 1P+N C16</td><td class="mono">S201-C16NA</td><td class="r mono">€ 18,90</td></tr>
+      <tr><td>Magnetotermico 1P+N C10</td><td class="mono">S201-C10NA</td><td class="r mono">€ 17,60</td></tr>
+      <tr><td>Differenziale 2P 25A 30mA A</td><td class="mono">F202A-25</td><td class="r mono faint">—</td></tr>
+      <tr><td>Differenziale 2P 40A 30mA A</td><td class="mono">F202A-40</td><td class="r mono">€ 62,10</td></tr>
+    </tbody></table></div>
+  </div>
+</div></div></div>
+
+</div>
+<script src="board.js"></script>
+</body></html>

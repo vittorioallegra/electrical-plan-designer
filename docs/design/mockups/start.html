@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup start</title><link rel="stylesheet" href="base.css">
+<style>
+.window { height: 760px; width: 1200px; }
+.mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; color: var(--on-accent); flex: none; }
+.mark svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.banner { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-md); background: var(--warning-subtle); color: var(--text); }
+.banner b { color: var(--warning); }
+.filerow { display: grid; grid-template-columns: 28px 1fr 160px 28px; align-items: center; gap: 12px; height: 52px; padding: 0 12px; border-radius: var(--r-md); }
+.filerow:hover { background: var(--hover); }
+.filerow .ic { width: 28px; height: 28px; border-radius: var(--r-sm); background: var(--chrome); border: 1px solid var(--border); display: grid; place-items: center; color: var(--text-muted); }
+.filerow .nm b { font-weight: 500; display: block; } .filerow .nm span { font-size: 12px; color: var(--text-faint); }
+.filerow.missing .nm b { color: var(--text-muted); }
+/* A */
+.a-side { width: 260px; flex: none; background: var(--panel); border-right: 1px solid var(--border); padding: 20px 16px; display: flex; flex-direction: column; gap: 6px; }
+.a-main { flex: 1; padding: 28px 40px; overflow: auto; display: flex; flex-direction: column; gap: 20px; }
+.navrow { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: var(--r-sm); color: var(--text); font-weight: 500; }
+.navrow:hover { background: var(--hover); }
+.navrow kbd { margin-left: auto; font: 12px "IBM Plex Sans Variable"; color: var(--text-faint); }
+/* B */
+.b-wrap { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 56px 24px; }
+.b-col { width: 720px; display: flex; flex-direction: column; gap: 28px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pcard { border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; }
+.pcard:hover { border-color: var(--border-strong); }
+.pcard .thumb { height: 112px; background: var(--canvas-bg); background-image: radial-gradient(var(--canvas-grid) 1px, transparent 1px); background-size: 12px 12px; border-bottom: 1px solid var(--border); display: grid; place-items: center; }
+.pcard .thumb svg { width: 120px; height: 84px; stroke: var(--canvas-wall); fill: none; stroke-width: 3; }
+.pcard .meta { padding: 10px 12px; } .pcard .meta b { font-weight: 500; display: block; } .pcard .meta span { font-size: 12px; color: var(--text-faint); }
+/* C */
+.c-wrap { flex: 1; display: grid; place-items: center; background: var(--chrome); }
+.c-box { width: 620px; background: var(--raised); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-dialog); overflow: hidden; }
+.c-head { padding: 18px 18px 14px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+.c-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--chrome); }
+.c-action { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: var(--r-md); background: var(--raised); border: 1px solid var(--border); font-weight: 500; }
+.c-action.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.c-action kbd { margin-left: auto; font: 12px "IBM Plex Sans Variable"; opacity: .65; }
+</style></head>
+<body>
+<div class="board">
+  <b>Schermata iniziale</b>
+  <div class="seg"><button data-v-btn="A">A · Barra laterale + elenco</button><button data-v-btn="B">B · Colonna centrale + schede</button><button data-v-btn="C">C · Lanciatore</button></div>
+  <span class="desc" id="desc"></span>
+  <div class="seg"><button data-theme-btn="light">Chiaro</button><button data-theme-btn="dark">Scuro</button></div>
+</div>
+<div class="stage">
+
+<div class="variant" data-v="A" data-desc="Come un'app desktop di documenti (Linear, Xcode). A sinistra l'identità e le azioni (Nuovo, Apri, Libreria, Impostazioni) con le scorciatoie. A destra i file recenti come contenuto principale (nome, cartella, data), con il ripristino e il progetto aperto in cima.">
+<div class="window"><div class="titlebar" style="border:0;background:var(--panel)"><div class="lights"><i></i><i></i><i></i></div></div>
+<div style="flex:1;display:flex;min-height:0">
+  <aside class="a-side">
+    <div style="display:flex;gap:10px;align-items:center;margin:0 4px 18px"><span class="mark"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><div><b style="font-weight:600">Electrical Plan</b><div class="faint" style="font-size:12px">Designer · v1.0</div></div></div>
+    <button class="btn primary lg" style="justify-content:flex-start"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nuovo progetto<span class="spacer"></span><span style="opacity:.7;font-size:12px">⌘N</span></button>
+    <div class="navrow"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Apri…<kbd>⌘O</kbd></div>
+    <div class="navrow"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h6v14H4zM14 5h6v14h-6z"/></svg>Libreria</div>
+    <div class="spacer"></div>
+    <div class="navrow"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Impostazioni<kbd>⌘,</kbd></div>
+  </aside>
+  <main class="a-main panel">
+    <div class="banner"><svg class="i" viewBox="0 0 24 24" style="color:var(--warning)"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span><b>Modifiche non salvate</b> di “Villa Bianchi” recuperate dopo una chiusura imprevista.</span><span class="spacer"></span><button class="btn ghost">Scarta</button><button class="btn">Ripristina</button></div>
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px"><h2>Progetti recenti</h2><div class="search" style="width:240px"><svg class="i s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca</div></div>
+      <div class="filerow"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Casa Rossi</b><span>~/Documenti/Cantieri 2026</span></span><span class="muted" style="font-size:12px">Oggi, 08:14</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div>
+      <div class="filerow"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Villa Bianchi</b><span>~/Documenti/Cantieri 2026</span></span><span class="muted" style="font-size:12px">Ieri, 17:40</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div>
+      <div class="filerow"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Ufficio Verdi srl</b><span>~/Desktop</span></span><span class="muted" style="font-size:12px">21 ott 2026</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div>
+      <div class="filerow missing"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Appartamento Neri</b><span>/Volumes/USB/Lavori</span></span><span><span class="chip">Non trovato</span></span><button class="iconbtn" title="Rimuovi"><svg class="i s" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    </div>
+  </main>
+</div></div></div>
+
+<div class="variant" data-v="B" data-desc="Una colonna centrale con identità e due azioni grandi; i recenti come schede con un'anteprima della pianta (richiede di salvare una miniatura nel file .epd: è una funzione nuova, da valutare).">
+<div class="window"><div class="titlebar" style="border:0"><div class="lights"><i></i><i></i><i></i></div><div class="spacer"></div><button class="btn ghost">Libreria</button><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button></div>
+<div class="b-wrap"><div class="b-col">
+  <div style="display:flex;align-items:center;gap:14px"><span class="mark" style="width:40px;height:40px;border-radius:10px"><svg viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><div><h1>Electrical Plan Designer</h1><p class="muted">Impianti elettrici: pianta, quadro, distinta e preventivo.</p></div></div>
+  <div style="display:flex;gap:8px"><button class="btn primary lg"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nuovo progetto</button><button class="btn lg"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Apri…</button></div>
+  <div><h3 style="margin-bottom:12px">Recenti</h3>
+  <div class="cards">
+    <div class="pcard"><div class="thumb"><svg viewBox="0 0 120 84"><path d="M4 4h112v76H4zM4 40h50M70 40h46M62 4v36M84 40v40M50 40v40"/></svg></div><div class="meta"><b>Casa Rossi</b><span>Oggi, 08:14</span></div></div>
+    <div class="pcard"><div class="thumb"><svg viewBox="0 0 120 84"><path d="M4 4h112v76H4zM40 4v76M40 44h76M80 44v36"/></svg></div><div class="meta"><b>Villa Bianchi</b><span>Ieri, 17:40</span></div></div>
+    <div class="pcard"><div class="thumb"><svg viewBox="0 0 120 84"><path d="M4 4h112v76H4zM4 30h112M60 30v50"/></svg></div><div class="meta"><b>Ufficio Verdi srl</b><span>21 ott 2026</span></div></div>
+  </div></div>
+</div></div></div></div>
+
+<div class="variant" data-v="C" data-desc="Un lanciatore compatto al centro della finestra, come Spotlight: ricerca e recenti navigabili da tastiera, tre azioni in fondo. Il più veloce, ma lascia la finestra quasi vuota.">
+<div class="window"><div class="titlebar" style="border:0"><div class="lights"><i></i><i></i><i></i></div></div>
+<div class="c-wrap"><div class="c-box">
+  <div class="c-head"><span class="mark"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><div style="flex:1"><b style="font-weight:600">Electrical Plan Designer</b></div><div class="search" style="width:260px"><svg class="i s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Cerca un progetto<kbd>/</kbd></div></div>
+  <div style="padding:8px">
+    <div class="filerow" style="background:var(--accent-subtle)"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Casa Rossi</b><span>~/Documenti/Cantieri 2026</span></span><span class="muted" style="font-size:12px">Oggi, 08:14</span><span class="faint">↵</span></div>
+    <div class="filerow"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Villa Bianchi</b><span>~/Documenti/Cantieri 2026</span></span><span class="muted" style="font-size:12px">Ieri, 17:40</span><span></span></div>
+    <div class="filerow"><span class="ic"><svg class="i s" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6v10H3z"/></svg></span><span class="nm"><b>Ufficio Verdi srl</b><span>~/Desktop</span></span><span class="muted" style="font-size:12px">21 ott 2026</span><span></span></div>
+  </div>
+  <div class="c-actions"><div class="c-action primary">Nuovo progetto<kbd>⌘N</kbd></div><div class="c-action">Apri…<kbd>⌘O</kbd></div><div class="c-action">Libreria</div></div>
+</div></div></div></div>
+
+</div>
+<script src="board.js"></script>
+</body></html>

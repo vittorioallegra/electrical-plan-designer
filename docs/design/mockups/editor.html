@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup editor</title><link rel="stylesheet" href="base.css">
+<style>
+.body { flex: 1; display: flex; min-height: 0; }
+.rail { width: 44px; flex: none; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 2px; }
+.left { width: 248px; flex: none; border-right: 1px solid var(--border); overflow: auto; }
+.right { width: 280px; flex: none; border-left: 1px solid var(--border); overflow: auto; }
+.ins-title { padding: 12px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+.ins-title .sym { width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--chrome); border: 1px solid var(--border); display: grid; place-items: center; }
+.ins-title small { display:block; color: var(--text-muted); font-size: 12px; }
+.bottom { height: 220px; flex: none; border-top: 1px solid var(--border); background: var(--panel); display: flex; flex-direction: column; }
+.bottom-h { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 12px; border-bottom: 1px solid var(--border); }
+.utabs { display: flex; gap: 16px; height: 100%; }
+.utabs span { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 500; border-bottom: 2px solid transparent; }
+.utabs span.on { color: var(--text); border-color: var(--accent); }
+.issue { display: flex; gap: 10px; align-items: center; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.issue .where { margin-left: auto; color: var(--text-faint); font-size: 12px; }
+/* B */
+.stages { width: 208px; flex: none; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 8px; gap: 2px; }
+.stage-item { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 8px; border-radius: var(--r-sm); color: var(--text); }
+.stage-item:hover { background: var(--hover); }
+.stage-item.on { background: var(--accent-subtle); color: var(--accent-text); font-weight: 500; }
+.stage-item .st { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-strong); display: grid; place-items: center; flex: none; }
+.stage-item .st.done { background: var(--success); border-color: var(--success); color: var(--panel); }
+.stage-item .st.next { border-color: var(--accent); }
+.stage-item .st.next::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.stage-item .meta { margin-left: auto; font-size: 12px; color: var(--text-faint); }
+.floortabs { height: 36px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-bottom: 1px solid var(--border); background: var(--panel); }
+.floortab { height: 26px; padding: 0 10px; border-radius: var(--r-sm); display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 500; }
+.floortab.on { background: var(--hover); color: var(--text); }
+/* C */
+.toolbar { height: 44px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-bottom: 1px solid var(--border); background: var(--panel); }
+.tgroup { display: flex; align-items: center; gap: 2px; }
+.tlabel { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px; border-radius: var(--r-sm); color: var(--text-muted); font-weight: 500; }
+.tlabel:hover { background: var(--hover); color: var(--text); }
+.tlabel.on { background: var(--accent-subtle); color: var(--accent-text); }
+.tree .row { padding-left: calc(8px + var(--d, 0) * 16px); }
+</style></head>
+<body>
+<div class="board">
+  <b>Editor della pianta</b>
+  <div class="seg"><button data-v-btn="A">A · Rail + barra di stato</button><button data-v-btn="B">B · Navigazione per fasi</button><button data-v-btn="C">C · Toolbar orizzontale</button></div>
+  <span class="desc" id="desc"></span>
+  <div class="seg"><button data-theme-btn="light">Chiaro</button><button data-theme-btn="dark">Scuro</button></div>
+</div>
+<div class="stage">
+
+<!-- ============ A ============ -->
+<div class="variant" data-v="A" data-desc="Stile Figma. Viste nella barra del titolo (Pianta / Quadro / Preventivo / Progetto). Strumenti in un rail verticale; a sinistra i piani, la visibilità dei livelli e lo sfondo; a destra l'ispettore. Circuiti, Distinta e Avvisi stanno nella barra di stato e aprono un pannello in basso (qui aperto sugli avvisi). La riga delle fasi sparisce.">
+<div class="window">
+  <div class="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="doc"><b>Casa Rossi</b><span class="saved">Salvato</span></div>
+    <div class="spacer"></div>
+    <div class="seg"><button aria-pressed="true">Pianta</button><button>Quadro</button><button>Preventivo</button><button>Progetto</button></div>
+    <div class="spacer"></div>
+    <button class="btn ghost"><svg class="i s" viewBox="0 0 24 24"><path d="M4 5h6v14H4zM14 5h6v14h-6z"/></svg>Libreria</button>
+    <button class="iconbtn" title="Esporta"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 21h14"/></svg></button>
+    <button class="iconbtn" title="Impostazioni"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+  </div>
+  <div class="body">
+    <nav class="rail">
+      <div class="tool on"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l6 17 2.5-7.5L21 10z"/></svg></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M5 5v14h14"/><path d="M5 12h7"/></svg></div>
+      <div class="hsep"></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M7 7l10 10M17 7L7 17"/></svg></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="16" r="3"/><path d="M10 14l8-8"/></svg></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></div>
+      <div class="hsep"></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M4 18c4 0 4-12 8-12s4 12 8 12"/></svg></div>
+      <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/></svg></div>
+    </nav>
+    <aside class="left panel">
+      <div class="sect"><div class="sect-h"><span>Piani</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <div class="row sel">Piano terra<span class="meta mono">h 2.70</span></div><div class="row">Primo piano<span class="meta mono">h 2.70</span></div></div>
+      <div class="sect"><div class="sect-h"><span>Livelli</span></div>
+        <div class="row"><svg class="i s" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Muri e stanze</div>
+        <div class="row"><svg class="i s" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Punti e apparecchi</div>
+        <div class="row"><svg class="i s" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Tubi<span class="meta"><span class="dot" style="background:var(--run-floor)"></span> <span class="dot" style="background:var(--run-ceiling)"></span> <span class="dot" style="background:var(--run-direct)"></span></span></div>
+        <div class="row faint"><svg class="i s" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3 3.6M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9 9 0 0 0 5.4-1.6"/></svg>Quote</div></div>
+      <div class="sect"><div class="sect-h"><span>Sfondo</span><button class="btn ghost" style="height:24px">Sostituisci</button></div>
+        <div class="row">pianta-terra.pdf<span class="meta mono">1:50</span></div>
+        <div class="field"><label>Opacità</label><div class="input"><span class="mono">40</span><span class="unit">%</span></div></div></div>
+    </aside>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <main class="canvas plan-slot">
+        <div class="floating" style="right:12px;bottom:12px"><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><span class="mono" style="padding:0 6px;font-size:12px">100%</span><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      </main>
+      <section class="bottom">
+        <div class="bottom-h"><div class="utabs"><span>Circuiti <span class="mono faint">6</span></span><span>Distinta <span class="mono faint">42</span></span><span class="on">Avvisi <span class="chip warn" style="height:18px">2</span></span></div><div class="spacer"></div><button class="iconbtn" title="Chiudi pannello"><svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+        <div class="issue"><span class="chip warn">Avviso</span>Caduta di tensione 3.1% sul circuito C3 Prese cucina (limite 3%)<span class="where">Cucina · Piano terra</span></div>
+        <div class="issue"><span class="chip warn">Avviso</span>La scatola S4 contiene 7 conduttori, capienza consigliata 6<span class="where">Soggiorno · Piano terra</span></div>
+      </section>
+    </div>
+    <aside class="right panel">
+      <div class="ins-title"><div class="sym"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg></div><div><b>Presa 10/16A</b><small>Cucina · Piano terra</small></div></div>
+      <div class="sect"><div class="sect-h"><span>Posizione</span></div>
+        <div class="field"><label>Altezza</label><div class="input"><span class="mono">0.30</span><span class="unit">m</span></div></div>
+        <div class="field"><label>Stanza</label><div class="input">Cucina<span class="unit">▾</span></div></div></div>
+      <div class="sect"><div class="sect-h"><span>Impianto</span></div>
+        <div class="field"><label>Circuito</label><div class="input">C3 Prese cucina<span class="unit">▾</span></div></div>
+        <div class="field"><label>Articolo</label><div class="input">Bipasso K4180<span class="unit">▾</span></div></div>
+        <div class="field"><label>Scatola</label><div class="input">503 · 3 moduli<span class="unit">▾</span></div></div></div>
+    </aside>
+  </div>
+  <div class="statusbar"><span class="tab"><b>Circuiti</b> <span class="mono">6</span></span><span class="tab"><b>Distinta</b> <span class="mono">42</span></span><span class="tab"><b>Avvisi</b> <span class="chip warn" style="height:18px">2</span></span><span class="spacer"></span><span class="mono">x 6.40  y 3.85 m</span></div>
+</div></div>
+
+<!-- ============ B ============ -->
+<div class="variant" data-v="B" data-desc="La guida al flusso diventa l'unica navigazione: una colonna di fasi con stato (fatto ✓ / prossimo •). Pianta, Tubi e Scatole sono la stessa pianta con strumenti diversi; Quadro, Circuiti, Distinta e Preventivo sono viste proprie. I piani sono schede sopra il canvas e gli strumenti stanno in una barra flottante.">
+<div class="window">
+  <div class="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="doc"><b>Casa Rossi</b><span class="saved">Salvato</span></div>
+    <div class="spacer"></div>
+    <button class="btn ghost"><svg class="i s" viewBox="0 0 24 24"><path d="M4 5h6v14H4zM14 5h6v14h-6z"/></svg>Libreria</button>
+    <button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 21h14"/></svg></button>
+    <button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  </div>
+  <div class="body">
+    <nav class="stages">
+      <div class="stage-item on"><span class="st done">✓</span>Pianta</div>
+      <div class="stage-item"><span class="st done">✓</span>Quadro</div>
+      <div class="stage-item"><span class="st next"></span>Tubi<span class="meta">3 da posare</span></div>
+      <div class="stage-item"><span class="st"></span>Scatole</div>
+      <div class="stage-item"><span class="st"></span>Circuiti<span class="meta mono">6</span></div>
+      <div class="stage-item"><span class="st"></span>Distinta<span class="meta mono">42</span></div>
+      <div class="stage-item"><span class="st"></span>Preventivo</div>
+      <div class="spacer"></div>
+      <div class="stage-item"><svg class="i s" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Avvisi<span class="meta"><span class="chip warn" style="height:18px">2</span></span></div>
+      <div class="stage-item"><svg class="i s" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Dati progetto</div>
+    </nav>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div class="floortabs"><span class="floortab on">Piano terra</span><span class="floortab">Primo piano</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="spacer"></div><button class="btn ghost" style="height:26px">Sfondo · pianta-terra.pdf</button></div>
+      <main class="canvas plan-slot">
+        <div class="floating" style="left:50%;top:12px;transform:translateX(-50%)">
+          <div class="tool on"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l6 17 2.5-7.5L21 10z"/></svg></div><div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M5 5v14h14"/></svg></div><div class="vsep"></div>
+          <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg></div><div class="tool"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M7 7l10 10M17 7L7 17"/></svg></div><div class="tool"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="16" r="3"/><path d="M10 14l8-8"/></svg></div><div class="vsep"></div>
+          <div class="tool"><svg class="i" viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/></svg></div>
+        </div>
+        <div class="floating" style="right:12px;bottom:12px"><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><span class="mono" style="padding:0 6px;font-size:12px">100%</span><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      </main>
+    </div>
+    <aside class="right panel">
+      <div class="ins-title"><div class="sym"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg></div><div><b>Presa 10/16A</b><small>Cucina · Piano terra</small></div></div>
+      <div class="sect"><div class="sect-h"><span>Posizione</span></div>
+        <div class="field"><label>Altezza</label><div class="input"><span class="mono">0.30</span><span class="unit">m</span></div></div>
+        <div class="field"><label>Stanza</label><div class="input">Cucina<span class="unit">▾</span></div></div></div>
+      <div class="sect"><div class="sect-h"><span>Impianto</span></div>
+        <div class="field"><label>Circuito</label><div class="input">C3 Prese cucina<span class="unit">▾</span></div></div>
+        <div class="field"><label>Articolo</label><div class="input">Bipasso K4180<span class="unit">▾</span></div></div></div>
+      <div class="sect"><div class="sect-h"><span>Verifiche</span></div><span class="chip warn">Caduta di tensione 3.1%</span></div>
+    </aside>
+  </div>
+</div></div>
+
+<!-- ============ C ============ -->
+<div class="variant" data-v="C" data-desc="Stile Fusion/CAD. Sotto la barra del titolo una toolbar orizzontale: viste a sinistra, strumenti con etichetta al centro. A sinistra l'albero del progetto (piani › stanze › elementi). In basso un pannello agganciato con le schede Circuiti / Distinta / Avvisi (qui aperto sui circuiti).">
+<div class="window">
+  <div class="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="doc"><b>Casa Rossi</b><span class="sep">/</span><span class="muted">Piano terra</span><span class="saved">Salvato</span></div>
+    <div class="spacer"></div>
+    <button class="btn ghost">Libreria</button><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 21h14"/></svg></button><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  </div>
+  <div class="toolbar">
+    <div class="seg"><button aria-pressed="true">Pianta</button><button>Quadro</button><button>Preventivo</button></div>
+    <div class="vsep" style="margin:0 6px"></div>
+    <div class="tgroup"><span class="tlabel on"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l6 17 2.5-7.5L21 10z"/></svg>Seleziona</span><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><path d="M5 5v14h14"/></svg>Muri</span></div>
+    <div class="vsep"></div>
+    <div class="tgroup"><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg>Prese</span><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M7 7l10 10M17 7L7 17"/></svg>Luci</span><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="16" r="3"/><path d="M10 14l8-8"/></svg>Comandi</span></div>
+    <div class="vsep"></div>
+    <div class="tgroup"><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><path d="M4 18c4 0 4-12 8-12s4 12 8 12"/></svg>Tubi</span><span class="tlabel"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Scatole</span></div>
+    <div class="spacer"></div>
+    <span class="mono muted" style="font-size:12px">100%</span>
+  </div>
+  <div class="body">
+    <aside class="left panel tree">
+      <div class="sect" style="border:0"><div class="sect-h"><span>Progetto</span><button class="iconbtn"><svg class="i s" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <div class="row" style="--d:0">▾ Piano terra</div>
+        <div class="row" style="--d:1">▸ Soggiorno<span class="meta mono">9</span></div>
+        <div class="row" style="--d:1">▾ Cucina<span class="meta mono">7</span></div>
+        <div class="row sel" style="--d:2">Presa 10/16A</div>
+        <div class="row" style="--d:2">Presa 10/16A</div>
+        <div class="row" style="--d:2">Punto luce</div>
+        <div class="row" style="--d:1">▸ Camera<span class="meta mono">6</span></div>
+        <div class="row" style="--d:1">▸ Bagno<span class="meta mono">5</span></div>
+        <div class="row" style="--d:0">▸ Primo piano</div>
+      </div>
+    </aside>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <main class="canvas plan-slot"></main>
+      <section class="bottom">
+        <div class="bottom-h"><div class="utabs"><span class="on">Circuiti <span class="mono faint">6</span></span><span>Distinta <span class="mono faint">42</span></span><span>Avvisi <span class="chip warn" style="height:18px">2</span></span></div><div class="spacer"></div><button class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+        <div style="overflow:auto"><table><thead><tr><th>Circuito</th><th>Protezione</th><th class="r">Sezione</th><th class="r">Lunghezza</th><th class="r">Caduta</th></tr></thead><tbody>
+          <tr><td><span class="dot" style="background:var(--run-floor)"></span> C1 Luci zona giorno</td><td class="mono">C10 · 1P+N</td><td class="r mono">1.5 mm²</td><td class="r mono">18.4 m</td><td class="r mono">1.2%</td></tr>
+          <tr class="sel"><td><span class="dot" style="background:var(--accent)"></span> C3 Prese cucina</td><td class="mono">C16 · 1P+N</td><td class="r mono">2.5 mm²</td><td class="r mono">24.9 m</td><td class="r mono" style="color:var(--warning)">3.1%</td></tr>
+          <tr><td><span class="dot" style="background:var(--riser)"></span> C5 Forno</td><td class="mono">C20 · 1P+N</td><td class="r mono">4 mm²</td><td class="r mono">9.6 m</td><td class="r mono">0.8%</td></tr>
+        </tbody></table></div>
+      </section>
+    </div>
+    <aside class="right panel">
+      <div class="ins-title"><div class="sym"><svg class="i" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0z"/></svg></div><div><b>Presa 10/16A</b><small>Cucina · Piano terra</small></div></div>
+      <div class="sect"><div class="sect-h"><span>Posizione</span></div>
+        <div class="field"><label>Altezza</label><div class="input"><span class="mono">0.30</span><span class="unit">m</span></div></div></div>
+      <div class="sect"><div class="sect-h"><span>Impianto</span></div>
+        <div class="field"><label>Circuito</label><div class="input">C3 Prese cucina<span class="unit">▾</span></div></div>
+        <div class="field"><label>Articolo</label><div class="input">Bipasso K4180<span class="unit">▾</span></div></div></div>
+    </aside>
+  </div>
+</div></div>
+
+</div>
+<script src="board.js"></script>
+</body></html>

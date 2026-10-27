@@ -59,6 +59,8 @@ the renderer: Vite/Vitest/Playwright configs, `e2e/`).
 
 ## Conventions
 
+- Design system: read DESIGN.md before any UI work (tokens, fonts, components); ask before
+  departing from it, and flag UI code that does not match it in reviews.
 - Repo in English; UI strings only via `t('...')` (`i18next/no-literal-string` on `.tsx` in
   `app`, `components`, `features`, `lib`); every key in both `en.json` and `it.json` (tested).
 - Imports (ESLint): features never import other features; shared folders (`api`, `components`,
