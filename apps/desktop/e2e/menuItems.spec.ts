@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import {
   clickMenu,
+  focusWindow,
   launchApp,
   menuEnabled,
   menuLabels,
@@ -44,6 +45,7 @@ test('the native menu has Settings, Export and Import JSON that follow the focus
     expect(await menuEnabled(app, ...settingsPath)).toBe(true);
 
     await openProjectFile(launched, project.path);
+    await focusWindow(app, true);
     await expect.poll(() => menuEnabled(app, 'File', 'Export')).toBe(true);
     expect(await menuEnabled(app, 'File', 'Import JSON…')).toBe(true);
 
@@ -53,13 +55,7 @@ test('the native menu has Settings, Export and Import JSON that follow the focus
     const second = await secondOpened;
     await expect(second.getByRole('heading', { name: 'Start' })).toBeVisible();
     // The window with the project has its name in the title.
-    const focus = (withProject: boolean) =>
-      app.evaluate(({ app, BrowserWindow }, wanted) => {
-        app.focus({ steal: true });
-        BrowserWindow.getAllWindows()
-          .find((w) => w.getTitle().includes('Demo house') === wanted)!
-          .focus();
-      }, withProject);
+    const focus = (withProject: boolean) => focusWindow(app, withProject);
     await focus(false);
     await expect.poll(() => menuEnabled(app, 'File', 'Export')).toBe(false);
     expect(await menuEnabled(app, 'File', 'Import JSON…')).toBe(false);

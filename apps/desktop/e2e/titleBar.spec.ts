@@ -67,12 +67,13 @@ test('title bar controls are no-drag and work, the other pages get the drag stri
     if (mac) {
       // The traffic lights need room, except in full screen.
       await expect(header).toHaveCSS('padding-left', '84px');
+      // The OS may refuse full screen (a locked screen), so the window's own events are emitted.
       await app.evaluate(({ BrowserWindow }) =>
-        BrowserWindow.getAllWindows()[0]!.setFullScreen(true),
+        BrowserWindow.getAllWindows()[0]!.emit('enter-full-screen'),
       );
       await expect(header).toHaveCSS('padding-left', '12px', { timeout: 15_000 });
       await app.evaluate(({ BrowserWindow }) =>
-        BrowserWindow.getAllWindows()[0]!.setFullScreen(false),
+        BrowserWindow.getAllWindows()[0]!.emit('leave-full-screen'),
       );
       await expect(header).toHaveCSS('padding-left', '84px', { timeout: 15_000 });
     }

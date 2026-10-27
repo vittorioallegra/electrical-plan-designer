@@ -159,3 +159,23 @@ export async function menuEnabled(app: ElectronApplication, ...labels: string[])
     return found?.enabled ?? false;
   }, labels);
 }
+
+/**
+ * Makes the app treat the window with (or without) a project as the focused one and refreshes the
+ * native menu, as a real focus change does. The OS can refuse focus (a locked screen, a headless
+ * session), so the menu's follow-the-focused-window logic is driven without it.
+ */
+export async function focusWindow(
+  app: ElectronApplication,
+  withProject: boolean | 'first',
+): Promise<void> {
+  await app.evaluate(({ app, BrowserWindow }, wanted) => {
+    const pick = () => {
+      const windows = BrowserWindow.getAllWindows();
+      if (wanted === 'first') return windows[0] ?? null;
+      return windows.find((w) => w.getTitle().includes('Demo house') === wanted) ?? null;
+    };
+    BrowserWindow.getFocusedWindow = pick as never;
+    app.emit('browser-window-focus');
+  }, withProject);
+}
