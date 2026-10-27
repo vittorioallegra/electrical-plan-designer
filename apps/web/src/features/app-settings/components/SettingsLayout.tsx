@@ -27,7 +27,7 @@ export function SettingsLayout() {
   // The catalog page fills the area itself (table and detail panel, each scrolling alone).
   const fillsArea = useMatch('/settings/catalog') !== null;
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
       <nav
         aria-label={t('appSettings.sections')}
         className="flex w-56 flex-none flex-col gap-0.5 overflow-y-auto border-r border-border bg-chrome px-2 py-3"

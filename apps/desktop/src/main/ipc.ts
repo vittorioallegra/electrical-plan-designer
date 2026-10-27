@@ -208,6 +208,8 @@ export function registerIpc({ openWindow }: { openWindow(): void }): void {
     preferences.setTheme(parseThemePreference(args[0])),
   );
 
+  invoke(channels.windowIsFullScreen, (win) => win.isFullScreen());
+
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);
     windowContexts.get(win)?.guard.setUnsaved(state.unsaved);

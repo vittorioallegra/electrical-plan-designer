@@ -95,6 +95,15 @@
   --color-rcd-6: #0891b2;
 }
 
+/* Electron drag regions (the macOS title bar is drawn by the page); every control inside a drag
+   region must opt out or it swallows the click. */
+@utility app-drag {
+  -webkit-app-region: drag;
+}
+@utility app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --color-chrome: #141517;
@@ -221,5 +230,19 @@
 @keyframes navigation-pending-show {
   to {
     opacity: 1;
+  }
+}
+
+/* The bottom panel slides: the outer panel element animates its flex-grow, except while a
+   separator is being dragged or when the user prefers reduced motion. */
+.panel-slide > [data-panel] {
+  transition: flex-grow 180ms ease;
+}
+.panel-slide:has([data-separator='active']) > [data-panel] {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-slide > [data-panel] {
+    transition: none;
   }
 }

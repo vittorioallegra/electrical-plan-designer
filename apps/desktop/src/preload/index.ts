@@ -4,6 +4,8 @@ import { channels, type EpdBridge } from '@epd/bridge/bridge';
 // Every call is an `ipcRenderer.invoke` (or `send`) on a channel from @epd/bridge; main validates
 // the sender and every argument.
 const bridge: EpdBridge = {
+  platform:
+    process.platform === 'darwin' || process.platform === 'win32' ? process.platform : 'linux',
   files: {
     open: () => ipcRenderer.invoke(channels.filesOpen),
     save: (path, bytes, expected) => ipcRenderer.invoke(channels.filesSave, path, bytes, expected),
@@ -64,6 +66,12 @@ const bridge: EpdBridge = {
     },
     ackClose: () => ipcRenderer.send(channels.closeAck),
     answerClose: (choice) => ipcRenderer.send(channels.closeAnswer, choice),
+    isFullScreen: () => ipcRenderer.invoke(channels.windowIsFullScreen),
+    onFullScreenChange: (listener) => {
+      const handler = (_event: unknown, fullScreen: boolean) => listener(fullScreen);
+      ipcRenderer.on(channels.windowFullScreen, handler);
+      return () => ipcRenderer.removeListener(channels.windowFullScreen, handler);
+    },
   },
 };
 

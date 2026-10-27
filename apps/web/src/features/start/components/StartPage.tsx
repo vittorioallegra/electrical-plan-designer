@@ -26,6 +26,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Menu } from '@/components/ui/Menu';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
+import { modifierLabel } from '@/lib/platform';
 
 /**
  * `/`: start a project. New (from the library defaults), open a file, restore the recovery copy a
@@ -111,11 +112,11 @@ export function StartPage() {
   // While a project is open the copy is that project's own.
   const shown = !current && recovered.data ? recovered.data : null;
 
-  const mod = modifierKey();
+  const mod = modifierLabel();
   const recentList = recentFiles.data ?? [];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-full">
       <aside className="flex w-64 shrink-0 flex-col gap-1.5 border-r border-border bg-panel p-4">
         <div className="mx-1 mb-4 flex items-center gap-2.5">
           <AppMark />
@@ -314,11 +315,6 @@ export function StartPage() {
       />
     </div>
   );
-}
-
-/** The shortcut modifier shown in hints: Command on macOS, Ctrl elsewhere. */
-function modifierKey(): string {
-  return /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
 }
 
 /** The folder part of a path (empty when it has none). */

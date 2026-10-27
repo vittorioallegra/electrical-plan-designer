@@ -179,6 +179,8 @@ export type MenuCommand =
 
 /** The API the preload script exposes to the renderer as `window.epd`. Grows with each step. */
 export interface EpdBridge {
+  /** The operating system the app runs on (shortcut hints, the macOS title bar inset). */
+  platform: 'darwin' | 'win32' | 'linux';
   files: {
     /** Native open dialog; null when cancelled. Rejects when the file cannot be read. */
     open(): Promise<OpenedFile | null>;
@@ -256,6 +258,10 @@ export interface EpdBridge {
     ackClose(): void;
     /** The user's answer; `close` closes the window, `cancel` keeps it open. */
     answerClose(choice: CloseChoice): void;
+    /** Whether the window is in full screen (macOS: the traffic lights are hidden then). */
+    isFullScreen(): Promise<boolean>;
+    /** The window entered or left full screen. */
+    onFullScreenChange(listener: (fullScreen: boolean) => void): Unsubscribe;
   };
 }
 
@@ -285,6 +291,8 @@ export const channels = {
   preferencesSetTheme: 'preferences:set-theme',
   preferencesThemeChanged: 'preferences:theme-changed',
   windowState: 'window:state',
+  windowIsFullScreen: 'window:is-full-screen',
+  windowFullScreen: 'window:full-screen',
   closeRequested: 'window:close-requested',
   closeAck: 'window:close-ack',
   closeAnswer: 'window:close-answer',

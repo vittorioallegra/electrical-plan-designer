@@ -44,11 +44,15 @@ export function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1440,
     height: 900,
-    minWidth: 960,
+    minWidth: 1024,
     minHeight: 640,
     show: false,
     backgroundColor: windowBackground(nativeTheme.shouldUseDarkColors),
     title: APP_NAME,
+    // macOS: the page draws the title bar (drag regions in CSS) and the traffic lights sit inset.
+    ...(process.platform === 'darwin'
+      ? { titleBarStyle: 'hiddenInset' as const, trafficLightPosition: { x: 14, y: 14 } }
+      : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -78,6 +82,8 @@ export function createWindow(): BrowserWindow {
   win.on('close', (event) => guard.onClose(event));
   // The title is the project name and the unsaved marker (set from the renderer), not the page's.
   win.on('page-title-updated', (event) => event.preventDefault());
+  win.on('enter-full-screen', () => win.webContents.send(channels.windowFullScreen, true));
+  win.on('leave-full-screen', () => win.webContents.send(channels.windowFullScreen, false));
   win.once('ready-to-show', () => win.show());
 
   void win.loadURL(url);
