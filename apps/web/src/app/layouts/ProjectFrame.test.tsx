@@ -12,6 +12,20 @@ async function openFrame() {
 }
 
 describe('project frame', () => {
+  // protects=the library notices sit under the title bar, inside the window-high frame; fails_when=a notice renders above the title bar (on macOS under the traffic lights, pushing the bar down) or outside the frame (pushing the status bar off screen); no_claim=the macOS pixels (Electron E2E covers the title bar)
+  it('shows a library notice under the title bar, in the frame', async () => {
+    await renderApp('/project/plan', { library: { invalid: ['catalog.json'] } });
+    await screen.findByTestId('project-name');
+    const notice = screen.getByText(/catalog\.json/);
+    const header = screen.getByRole('banner');
+    expect(header.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(header.parentElement!.contains(notice)).toBe(true);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    await screen.findByRole('heading', { name: 'General' });
+    expect(screen.getByText(/catalog\.json/).closest('.h-screen')).not.toBeNull();
+  });
+
   // protects=one navigation per context and no duplicated commands in the title bar; fails_when=a second navigation landmark appears, or Save, Undo, Redo or Home buttons come back (the native menu and shortcuts own them); no_claim=the native menu
   it('has one navigation landmark and no Save, Undo, Redo or Home buttons', async () => {
     await openFrame();

@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router';
 import { useEditor, useEditorContext, useEditorServices } from '@/stores/editor/EditorContext';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
+import { LibraryNotices } from '@/app/LibraryNotices';
 import { ProjectBody } from '@/app/layouts/BottomPanel';
 import { ProjectTitleBar } from '@/app/layouts/ProjectTitleBar';
 import { StatusBar } from '@/app/layouts/StatusBar';
@@ -102,6 +103,7 @@ export function ProjectFrame() {
         }}
       />
 
+      <LibraryNotices />
       {narrow ? (
         <Banner
           action={

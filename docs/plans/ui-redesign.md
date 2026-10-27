@@ -251,6 +251,7 @@ Approved: yes (2026-10-27)
   - Catalog table needed horizontal scrolling at 1024px, hiding the price column — `fix: hide the catalog column and narrow the detail panel below 1180px so the price column stays visible`
 - review: pending
   - File > Import JSON from the native menu did nothing: the page's file input needs a user activation a menu command does not give (the Electron E2E hid it by touching the page first) — `fix: import JSON from the native menu through a main-process dialog, since a page file input does not open without a click in the page`
+  - The library notices rendered above the frames: on macOS under the traffic lights, above the title bar, and pushing the window-high frame's status bar off screen — `fix: show the library notices under each frame's title bar so they no longer sit under the macOS traffic lights and push the status bar off screen`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.
