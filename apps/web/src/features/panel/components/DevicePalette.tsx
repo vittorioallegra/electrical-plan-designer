@@ -1,7 +1,9 @@
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCatalog } from '@/hooks/useCatalog';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { IconButton } from '@/components/ui/IconButton';
+import { PanelSection } from '@/components/ui/PanelSection';
 import { addDevice, defaultDeviceLabel } from '@/features/panel/utils/commands';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
@@ -15,8 +17,7 @@ export function DevicePalette({ readOnly }: { readOnly: boolean }) {
   const itemName = useItemName();
   const palette = useItemsOf('panel_device');
   return (
-    <>
-      <h2 className="mb-1 font-medium">{t('panel.palette')}</h2>
+    <PanelSection title={t('panel.palette')}>
       <ul className="flex flex-col gap-0.5">
         {palette.map((item) => (
           <li
@@ -28,28 +29,24 @@ export function DevicePalette({ readOnly }: { readOnly: boolean }) {
                 JSON.stringify({ kind: 'item', itemId: item.id }),
               )
             }
-            className="flex cursor-grab items-center gap-1 rounded px-1 py-0.5 hover:bg-surface-muted"
+            className="flex min-h-9 cursor-grab items-center gap-2 rounded-sm px-2 py-1 hover:bg-hover"
           >
             <span className="min-w-0 flex-1" title={itemName(item)}>
-              <span className="block font-medium">
+              <span className="block truncate font-medium">
                 {defaultDeviceLabel(item) || itemName(item)}
               </span>
-              <span className="block text-xs leading-tight text-text-muted">{itemName(item)}</span>
+              <span className="block truncate text-small text-text-muted">{itemName(item)}</span>
             </span>
-            <span className="text-xs text-text-muted">
-              {t('panel.modulesShort', { count: item.modules ?? 1 })}
-            </span>
-            <Button
-              variant="ghost"
-              aria-label={t('panel.add', { name: itemName(item) })}
+            <Badge>{t('panel.modulesShort', { count: item.modules ?? 1 })}</Badge>
+            <IconButton
+              label={t('panel.add', { name: itemName(item) })}
+              icon={<Plus size={14} />}
               disabled={readOnly}
               onClick={() => addDevice(store, item, lookup)}
-            >
-              <Plus size={14} />
-            </Button>
+            />
           </li>
         ))}
       </ul>
-    </>
+    </PanelSection>
   );
 }

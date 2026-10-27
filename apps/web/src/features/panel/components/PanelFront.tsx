@@ -82,7 +82,7 @@ export function PanelFront({
 
   return (
     <div
-      className="inline-flex flex-col gap-3 rounded-lg border-2 border-border bg-surface-muted p-3"
+      className="inline-flex flex-col gap-3 rounded-lg border border-border-strong bg-panel p-3"
       data-testid="panel-front"
     >
       {Array.from({ length: maxRail }, (_, rail) => (
@@ -99,7 +99,7 @@ export function PanelFront({
               <div
                 key={slot}
                 className={cn(
-                  'absolute top-0 h-full border border-dashed border-border',
+                  'absolute top-0 h-full border border-dashed border-border-strong/60',
                   outside && 'hatched',
                 )}
                 style={{ left: slot * MODULE_PX, width: MODULE_PX }}
@@ -108,7 +108,7 @@ export function PanelFront({
               />
             );
           })}
-          <div className="pointer-events-none absolute top-1/2 h-2 w-full -translate-y-1/2 bg-border" />
+          <div className="pointer-events-none absolute top-1/2 h-2 w-full -translate-y-1/2 bg-pressed" />
           {panel.devices
             .filter((d) => d.rail === rail)
             .map((d) => {
@@ -138,8 +138,8 @@ export function PanelFront({
                   onDrop={(e) => onDropOnDevice(e, d)}
                   onClick={() => store.getState().setUi({ selection: [d.id] })}
                   className={cn(
-                    'absolute top-1 flex h-[calc(100%-0.5rem)] flex-col items-center justify-center overflow-hidden rounded border-2 bg-surface px-0.5 text-center text-xs leading-tight shadow-sm',
-                    selection.includes(d.id) ? 'border-accent' : 'border-text-muted',
+                    'absolute top-1 flex h-[calc(100%-0.5rem)] flex-col items-center justify-center overflow-hidden rounded-sm border-2 bg-raised px-0.5 text-center text-small leading-tight',
+                    selection.includes(d.id) ? 'border-accent' : 'border-border-strong',
                     flagged.has(d.id) && 'hatched border-error',
                   )}
                   style={{
@@ -149,10 +149,10 @@ export function PanelFront({
                     borderTopWidth: color ? 6 : undefined,
                   }}
                 >
-                  <span className="w-full truncate font-semibold" title={d.label}>
+                  <span className="w-full truncate font-mono font-semibold" title={d.label}>
                     {d.label}
                   </span>
-                  <span className={cn('text-text-muted', width < 2 && 'sr-only')}>
+                  <span className={cn('text-label text-text-muted', width < 2 && 'sr-only')}>
                     {item
                       ? t(`catalog.panelDeviceTypes.${item.attributes.panelDeviceType ?? 'other'}`)
                       : t('catalog.missingItem', { id: d.itemId })}
