@@ -51,7 +51,7 @@ export function Select({
         aria-invalid={invalid || undefined}
         className={cn(
           fieldBox,
-          'inline-flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-45 data-[state=open]:border-focus',
+          'select-trigger inline-flex min-w-0 cursor-pointer items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-45 data-[state=open]:border-focus',
           invalid ? 'border-error' : 'border-border',
           className,
         )}

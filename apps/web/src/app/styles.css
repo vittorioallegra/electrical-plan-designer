@@ -206,6 +206,14 @@
   font-size: 1rem;
 }
 
+/* Defaults a caller's utility class must be able to override (`cn` does not merge conflicting
+   utilities, so a `w-full` inside a component would beat the caller's `w-40`). */
+@layer components {
+  .select-trigger {
+    width: 100%;
+  }
+}
+
 /* In the base layer so a component's `outline-none` utility can turn it off. */
 @layer base {
   :focus-visible {
