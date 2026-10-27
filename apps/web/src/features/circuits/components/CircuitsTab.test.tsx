@@ -114,7 +114,7 @@ describe('circuits tab', () => {
   it('selects a circuit row with the keyboard', async () => {
     const tab = await openCircuits();
     const row = within(tab).getByRole('row', { name: /Sockets GF/ });
-    expect(row).toHaveAttribute('tabindex', '0');
+    expect(row).toHaveAttribute('tabindex');
     row.focus();
     await userEvent.keyboard(' ');
     expect(row).toHaveAttribute('aria-selected', 'true');

@@ -17,7 +17,7 @@ test('a library price change reaches the project only after the update, and undo
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('link', { name: 'Catalog', exact: true }).click();
     await page.getByRole('radio', { name: 'Wall boxes' }).click();
-    await page.getByRole('cell', { name: 'Wall box 503 (3 modules)' }).click();
+    await page.getByRole('gridcell', { name: 'Wall box 503 (3 modules)' }).click();
     await page.getByLabel('Price of Wall box 503 (3 modules)').fill('2');
     await page.getByLabel('Price of Wall box 503 (3 modules)').blur();
     await page.getByRole('link', { name: 'Back to Demo house' }).click();

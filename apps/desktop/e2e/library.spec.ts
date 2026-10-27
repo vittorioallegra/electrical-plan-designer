@@ -30,7 +30,7 @@ async function addOwnItem(page: Page, name: string) {
   await dialog.getByRole('combobox', { name: 'Device type' }).click();
   await page.getByRole('option', { name: 'Socket', exact: true }).click();
   await dialog.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('cell', { name })).toBeVisible();
+  await expect(page.getByRole('gridcell', { name })).toBeVisible();
 }
 
 // protects=AC 10 persistence; fails_when=company data, a "My items" catalog item or the logo set in the library are not in the files under userData/library, or are gone after a restart; no_claim=every library section (unit-tested), projects reading the library (unit-tested)
@@ -72,7 +72,7 @@ test('the library survives a restart', async () => {
     await expect(second.page.getByLabel('VAT number')).toHaveValue('IT01234567890');
     await expect(second.page.getByRole('img', { name: 'Logo' })).toBeVisible();
     await second.page.getByRole('link', { name: 'Catalog', exact: true }).click();
-    await expect(second.page.getByRole('cell', { name: 'Brand socket' })).toBeVisible();
+    await expect(second.page.getByRole('gridcell', { name: 'Brand socket' })).toBeVisible();
   } finally {
     for (const app of launched) await app.close().catch(() => undefined);
     rmSync(userData, { recursive: true, force: true });
@@ -163,7 +163,7 @@ test('export the library, import it on a fresh install; an invalid file is refus
     await expect(second.page.getByLabel('Business name')).toHaveValue('Elettricità Rossi');
     await expect(second.page.getByRole('img', { name: 'Logo' })).toBeVisible();
     await second.page.getByRole('link', { name: 'Catalog', exact: true }).click();
-    await expect(second.page.getByRole('cell', { name: 'Brand socket' })).toBeVisible();
+    await expect(second.page.getByRole('gridcell', { name: 'Brand socket' })).toBeVisible();
 
     const backups = readdirSync(target).filter((n) => n.startsWith('library.backup-'));
     expect(backups).toHaveLength(1);

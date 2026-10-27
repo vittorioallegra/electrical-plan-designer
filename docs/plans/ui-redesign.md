@@ -263,6 +263,7 @@ Approved: yes (2026-10-27)
 - Hand-styled buttons in StartPage recent rows, CatalogList, FloorsPanel, PanelFront and BackgroundImportDialog — `refactor: add a kit ListRow and use it for the recent files, the catalog import row and the floors, and Button for the page thumbnails and panel devices, instead of hand-styled buttons in features`
 - Hand-styled buttons in StatusBar, ZoomControl and RunLegend (the status bar ones 20px high instead of 24px) — `fix: draw the status bar tabs, the zoom level and the run legend toggle with Button, so the status bar buttons are 24px high as DESIGN.md says`
 - `Toolbar`, the status bar and the tool rail used `role="toolbar"` without arrow-key navigation — `fix: add roving focus (one tab stop, arrows, Home and End) to the kit Toolbar, the status bar and the tool rail, which declared role toolbar without the keyboard behaviour`
+- `Table` set `aria-selected` on plain table rows, where it is not valid — `fix: make selectable tables an ARIA grid with row, gridcell and aria-selected and roving row focus, instead of aria-selected on plain table rows where it is not valid`
 - The catalog category chips showed a horizontal scrollbar in Italian at common widths — `fix: let the catalog category chips wrap inside the toolbar instead of scrolling horizontally in Italian`
 
 ### Decisions

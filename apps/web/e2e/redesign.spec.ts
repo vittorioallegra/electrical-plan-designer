@@ -66,7 +66,7 @@ test.describe('English', () => {
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('link', { name: 'Catalog', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Catalog' })).toBeVisible();
-    const rows = page.getByRole('table').getByRole('row');
+    const rows = page.getByRole('grid').getByRole('row');
     const all = await rows.count();
     expect(all).toBeGreaterThan(5);
 

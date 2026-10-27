@@ -42,6 +42,51 @@ describe('Table', () => {
     expect(onRowClick).toHaveBeenCalledTimes(3);
   });
 
+  // protects=grid semantics and roving focus of selectable tables; fails_when=rows are all tab stops, arrows/Home/End do not move between rows, or a plain table gets grid roles or aria-selected; no_claim=selection styling
+  it('is a grid with one tab stop and Up/Down/Home/End row navigation when selectable', async () => {
+    const onRowClick = vi.fn();
+    const { rerender } = render(
+      <>
+        <button>before</button>
+        <Table
+          columns={columns}
+          rows={rows}
+          rowKey={(r) => r.id}
+          selectedKey="b"
+          onRowClick={onRowClick}
+        />
+        <button>after</button>
+      </>,
+    );
+    expect(screen.getByRole('grid')).toBeInTheDocument();
+    expect(screen.getAllByRole('columnheader')).toHaveLength(2);
+    expect(screen.getAllByRole('gridcell')).toHaveLength(4);
+    const [socket, switchRow] = screen.getAllByRole('row').slice(1);
+    // The selected row is the single tab stop.
+    expect(switchRow).toHaveAttribute('tabindex', '0');
+    expect(socket).toHaveAttribute('tabindex', '-1');
+    await userEvent.tab();
+    await userEvent.tab();
+    expect(switchRow).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(socket).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    expect(switchRow).toHaveFocus();
+    await userEvent.keyboard('{Home}');
+    expect(socket).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(onRowClick).toHaveBeenLastCalledWith(rows[0]);
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: 'after' })).toHaveFocus();
+
+    rerender(<Table columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    for (const row of screen.getAllByRole('row')) {
+      expect(row).not.toHaveAttribute('aria-selected');
+      expect(row).not.toHaveAttribute('tabindex');
+    }
+  });
+
   // protects=empty state inside the frame and numeric alignment; fails_when=no rows renders nothing or numbers are not right-aligned; no_claim=sticky offset
   it('shows the empty state and right-aligns numeric columns', () => {
     const { rerender } = render(

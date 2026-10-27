@@ -34,7 +34,7 @@ async function catalogAction(catalog: string, action: string) {
   await userEvent.click(await screen.findByRole('menuitem', { name: action }));
 }
 
-const selectRow = (name: string) => userEvent.click(screen.getByRole('cell', { name }));
+const selectRow = (name: string) => userEvent.click(screen.getByRole('gridcell', { name }));
 
 const item = (id: string, name: string, unitPrice?: number, code = id.toUpperCase()) => ({
   id: `c1:${id}`,
@@ -110,9 +110,9 @@ describe('library catalog page', () => {
     );
     await userEvent.click(await screen.findByRole('button', { name: 'Archive' }));
     expect(catalogs()[0]!.items[0]!.archived).toBe(true);
-    expect(screen.queryByRole('cell', { name: 'Schuko socket (copy)' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Schuko socket (copy)' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Show archived'));
-    expect(screen.getByRole('cell', { name: /Schuko socket \(copy\)/ })).toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: /Schuko socket \(copy\)/ })).toBeInTheDocument();
   });
 
   // protects=pricing built-ins in the library; fails_when=a built-in price is not written to the library's price overrides; no_claim=quote math
@@ -137,7 +137,7 @@ describe('library catalog page', () => {
     const [catalog] = catalogs();
     expect(catalog).toMatchObject({ name: 'Vimar 2026', source: 'vimar.epc' });
     expect(catalog!.items[0]!.id).toBe(`${catalog!.id}:V1`);
-    expect(await screen.findByRole('cell', { name: 'Vimar socket' })).toBeInTheDocument();
+    expect(await screen.findByRole('gridcell', { name: 'Vimar socket' })).toBeInTheDocument();
 
     usePreset(catalog!.items[0]!.id);
     await catalogAction('Vimar 2026', 'Remove');
@@ -208,12 +208,12 @@ describe('library catalog page', () => {
     });
     const search = await screen.findByRole('textbox', { name: 'Search by name or code' });
     await userEvent.type(search, 'plus');
-    expect(screen.getByRole('cell', { name: 'Vimar plus socket' })).toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Vimar switch' })).not.toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: 'Vimar plus socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Vimar switch' })).not.toBeInTheDocument();
     await userEvent.clear(search);
     await userEvent.type(search, 'zx-9');
-    expect(screen.getByRole('cell', { name: 'Vimar plus socket' })).toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Vimar switch' })).not.toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: 'Vimar plus socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Vimar switch' })).not.toBeInTheDocument();
     await userEvent.clear(search);
     await userEvent.type(search, 'nothing like this');
     expect(await screen.findByText('No items match.')).toBeInTheDocument();
@@ -235,11 +235,11 @@ describe('library catalog page', () => {
       ),
     );
     await userEvent.click(screen.getByRole('button', { name: /without price/ }));
-    expect(screen.getByRole('cell', { name: 'Free socket' })).toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Priced socket' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Schuko socket' })).not.toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: 'Free socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Priced socket' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Schuko socket' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /without price/ }));
-    expect(screen.getByRole('cell', { name: 'Priced socket' })).toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: 'Priced socket' })).toBeInTheDocument();
   });
 
   // protects=editing in the detail panel; fails_when=a price or field typed in the panel is not written to the item on blur/Enter, or the item is not marked as edited; no_claim=attribute fields
@@ -255,7 +255,7 @@ describe('library catalog page', () => {
     await userEvent.type(price, '6,10{Enter}');
     await waitFor(() => expect(catalogs()[0]!.items[0]!.unitPrice).toBe(610));
     expect(catalogs()[0]!.items[0]!.editedAt).toBeDefined();
-    expect(screen.getByRole('cell', { name: '€6.10' })).toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: '€6.10' })).toBeInTheDocument();
 
     const name = within(panel).getByLabelText('Name');
     await userEvent.clear(name);
@@ -291,24 +291,24 @@ describe('library catalog page', () => {
       project: null,
       library: withCatalog([item('a', 'Vimar socket', 500)]),
     });
-    await screen.findByRole('cell', { name: 'Schuko socket' });
+    await screen.findByRole('gridcell', { name: 'Schuko socket' });
     const list = screen.getByRole('list', { name: 'Catalogs' });
     await userEvent.click(within(list).getByRole('link', { name: /Vimar/ }));
-    expect(await screen.findByRole('cell', { name: 'Vimar socket' })).toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Schuko socket' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('gridcell', { name: 'Vimar socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Schuko socket' })).not.toBeInTheDocument();
     await userEvent.click(within(list).getByRole('link', { name: /Built-in/ }));
-    expect(await screen.findByRole('cell', { name: 'Schuko socket' })).toBeInTheDocument();
-    expect(screen.queryByRole('cell', { name: 'Vimar socket' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('gridcell', { name: 'Schuko socket' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Vimar socket' })).not.toBeInTheDocument();
   });
 
   // protects=a large catalog without virtualization; fails_when=a 1,300-item catalog does not render every row, or the search over it stops working; no_claim=render time
   it('renders a catalog of 1,300 items in full and searches it', async () => {
     const many = Array.from({ length: 1300 }, (_, i) => item(`i${i}`, `Socket ${i}`, 100 + i));
     app = await renderApp('/settings/catalog', { project: null, library: withCatalog(many) });
-    await screen.findByRole('cell', { name: 'Socket 1299' });
+    await screen.findByRole('gridcell', { name: 'Socket 1299' });
     expect(screen.getAllByRole('row').length).toBeGreaterThan(1300);
     await userEvent.type(screen.getByRole('textbox', { name: 'Search by name or code' }), 'I1299');
-    await waitFor(() => expect(screen.queryByRole('cell', { name: 'Socket 7' })).toBeNull());
-    expect(screen.getByRole('cell', { name: 'Socket 1299' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('gridcell', { name: 'Socket 7' })).toBeNull());
+    expect(screen.getByRole('gridcell', { name: 'Socket 1299' })).toBeInTheDocument();
   });
 });

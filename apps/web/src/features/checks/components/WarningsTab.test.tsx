@@ -118,7 +118,7 @@ describe('warnings tab', () => {
     const tab = await openWarnings();
     addLooseBox();
     const row = within(tab).getByRole('row', { name: /Not connected to the panel/ });
-    expect(row).toHaveAttribute('tabindex', '0');
+    expect(row).toHaveAttribute('tabindex');
     row.focus();
     await userEvent.keyboard('{Enter}');
     expect(ui().selection).toEqual(['n_loose']);

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
+import { useRovingFocus } from '@/hooks/useRovingFocus';
 
 export interface Column<T> {
   key: string;
@@ -26,19 +27,29 @@ export function Table<T>({
   className?: string;
   /** Highlights the row with this key. */
   selectedKey?: string | null;
-  /** Makes rows selectable by click and by Enter/Space on the focused row. */
+  /**
+   * Makes rows selectable by click and by Enter/Space on the focused row. The table is then an
+   * ARIA grid with roving focus: one tab stop, Up/Down/Home/End move between rows.
+   */
   onRowClick?: (row: T) => void;
   /** Shown inside the table frame when there are no rows. */
   empty?: ReactNode;
 }) {
+  const roving = useRovingFocus<HTMLTableElement>('tbody tr[data-row]', 'vertical');
+  const selectable = !!onRowClick;
   return (
-    <table className={cn('w-full border-collapse text-left text-body', className)}>
+    <table
+      role={selectable ? 'grid' : undefined}
+      {...roving}
+      className={cn('w-full border-collapse text-left text-body', className)}
+    >
       <thead>
-        <tr>
+        <tr role={selectable ? 'row' : undefined}>
           {columns.map((c) => (
             <th
               key={c.key}
               scope="col"
+              role={selectable ? 'columnheader' : undefined}
               className={cn(
                 'sticky top-0 z-[1] h-8 border-b border-border bg-panel px-3 text-small font-medium text-text-muted',
                 c.align === 'right' && 'text-right',
@@ -62,8 +73,9 @@ export function Table<T>({
           return (
             <tr
               key={key}
-              aria-selected={onRowClick ? selected : undefined}
-              tabIndex={onRowClick ? 0 : undefined}
+              role={selectable ? 'row' : undefined}
+              data-row={selectable ? '' : undefined}
+              aria-selected={selectable ? selected : undefined}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               onKeyDown={
                 onRowClick
@@ -85,6 +97,7 @@ export function Table<T>({
               {columns.map((c) => (
                 <td
                   key={c.key}
+                  role={selectable ? 'gridcell' : undefined}
                   className={cn(
                     'px-3',
                     c.align === 'right' && 'text-right font-mono tabular-nums',
