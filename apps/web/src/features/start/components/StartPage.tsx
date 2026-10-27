@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconButton } from '@/components/ui/IconButton';
+import { ListRow } from '@/components/ui/ListRow';
 import { Menu } from '@/components/ui/Menu';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
@@ -213,68 +214,55 @@ export function StartPage() {
             <h2 className="text-heading font-semibold">{t('start.recent.title')}</h2>
             <ul className="flex flex-col">
               {recentList.map((file) => (
-                <li
-                  key={file.path}
-                  className="flex h-13 items-center gap-3 rounded-md px-3 hover:bg-hover"
-                >
-                  <span
-                    aria-hidden
-                    className="flex size-7 shrink-0 items-center justify-center rounded-sm border border-border bg-chrome text-text-muted"
-                  >
-                    <FileText size={14} />
-                  </span>
-                  <button
-                    type="button"
-                    className="min-w-0 flex-1 text-left"
+                <li key={file.path}>
+                  <ListRow
+                    icon={
+                      <span className="flex size-7 items-center justify-center rounded-sm border border-border bg-chrome text-text-muted">
+                        <FileText size={14} />
+                      </span>
+                    }
+                    label={file.name}
+                    description={folderOf(file.path)}
+                    muted={file.missing}
+                    meta={
+                      file.missing ? (
+                        <Badge tone="warning">{t('start.recent.missing')}</Badge>
+                      ) : file.modifiedAt !== undefined ? (
+                        dateFormat.format(new Date(file.modifiedAt))
+                      ) : null
+                    }
                     onClick={() => opener.openPath(file.path)}
-                  >
-                    <span
-                      className={cn(
-                        'block truncate font-medium',
-                        file.missing && 'text-text-muted',
-                      )}
-                    >
-                      {file.name}
-                    </span>
-                    <span className="block truncate text-small text-text-faint">
-                      {folderOf(file.path)}
-                    </span>
-                  </button>
-                  {file.missing ? (
-                    <Badge tone="warning">{t('start.recent.missing')}</Badge>
-                  ) : file.modifiedAt !== undefined ? (
-                    <span className="shrink-0 text-small text-text-muted tnum">
-                      {dateFormat.format(new Date(file.modifiedAt))}
-                    </span>
-                  ) : null}
-                  {file.missing ? (
-                    <IconButton
-                      label={`${t('start.recent.remove')}: ${file.name}`}
-                      icon={<X size={16} />}
-                      onClick={() => void forget(file.path)}
-                    />
-                  ) : (
-                    <Menu
-                      trigger={
+                    trailing={
+                      file.missing ? (
                         <IconButton
-                          label={t('start.recent.more', { name: file.name })}
-                          icon={<Ellipsis size={16} />}
+                          label={`${t('start.recent.remove')}: ${file.name}`}
+                          icon={<X size={16} />}
+                          onClick={() => void forget(file.path)}
                         />
-                      }
-                      items={[
-                        {
-                          key: 'open',
-                          label: t('start.recent.open'),
-                          onSelect: () => opener.openPath(file.path),
-                        },
-                        {
-                          key: 'remove',
-                          label: t('start.recent.remove'),
-                          onSelect: () => void forget(file.path),
-                        },
-                      ]}
-                    />
-                  )}
+                      ) : (
+                        <Menu
+                          trigger={
+                            <IconButton
+                              label={t('start.recent.more', { name: file.name })}
+                              icon={<Ellipsis size={16} />}
+                            />
+                          }
+                          items={[
+                            {
+                              key: 'open',
+                              label: t('start.recent.open'),
+                              onSelect: () => opener.openPath(file.path),
+                            },
+                            {
+                              key: 'remove',
+                              label: t('start.recent.remove'),
+                              onSelect: () => void forget(file.path),
+                            },
+                          ]}
+                        />
+                      )
+                    }
+                  />
                 </li>
               ))}
             </ul>

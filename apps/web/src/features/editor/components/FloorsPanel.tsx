@@ -7,12 +7,12 @@ import { newId } from '@epd/domain/ids';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
+import { ListRow } from '@/components/ui/ListRow';
 import { PanelSection } from '@/components/ui/PanelSection';
 import { TextField } from '@/components/ui/TextField';
 import { formatLength } from '@/lib/format';
 import { Dialog } from '@/components/ui/Dialog';
 import { NumberInput } from '@/components/ui/NumberInput';
-import { cn } from '@/lib/cn';
 
 export function FloorsPanel() {
   const { t, i18n } = useTranslation();
@@ -61,26 +61,17 @@ export function FloorsPanel() {
       >
         <div role="tablist" aria-label={t('editor.floors')} className="flex flex-col gap-0.5">
           {[...floors].reverse().map((f) => (
-            <button
+            <ListRow
               key={f.id}
               role="tab"
-              type="button"
+              selected={f.id === activeId}
               aria-selected={f.id === activeId}
               title={f.name}
               aria-label={f.name}
-              className={cn(
-                'flex h-7 items-center gap-2 rounded-sm px-2 text-left focus-visible:outline-2 focus-visible:outline-offset-1',
-                f.id === activeId
-                  ? 'bg-accent-subtle font-medium text-accent-text'
-                  : 'hover:bg-hover',
-              )}
+              label={f.name}
+              meta={<span className="font-mono">{formatLength(f.height, locale)}</span>}
               onClick={() => store.getState().setUi({ floorId: f.id, selection: [] })}
-            >
-              <span className="min-w-0 flex-1 truncate">{f.name}</span>
-              <span className="font-mono text-small text-text-faint tabular-nums">
-                {formatLength(f.height, locale)}
-              </span>
-            </button>
+            />
           ))}
         </div>
       </PanelSection>

@@ -2,7 +2,7 @@ import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger-ghost';
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg' | 'fill';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-hover',
@@ -15,6 +15,8 @@ const sizes: Record<Size, string> = {
   sm: 'h-6 gap-1 px-2 text-small',
   md: 'h-[var(--control-height,1.75rem)] gap-1.5 px-[var(--control-padding-x,0.75rem)] text-body',
   lg: 'h-9 gap-2 px-4 text-body',
+  // Height, padding and text size come from the caller (a block that fills its parent).
+  fill: 'gap-1',
 };
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
@@ -22,12 +24,15 @@ export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   size?: Size;
   /** Leading icon; decorative, the label stays the accessible name. */
   icon?: ReactNode;
+  /** Toggle state: sets `aria-pressed` and fills the button with the accent tint. */
+  pressed?: boolean;
 }
 
 export function Button({
   variant = 'secondary',
   size = 'md',
   icon,
+  pressed,
   className,
   type = 'button',
   children,
@@ -36,9 +41,10 @@ export function Button({
   return (
     <button
       type={type}
+      aria-pressed={pressed}
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-sm font-medium whitespace-nowrap transition-colors duration-[80ms] focus-visible:outline-2 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent',
-        variants[variant],
+        pressed ? 'bg-accent-subtle text-accent-text' : variants[variant],
         variant === 'primary' && 'disabled:hover:bg-accent',
         variant === 'secondary' && 'disabled:hover:bg-panel',
         sizes[size],

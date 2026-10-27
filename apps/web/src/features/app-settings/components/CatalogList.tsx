@@ -16,6 +16,7 @@ import type { Library } from '@epd/domain/library';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { IconButton } from '@/components/ui/IconButton';
+import { ListRow } from '@/components/ui/ListRow';
 import { Menu } from '@/components/ui/Menu';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/cn';
@@ -148,14 +149,13 @@ export function CatalogList() {
           ),
         )}
       </ul>
-      <button
-        type="button"
-        className={cn(row, 'pl-5 text-text-muted hover:bg-hover hover:text-text')}
+      <ListRow
+        indent
+        muted
+        icon={<Plus size={14} />}
+        label={t('catalog.import.open')}
         onClick={() => setImporting({ mode: 'import' })}
-      >
-        <Plus size={14} aria-hidden />
-        {t('catalog.import.open')}
-      </button>
+      />
 
       {importing?.mode === 'import' ? (
         <ImportDialog

@@ -7,6 +7,7 @@ import { addDevice, moveDevice, setUpstream } from '@/features/panel/utils/comma
 import { rcdGroupColors } from '@/features/panel/utils/rcdGroups';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useItemName } from '@/hooks/useItemName';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { useEditorContext } from '@/stores/editor/EditorContext';
 
@@ -116,9 +117,10 @@ export function PanelFront({
               const width = deviceWidth(d, lookup);
               const color = groupColor.get(d.id);
               return (
-                <button
+                <Button
                   key={d.id}
-                  type="button"
+                  variant="ghost"
+                  size="fill"
                   draggable={!readOnly}
                   data-testid={`device-${d.id}`}
                   data-warning={flagged.get(d.id)}
@@ -138,7 +140,7 @@ export function PanelFront({
                   onDrop={(e) => onDropOnDevice(e, d)}
                   onClick={() => store.getState().setUi({ selection: [d.id] })}
                   className={cn(
-                    'absolute top-1 flex h-[calc(100%-0.5rem)] flex-col items-center justify-center overflow-hidden rounded-sm border-2 bg-raised px-0.5 text-center text-small leading-tight',
+                    'absolute top-1 h-[calc(100%-0.5rem)] flex-col gap-0 overflow-hidden border-2 bg-raised px-0.5 text-center text-small leading-tight',
                     selection.includes(d.id) ? 'border-accent' : 'border-border-strong',
                     flagged.has(d.id) && 'hatched border-error',
                   )}
@@ -157,7 +159,7 @@ export function PanelFront({
                       ? t(`catalog.panelDeviceTypes.${item.attributes.panelDeviceType ?? 'other'}`)
                       : t('catalog.missingItem', { id: d.itemId })}
                   </span>
-                </button>
+                </Button>
               );
             })}
         </div>

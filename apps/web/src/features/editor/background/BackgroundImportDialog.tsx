@@ -154,19 +154,21 @@ function ImportDialogBody({ onClose }: { onClose: () => void }) {
           aria-label={t('background.pages')}
         >
           {step.thumbs.map((thumb, i) => (
-            <button
+            <Button
               key={i}
               role="option"
+              variant="ghost"
+              size="fill"
               aria-selected={step.selected === i + 1}
               className={cn(
-                'flex flex-col items-center gap-1 rounded border p-1',
+                'flex-col items-center border p-1 text-body',
                 step.selected === i + 1 ? 'border-accent' : 'border-border',
               )}
               onClick={() => setStep({ ...step, selected: i + 1 })}
             >
               {thumb ? <img src={thumb} alt="" className="max-h-28" /> : <span className="h-28" />}
               <span>{t('background.page', { page: i + 1 })}</span>
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}
