@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { ProjectSettings } from '@epd/domain/types';
 import { NumberInput } from '@/components/ui/NumberInput';
+import { Select } from '@/components/ui/Select';
 
 type NumberField = {
   key: string;
@@ -72,38 +73,54 @@ export function ProjectSettingsForm({
   edit: (label: string, fn: (s: ProjectSettings) => void) => unknown;
 }) {
   const { t } = useTranslation();
+  const row = (f: NumberField) => (
+    <label key={f.key} className="contents">
+      <span>{t(`settings.${f.key}`)}</span>
+      <NumberInput
+        aria-label={t(`settings.${f.key}`)}
+        value={f.get(settings)}
+        unit={f.unit}
+        min={f.min}
+        max={f.max}
+        disabled={readOnly}
+        onValueChange={(v) => edit(`setting ${f.key}`, (d) => f.set(d, v))}
+      />
+    </label>
+  );
+  const grid = 'grid grid-cols-[1fr_10rem] items-center gap-x-4 gap-y-2';
   return (
-    <div className="grid grid-cols-[1fr_10rem] items-center gap-x-4 gap-y-2">
-      {fields.map((f) => (
-        <label key={f.key} className="contents">
-          <span>{t(`settings.${f.key}`)}</span>
-          <NumberInput
-            aria-label={t(`settings.${f.key}`)}
-            value={f.get(settings)}
-            unit={f.unit}
-            min={f.min}
-            max={f.max}
-            disabled={readOnly}
-            onValueChange={(v) => edit(`setting ${f.key}`, (d) => f.set(d, v))}
-          />
-        </label>
-      ))}
-      <label className="contents">
-        <span>{t('settings.defaultRunElevation')}</span>
-        <select
-          className="h-[var(--control-height)] rounded border border-border px-2"
-          value={settings.defaultRunElevation}
-          disabled={readOnly}
-          onChange={(e) =>
-            edit('setting run elevation', (d) => {
-              d.defaultRunElevation = e.target.value as 'floor' | 'ceiling';
-            })
-          }
-        >
-          <option value="floor">{t('runElevation.floor')}</option>
-          <option value="ceiling">{t('runElevation.ceiling')}</option>
-        </select>
-      </label>
+    <div className="flex flex-col gap-6">
+      <section className="flex flex-col gap-2">
+        <h3 className="text-label font-semibold tracking-wide text-text-muted uppercase">
+          {t('settings.groupMounting')}
+        </h3>
+        <div className={grid}>{fields.filter((f) => f.key.startsWith('mounting.')).map(row)}</div>
+      </section>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-label font-semibold tracking-wide text-text-muted uppercase">
+          {t('settings.groupRouting')}
+        </h3>
+        <div className={grid}>
+          {fields.filter((f) => !f.key.startsWith('mounting.')).map(row)}
+          <label className="contents">
+            <span>{t('settings.defaultRunElevation')}</span>
+            <Select
+              aria-label={t('settings.defaultRunElevation')}
+              value={settings.defaultRunElevation}
+              disabled={readOnly}
+              onValueChange={(v) =>
+                edit('setting run elevation', (d) => {
+                  d.defaultRunElevation = v as 'floor' | 'ceiling';
+                })
+              }
+              options={[
+                { value: 'floor', label: t('runElevation.floor') },
+                { value: 'ceiling', label: t('runElevation.ceiling') },
+              ]}
+            />
+          </label>
+        </div>
+      </section>
     </div>
   );
 }

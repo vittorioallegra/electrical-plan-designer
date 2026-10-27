@@ -9,14 +9,18 @@ export function ProjectDetailsPage() {
   const settings = useEditor((s) => s.data.settings);
   const readOnly = useEditor((s) => s.readOnly);
   return (
-    <div className="mx-auto max-w-xl overflow-y-auto p-4">
-      <h1 className="mb-1 text-xl font-semibold">{t('pages.projectDetails')}</h1>
-      <p className="mb-4 text-text-muted">{t('settings.hint')}</p>
-      <ProjectSettingsForm
-        settings={settings}
-        readOnly={readOnly}
-        edit={(label, fn) => store.getState().applyCommand(label, (d) => fn(d.settings))}
-      />
+    <div className="h-full overflow-y-auto bg-panel">
+      <div className="flex max-w-xl flex-col gap-6 px-6 py-4">
+        <header>
+          <h1 className="text-heading font-semibold">{t('pages.projectDetails')}</h1>
+          <p className="mt-0.5 text-text-muted">{t('settings.hint')}</p>
+        </header>
+        <ProjectSettingsForm
+          settings={settings}
+          readOnly={readOnly}
+          edit={(label, fn) => store.getState().applyCommand(label, (d) => fn(d.settings))}
+        />
+      </div>
     </div>
   );
 }
