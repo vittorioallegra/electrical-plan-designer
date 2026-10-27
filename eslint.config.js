@@ -17,6 +17,7 @@ export default defineConfig(
   {
     ignores: [
       '.gstack',
+      'docs/design',
       '**/dist',
       '**/out',
       '**/release',

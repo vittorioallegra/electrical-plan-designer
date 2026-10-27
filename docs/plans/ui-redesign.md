@@ -226,9 +226,10 @@ Base: 8850b93
 Spec: docs/specs/ui-redesign.md
 Architecture: agreed
 Approved: yes (2026-10-27)
+Next: Implement step 2
 
 ### Steps
-- [ ] 1. Tokens, fonts, theme-aware canvas
+- [x] 1. Tokens, fonts, theme-aware canvas — `feat: add design tokens, bundled fonts and a theme-aware canvas`
 - [ ] 2. Theme preference end to end
 - [ ] 3. UI kit
 - [ ] 4. Routes and names: Settings and Project

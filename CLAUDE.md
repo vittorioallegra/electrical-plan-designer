@@ -50,17 +50,18 @@ the renderer: Vite/Vitest/Playwright configs, `e2e/`).
   `src/hooks/` (`useCatalog` = project copies, `useItemsOf` = pickers), `src/config/`
 - `src/lib/` — `repositories/` (`types.ts`, `fileAccess.ts`, `recovery.ts`, `library.ts`,
   `windowHost.ts`; over `window.epd` or an in-memory fake), `i18n/` (`locales/en.json` base,
-  `it.json`), `projectFile/` (`.epd` zip), `libraryFile/` (`.epl` zip), formatting helpers
+  `it.json`), `projectFile/` (`.epd` zip), `libraryFile/` (`.epl` zip), `theme/` (resolved light/dark), formatting helpers
 - `src/stores/editor/` — `workspace.ts` (the window's one open project), editor store
   (`ProjectFile` + assets, zustand + immer), undo/redo, autosave to the recovery copy;
   `src/stores/library/` — the app library
 - `src/testing/` (`renderApp`, `editor`, `pdfText`, setup), `scripts/`, `tests/fixtures/`
-  (shared; e2e `fixture(name)`), `tests/lint/`
+  (shared; e2e `fixture(name)`), `tests/lint/` (boundaries, no colour literals), `tests/design/` (DESIGN.md tokens, contrast)
 
 ## Conventions
 
 - Design system: read DESIGN.md before any UI work (tokens, fonts, components); ask before
-  departing from it, and flag UI code that does not match it in reviews.
+  departing from it, and flag UI code that does not match it in reviews. Colours only via
+  tokens in `src/app/styles.css` (no hex/rgb literals elsewhere; the canvas reads `canvas-*`).
 - Repo in English; UI strings only via `t('...')` (`i18next/no-literal-string` on `.tsx` in
   `app`, `components`, `features`, `lib`); every key in both `en.json` and `it.json` (tested).
 - Imports (ESLint): features never import other features; shared folders (`api`, `components`,

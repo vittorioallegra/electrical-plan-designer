@@ -6,7 +6,7 @@ import type { PlanNode, Point } from '@epd/domain/types';
 import { useLibrary } from '@/stores/library/useLibrary';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
-import { useCanvasColors } from './canvasColors';
+import { useCanvasColors, useFontsReady } from './canvasColors';
 import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
 import { usePlanPointer, type CanvasPickHandlers } from './hooks/usePlanPointer';
 import { useStageSize } from './hooks/useStageSize';
@@ -57,6 +57,7 @@ export function PlanCanvas({
   const activeOwner = useEditor((s) => s.ui.activeOwner);
   const { routing } = useAnalysis();
   const colors = useCanvasColors();
+  const fontsReady = useFontsReady();
 
   // A focus request (e.g. from the warnings tab) pans the view to that point once.
   const focus = useEditor((s) => s.ui.focus);
@@ -123,6 +124,7 @@ export function PlanCanvas({
     <div
       ref={container}
       className="relative h-full w-full touch-none overflow-hidden"
+      style={{ background: colors.background }}
       data-testid="plan-canvas"
     >
       <Stage
@@ -146,6 +148,7 @@ export function PlanCanvas({
           colors={colors}
         />
         <PlanLayer
+          key={String(fontsReady)}
           scene={scene}
           scale={view.scale}
           colors={colors}

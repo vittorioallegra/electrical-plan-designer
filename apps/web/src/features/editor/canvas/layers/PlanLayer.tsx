@@ -3,7 +3,7 @@ import type { LengthContext } from '@epd/domain/lengths';
 import type { ConduitSegment, PlanNode, Point, Wall } from '@epd/domain/types';
 import { provisionDash, symbolPaths } from '@/components/symbols/symbols';
 import { formatLength, type Locale } from '@/lib/format';
-import type { CanvasColors } from '../canvasColors';
+import { runDash, type CanvasColors } from '../canvasColors';
 import { LABEL_FONT_PX, nodeLabelBox, segmentLabelBox, type LabelBox } from '../labels';
 import { LABEL_MIN_SCALE, symbolOf } from '../planScene';
 
@@ -98,15 +98,15 @@ export function PlanLayer({
             ) : null}
             <Line
               points={flat}
-              stroke={colors.run[s.runElevation]}
+              stroke={colors.run}
               strokeWidth={2.5}
               strokeScaleEnabled={false}
               lineJoin="round"
-              {...(s.runElevation === 'ceiling' ? { dash: [px(8), px(4)] } : {})}
+              dash={[...runDash[s.runElevation]]}
             />
             {scale >= LABEL_MIN_SCALE ? (
               <Text
-                {...labelProps(labelBox, colors.run[s.runElevation])}
+                {...labelProps(labelBox, colors.run)}
                 x={label.x + px(labelBox.x)}
                 y={label.y + px(labelBox.y)}
                 text={formatLength(lengths.segmentLengthMm(s) / 1000, locale)}

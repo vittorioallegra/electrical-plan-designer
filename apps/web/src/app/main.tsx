@@ -24,6 +24,9 @@ import {
 import { createDesktopWindowHost, createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
 import { createLibraryStore } from '@/stores/library/libraryStore';
+import '@fontsource-variable/ibm-plex-sans/index.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 import './styles.css';
 
 const config = getConfig();

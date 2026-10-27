@@ -2,7 +2,7 @@ import type { CatalogLookup } from '@epd/domain/catalog/lookup';
 import { isRcdType } from '@epd/domain/panel';
 import type { PanelDevice } from '@epd/domain/types';
 
-const groupColors = ['#2563eb', '#16a34a', '#d97706', '#9333ea', '#db2777', '#0891b2'];
+const groupColors = [1, 2, 3, 4, 5, 6].map((n) => `var(--color-rcd-${n})`);
 
 /**
  * Color of each RCD group: every RCD gets the next color, and devices downstream of it

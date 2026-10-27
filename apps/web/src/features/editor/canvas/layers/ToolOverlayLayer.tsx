@@ -1,6 +1,6 @@
 import { Circle, Layer, Line, Rect } from 'react-konva';
 import type { Floor, PlanNode, RunElevation } from '@epd/domain/types';
-import type { CanvasColors } from '../canvasColors';
+import { runDash, type CanvasColors } from '../canvasColors';
 import type { PlanPointer } from '../hooks/usePlanPointer';
 import { backgroundPxToWorld, DEFAULT_WALL_THICKNESS } from '../planScene';
 
@@ -42,10 +42,10 @@ export function ToolOverlayLayer({
             ...conduit!.vertices,
             ...(cursor ? [cursor.point] : []),
           ].flatMap((p) => [p.x, p.y])}
-          stroke={colors.run[runElevation]}
+          stroke={colors.run}
           strokeWidth={2.5}
           strokeScaleEnabled={false}
-          dash={[6, 4]}
+          dash={[...runDash[runElevation]]}
         />
       ) : null}
       {background
