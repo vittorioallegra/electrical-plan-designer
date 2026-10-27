@@ -64,7 +64,7 @@ if (!app.requestSingleInstanceLock()) {
     // The theme is in place before the first window exists: no flash of the wrong one.
     await initPreferences();
     // The E2E tests open a second window to see a preference reach every window.
-    if (process.env['EPD_TEST_HOOKS']) {
+    if (process.env['EPD_TEST_HOOKS'] && !app.isPackaged) {
       (globalThis as { epdOpenWindow?: () => void }).epdOpenWindow = () => void openWindow();
     }
     openWindow();
