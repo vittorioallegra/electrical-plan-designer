@@ -150,6 +150,37 @@ for (const [name, locale] of [
   });
 }
 
+for (const width of [1024, 1280, 1440]) {
+  test.describe(`catalog toolbar at ${width}px`, () => {
+    test.use({ locale: 'it-IT', viewport: { width, height: 700 } });
+
+    // protects=the category chips fit the catalog toolbar without a scrollbar in Italian; fails_when=the chips (or a wrapper around them) scroll horizontally or reach past the toolbar; no_claim=other languages or the look of the wrapped chips
+    test('the category chips show no horizontal scrollbar in Italian', async ({ page }) => {
+      await openDemo(page, 'Apri file…');
+      await go(page, '/settings/catalog');
+      const chips = page.getByRole('radiogroup', { name: 'Categoria' });
+      await expect(chips).toBeVisible();
+      const fit = await chips.evaluate((el) => {
+        const toolbar = el.parentElement!;
+        const scrolls = (node: Element) => node.scrollWidth - node.clientWidth;
+        const right = el.getBoundingClientRect().right;
+        const toolbarRight = toolbar.getBoundingClientRect().right;
+        const overflowing: string[] = [];
+        for (
+          let node: Element | null = el;
+          node && node !== toolbar.parentElement;
+          node = node.parentElement
+        ) {
+          if (scrolls(node) > 0) overflowing.push(node.tagName);
+        }
+        return { overflowing, past: right - toolbarRight };
+      });
+      expect(fit.overflowing).toEqual([]);
+      expect(fit.past).toBeLessThanOrEqual(0);
+    });
+  });
+}
+
 test.describe('catalog at the minimum window width', () => {
   test.use({ locale: 'it-IT', viewport: { width: 1024, height: 700 } });
 

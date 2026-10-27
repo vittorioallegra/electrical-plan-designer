@@ -252,17 +252,16 @@ export function CatalogPage() {
               className="min-w-0 flex-1 bg-transparent outline-none"
             />
           </span>
-          <div className="max-w-full overflow-x-auto">
-            <SegmentedControl
-              aria-label={t('catalog.category')}
-              value={category}
-              onValueChange={(v) => setCategory(v as CatalogCategory | 'all')}
-              options={[
-                { value: 'all', label: t('catalog.allCategories') },
-                ...categories.map((c) => ({ value: c, label: t(`catalog.categories.${c}`) })),
-              ]}
-            />
-          </div>
+          <SegmentedControl
+            aria-label={t('catalog.category')}
+            className="max-w-full flex-wrap"
+            value={category}
+            onValueChange={(v) => setCategory(v as CatalogCategory | 'all')}
+            options={[
+              { value: 'all', label: t('catalog.allCategories') },
+              ...categories.map((c) => ({ value: c, label: t(`catalog.categories.${c}`) })),
+            ]}
+          />
           <label className="ml-auto flex items-center gap-2 text-text-muted">
             <input
               type="checkbox"
