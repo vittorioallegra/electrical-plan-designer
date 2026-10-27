@@ -6,6 +6,7 @@ import type {
   ExportFilter,
   ExportResult,
   FileStat,
+  ImportedFile,
   OpenedFile,
   SaveAsResult,
   SaveResult,
@@ -16,7 +17,7 @@ export type { FsOps };
 
 /** The native dialogs. `Owner` is whatever the dialogs need to attach to (a window). */
 export interface FileDialogs<Owner> {
-  chooseFileToOpen(owner: Owner): Promise<string | null>;
+  chooseFileToOpen(owner: Owner, filters: ExportFilter[]): Promise<string | null>;
   chooseFileToSave(
     owner: Owner,
     options: { defaultName: string; filters: ExportFilter[] },
@@ -40,6 +41,8 @@ export interface FileService<Owner> {
     bytes: Uint8Array,
     filters: ExportFilter[],
   ): Promise<ExportResult>;
+  /** A file to import (not the project's: `save` may not write it); null when cancelled. */
+  openImport(owner: Owner, filters: ExportFilter[]): Promise<ImportedFile | null>;
   /** Lets `save` write to `path`: it came from a dialog, the recent list or the OS. */
   allow(path: string): void;
   isAllowed(path: string): boolean;
@@ -119,8 +122,14 @@ export function createFileService<Owner>({
     isAllowed: (path) => allowed.has(keyOf(path)),
 
     async open(owner) {
-      const path = await dialogs.chooseFileToOpen(owner);
+      const path = await dialogs.chooseFileToOpen(owner, [PROJECT_FILTER]);
       return path === null ? null : read(path);
+    },
+
+    async openImport(owner, filters) {
+      const path = await dialogs.chooseFileToOpen(owner, filters);
+      if (path === null) return null;
+      return { name: basename(path), bytes: new Uint8Array(await fs.readFile(path)) };
     },
 
     async openPath(path) {

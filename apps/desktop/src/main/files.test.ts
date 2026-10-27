@@ -136,6 +136,29 @@ describe('file service', () => {
     expect(readdirSync(dir).sort()).toEqual(['a.pdf', 'new.epd']);
   });
 
+  // protects=the import dialog of the native menu's Import JSON; fails_when=the picked file's name or bytes are not returned, the import filters do not reach the dialog, a cancel is not null, or the picked file becomes writable by save; no_claim=the renderer import
+  it('reads a file picked to import without letting save write it', async () => {
+    const path = join(dir, 'doc.json');
+    writeFileSync(path, bytes(7, 8));
+    const filters = [{ name: 'JSON', extensions: ['json'] }];
+    let asked: unknown;
+    const files = createFileService<null>({
+      dialogs: {
+        chooseFileToOpen: async (_owner, f) => {
+          asked = f;
+          return path;
+        },
+        chooseFileToSave: async () => null,
+      },
+    });
+    const picked = (await files.openImport(null, filters))!;
+    expect(picked.name).toBe('doc.json');
+    expect([...picked.bytes]).toEqual([7, 8]);
+    expect(asked).toEqual(filters);
+    expect(files.isAllowed(path)).toBe(false);
+    expect(await service(null).openImport(null, filters)).toBeNull();
+  });
+
   // protects=serialized writes per path; fails_when=two saves of one path overlap so the later request does not end up on disk; no_claim=writes to different paths (independent)
   it('applies concurrent saves of one path in the order they were requested', async () => {
     const path = join(dir, 'house.epd');

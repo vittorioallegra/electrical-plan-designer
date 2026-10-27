@@ -4,7 +4,7 @@ import { loadDoc } from '@epd/domain/load';
 import { useToast } from '@/components/ui/Toast';
 import { fileSafe } from '@/lib/download';
 import { exportFilters, useExportFile } from '@/hooks/useExportFile';
-import { useEditorContext } from '@/stores/editor/EditorContext';
+import { useEditorContext, useEditorServices } from '@/stores/editor/EditorContext';
 import { useProjectPdfExport } from '@/features/exports/hooks/useProjectPdfExport';
 
 export interface ProjectTransfer {
@@ -14,12 +14,15 @@ export interface ProjectTransfer {
   exportJson(): void;
   /** Replaces the project's document with the JSON file's (one undoable change). */
   importJson(file: File): Promise<void>;
+  /** Asks for the JSON file in a dialog that needs no click in the page (the native menu), then imports it. */
+  importJsonFromDialog(): Promise<void>;
 }
 
 /** The open project's PDF and JSON export and JSON import, shared by the top bar and the menu. */
 export function useProjectTransfer(): ProjectTransfer {
   const { t } = useTranslation();
   const { store } = useEditorContext();
+  const { fileAccess } = useEditorServices();
   const toast = useToast();
   const projectPdf = useProjectPdfExport();
   const exportFile = useExportFile();
@@ -61,5 +64,16 @@ export function useProjectTransfer(): ProjectTransfer {
     }
   }
 
-  return { exporting, exportPdf, exportJson, importJson };
+  async function importJsonFromDialog() {
+    let file: File | null;
+    try {
+      file = await fileAccess.openImport(exportFilters.json);
+    } catch {
+      toast(t('editor.importFailed'), 'error');
+      return;
+    }
+    if (file) await importJson(file);
+  }
+
+  return { exporting, exportPdf, exportJson, importJson, importJsonFromDialog };
 }

@@ -5,6 +5,7 @@ import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseFilters,
   parseLibraryLogo,
   parseLibraryReplacement,
   parseMenuLabels,
@@ -43,6 +44,8 @@ describe('ipc validation', () => {
       parseExportArgs(['a.pdf', new Uint8Array(1), [{ name: 'x', extensions: ['*'] }]]),
     ).toThrow(InvalidArgument);
     expect(() => parseExportArgs(['a.pdf', new Uint8Array(1), 'pdf'])).toThrow(InvalidArgument);
+    expect(parseFilters(filters)).toEqual(filters);
+    expect(() => parseFilters([{ name: 'x', extensions: ['../x'] }])).toThrow(InvalidArgument);
   });
 
   // protects=window messages; fails_when=a state without a boolean, a choice other than close/cancel, or a foreign origin is accepted; no_claim=the trusted-sender check on the Electron event (E2E)

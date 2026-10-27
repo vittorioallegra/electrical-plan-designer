@@ -26,6 +26,10 @@ export function createDesktopFileAccess(files: EpdBridge['files']): FileAccess {
     async exportFile(name, blob, filters) {
       return files.exportFile(name, new Uint8Array(await blob.arrayBuffer()), filters);
     },
+    async openImport(filters) {
+      const picked = await files.openImport(filters);
+      return picked && new File([new Uint8Array(picked.bytes)], picked.name);
+    },
   };
 }
 
@@ -41,7 +45,7 @@ export interface MemoryFileAccess extends FileAccess {
   writes: string[];
   /** Names exported, in order (their bytes are in `files`). */
   exports: string[];
-  /** File the next open() returns (null = the user cancels). */
+  /** File the next open() or openImport() returns (null = the user cancels). */
   nextOpen: string | null;
   /** Name the next Save As / export dialog returns: undefined = the suggested one, null = cancel. */
   nextSaveAs: string | null | undefined;
@@ -142,6 +146,12 @@ export function createMemoryFileAccess(files = new Map<string, Uint8Array>()): M
       put(chosen, new Uint8Array(await blob.arrayBuffer()));
       access.exports.push(chosen);
       return { status: 'saved', path: chosen };
+    },
+    async openImport(_filters: ExportFilter[]) {
+      const name = access.nextOpen;
+      access.nextOpen = null;
+      const bytes = name === null ? undefined : files.get(name);
+      return name === null || !bytes ? null : new File([bytes.slice()], name);
     },
   };
   return access;

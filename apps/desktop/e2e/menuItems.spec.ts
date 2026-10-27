@@ -9,6 +9,7 @@ import {
   menuEnabled,
   menuLabels,
   openProjectFile,
+  stubOpenDialog,
   stubSaveDialog,
   tempProject,
   type LaunchedApp,
@@ -23,7 +24,7 @@ function fileText(path: string): string {
   }
 }
 
-// protects=Settings, Export and Import JSON in the native menu; fails_when=Settings is missing from the platform's menu or does not open General with the project still open, Export and Import JSON stay enabled in a window without a project (or disabled in one with it) as focus moves between windows, Export PDF or JSON writes nothing, or Import JSON does not open its file picker; no_claim=accelerators and the macOS no-window case (menu unit test)
+// protects=Settings, Export and Import JSON in the native menu; fails_when=Settings is missing from the platform's menu or does not open General with the project still open, Export and Import JSON stay enabled in a window without a project (or disabled in one with it) as focus moves between windows, Export PDF or JSON writes nothing, or Import JSON does not import the file picked in its native dialog; no_claim=accelerators and the macOS no-window case (menu unit test)
 test('the native menu has Settings, Export and Import JSON that follow the focused window', async () => {
   const project = tempProject();
   const scratch = mkdtempSync(join(tmpdir(), 'epd-menu-'));
@@ -79,22 +80,12 @@ test('the native menu has Settings, Export and Import JSON that follow the focus
     await clickMenu(app, ...settingsPath);
     await expect(page).toHaveURL(/\/settings\/general$/);
 
-    // Import JSON asks for the file by clicking the page's file input. The native file dialog
-    // cannot be driven, so the click is recorded instead and the file is fed to the input.
+    // Import JSON asks main for the file (a page's file input would not open: a menu command is
+    // not a click in the page). Nothing here touches the page, so no user activation helps it.
     await page.goBack();
     await expect(page.getByTestId('project-name')).toHaveText('Demo house');
-    const input = page.getByTestId('import-json');
-    await input.evaluate((el) => {
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        (window as unknown as { importAsked: boolean }).importAsked = true;
-      });
-    });
+    await stubOpenDialog(app, json);
     await clickMenu(app, 'File', 'Import JSON…');
-    await expect
-      .poll(() => page.evaluate(() => (window as unknown as { importAsked?: boolean }).importAsked))
-      .toBe(true);
-    await input.setInputFiles(json);
     await expect(
       page.getByText('Project imported. Undo restores the previous version.'),
     ).toBeVisible();

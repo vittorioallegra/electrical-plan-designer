@@ -55,6 +55,11 @@ export interface FileAccess {
   saveAs(suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
   /** Asks where to save a file that is not the project (PDF, CSV, JSON, catalog). */
   exportFile(name: string, blob: Blob, filters: ExportFilter[]): Promise<ExportResult>;
+  /**
+   * Asks for a file to import (JSON...) in a dialog that needs no click in the page (the native
+   * menu has none to give); null when cancelled. Rejects when it cannot be read.
+   */
+  openImport(filters: ExportFilter[]): Promise<File | null>;
 }
 
 /** The recent project files (the desktop app adds a file as it is opened or saved). */

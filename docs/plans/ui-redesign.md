@@ -250,6 +250,7 @@ Approved: yes (2026-10-27)
   - Bottom panel reopened at the minimum height after being dragged shut — `fix: remember the bottom panel height only when a drag ends so reopening restores it`
   - Catalog table needed horizontal scrolling at 1024px, hiding the price column — `fix: hide the catalog column and narrow the detail panel below 1180px so the price column stays visible`
 - review: pending
+  - File > Import JSON from the native menu did nothing: the page's file input needs a user activation a menu command does not give (the Electron E2E hid it by touching the page first) — `fix: import JSON from the native menu through a main-process dialog, since a page file input does not open without a click in the page`
 
 ### Decisions
 - Scope: on-screen app only; PDF/CSV exports keep their look.

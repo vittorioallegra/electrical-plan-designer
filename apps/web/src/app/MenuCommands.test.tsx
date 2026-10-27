@@ -82,7 +82,7 @@ describe('native menu commands', () => {
     expect(workspace.getState().current).not.toBeNull();
   });
 
-  // protects=Export PDF, Export JSON and Import JSON from the native menu; fails_when=a command does nothing in the project frame, from Settings it does not return to the project and run, or the import is attempted without a project; no_claim=the file contents (export and import tests)
+  // protects=Export PDF, Export JSON and Import JSON from the native menu; fails_when=a command does nothing in the project frame, from Settings it does not return to the project and run, or Import JSON relies on the page's file input (which does not open without a click in the page) instead of the import dialog; no_claim=the file contents (export and import tests), the native dialog (Electron E2E)
   it('Export and Import JSON run in the project, also from Settings', async () => {
     const { windowHost, router, fileAccess } = await openDemoWithEdit();
     act(() => windowHost.menuCommand({ command: 'exportJson' }));
@@ -96,10 +96,13 @@ describe('native menu commands', () => {
     expect(router.state.location.state).toBeNull();
 
     const picked = vi.fn();
-    const input = screen.getByTestId('import-json');
-    input.addEventListener('click', picked);
+    screen.getByTestId('import-json').addEventListener('click', picked);
+    fileAccess.nextOpen = 'Demo-house.json';
     act(() => windowHost.menuCommand({ command: 'importJson' }));
-    expect(picked).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByText('Project imported. Undo restores the previous version.'),
+    ).toBeInTheDocument();
+    expect(picked).not.toHaveBeenCalled();
   });
 
   // protects=the project commands need a project; fails_when=Export from the menu on the start screen navigates to a project route that is not there; no_claim=the menu enablement (menu.test)

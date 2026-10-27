@@ -17,6 +17,12 @@ export interface OpenedFile {
   stat: FileStat;
 }
 
+/** A file the user picked to import into the project (not the project's file). */
+export interface ImportedFile {
+  name: string;
+  bytes: Uint8Array;
+}
+
 /** A file main wrote: the path the project is bound to and the stat Save expects next. */
 export interface SavedFile {
   path: string;
@@ -203,6 +209,12 @@ export interface EpdBridge {
     saveAs(suggestedName: string, bytes: Uint8Array): Promise<SaveAsResult>;
     /** Native save dialog and an atomic write of a file that is not the project (PDF, CSV...). */
     exportFile(name: string, bytes: Uint8Array, filters: ExportFilter[]): Promise<ExportResult>;
+    /**
+     * Native open dialog for a file to import (JSON...); null when cancelled. Unlike a page's file
+     * input it needs no click in the page, so the native menu can use it. Rejects when the file
+     * cannot be read.
+     */
+    openImport(filters: ExportFilter[]): Promise<ImportedFile | null>;
   };
   recent: {
     /** The last opened or saved project files, newest first (main adds them as they are used). */
@@ -271,6 +283,7 @@ export const channels = {
   filesSave: 'files:save',
   filesSaveAs: 'files:save-as',
   filesExport: 'files:export',
+  filesOpenImport: 'files:open-import',
   filesOpenPath: 'files:open-path',
   openRequest: 'files:open-request',
   openRequestReady: 'files:open-request-ready',

@@ -21,6 +21,7 @@ const bridge: EpdBridge = {
       ipcRenderer.invoke(channels.filesSaveAs, suggestedName, bytes),
     exportFile: (name, bytes, filters) =>
       ipcRenderer.invoke(channels.filesExport, name, bytes, filters),
+    openImport: (filters) => ipcRenderer.invoke(channels.filesOpenImport, filters),
   },
   recent: {
     list: () => ipcRenderer.invoke(channels.recentList),

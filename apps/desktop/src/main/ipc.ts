@@ -22,6 +22,7 @@ import {
   isAllowedUrl,
   parseCloseChoice,
   parseExportArgs,
+  parseFilters,
   parseLibraryLogo,
   parseLibraryReplacement,
   parseMenuLabels,
@@ -36,11 +37,8 @@ import { windowContexts } from './window';
 import { windowTitle } from './windowTitle';
 
 const dialogs: FileDialogs<BrowserWindow> = {
-  async chooseFileToOpen(win) {
-    const result = await dialog.showOpenDialog(win, {
-      properties: ['openFile'],
-      filters: [{ name: 'Electrical Plan Designer', extensions: ['epd'] }],
-    });
+  async chooseFileToOpen(win, filters) {
+    const result = await dialog.showOpenDialog(win, { properties: ['openFile'], filters });
     return result.canceled ? null : (result.filePaths[0] ?? null);
   },
   async chooseFileToSave(win, { defaultName, filters }) {
@@ -191,6 +189,9 @@ export function registerIpc({ openWindow }: { openWindow(): void }): void {
     const { name, bytes, filters } = parseExportArgs(args);
     return files.exportFile(win, name, bytes, filters);
   });
+  invoke(channels.filesOpenImport, (win, [filters]) =>
+    files.openImport(win, parseFilters(filters)),
+  );
 
   invoke(channels.recoverySave, (_win, args) => recovery.save(parseRecoverySaveArgs(args)));
   invoke(channels.recoveryLoad, () => recovery.load());

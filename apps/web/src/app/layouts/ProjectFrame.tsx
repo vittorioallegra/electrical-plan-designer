@@ -52,10 +52,12 @@ export function ProjectFrame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [save]);
 
-  const { exporting, exportPdf, exportJson, importJson } = useProjectTransfer();
+  const { exporting, exportPdf, exportJson, importJson, importJsonFromDialog } =
+    useProjectTransfer();
 
   // The native menu's Export and Import JSON. Run from another page (Settings), the menu sent the
-  // user here first and left the command in the location state.
+  // user here first and left the command in the location state. Import JSON uses a dialog of its
+  // own: the page's file input opens only on a click in the page, which a menu command is not.
   const location = useLocation();
   const navigate = useNavigate();
   const { windowHost } = useEditorServices();
@@ -64,7 +66,7 @@ export function ProjectFrame() {
     run.current = (command) => {
       if (command === 'exportPdf') void exportPdf();
       else if (command === 'exportJson') exportJson();
-      else if (command === 'importJson' && !store.getState().readOnly) importInput.current?.click();
+      else if (command === 'importJson' && !store.getState().readOnly) void importJsonFromDialog();
     };
   });
   useEffect(() => windowHost.onMenuCommand(({ command }) => run.current(command)), [windowHost]);

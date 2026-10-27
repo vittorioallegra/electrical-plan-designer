@@ -95,26 +95,26 @@ export function parseExportArgs(args: unknown[]): {
   bytes: Uint8Array;
   filters: ExportFilter[];
 } {
-  const filters = args[2];
+  return { name: fileNameOf(args[0]), bytes: bytesOf(args[1]), filters: parseFilters(args[2]) };
+}
+
+/** The file types of a save or import dialog. */
+export function parseFilters(filters: unknown): ExportFilter[] {
   if (!Array.isArray(filters) || filters.length > 8) fail('filters');
-  return {
-    name: fileNameOf(args[0]),
-    bytes: bytesOf(args[1]),
-    filters: filters.map((f: unknown) => {
-      const filter = f as Partial<ExportFilter> | null;
-      if (typeof filter !== 'object' || filter === null || !Array.isArray(filter.extensions))
-        fail('filter');
-      const extensions = filter.extensions as unknown[];
-      if (extensions.length === 0 || extensions.length > 8) fail('filter');
-      return {
-        name: text(filter.name, 'filter name', 64),
-        extensions: extensions.map((e) => {
-          if (typeof e !== 'string' || !/^[A-Za-z0-9]{1,8}$/.test(e)) fail('extension');
-          return e;
-        }),
-      };
-    }),
-  };
+  return filters.map((f: unknown) => {
+    const filter = f as Partial<ExportFilter> | null;
+    if (typeof filter !== 'object' || filter === null || !Array.isArray(filter.extensions))
+      fail('filter');
+    const extensions = filter.extensions as unknown[];
+    if (extensions.length === 0 || extensions.length > 8) fail('filter');
+    return {
+      name: text(filter.name, 'filter name', 64),
+      extensions: extensions.map((e) => {
+        if (typeof e !== 'string' || !/^[A-Za-z0-9]{1,8}$/.test(e)) fail('extension');
+        return e;
+      }),
+    };
+  });
 }
 
 export function parseWindowState(value: unknown): WindowState {
