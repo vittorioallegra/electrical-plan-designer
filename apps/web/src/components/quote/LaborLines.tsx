@@ -36,7 +36,7 @@ export function LaborLines({
         >
           <input
             aria-label={t('quote.laborDescription')}
-            className={cn(fieldBox, 'min-w-48 flex-1 border-border outline-none')}
+            className={cn(fieldBox, 'min-w-48 flex-1 border-border')}
             defaultValue={line.description}
             disabled={readOnly}
             onBlur={(e) => {

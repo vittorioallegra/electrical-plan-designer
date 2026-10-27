@@ -206,9 +206,20 @@
   font-size: 1rem;
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+/* In the base layer so a component's `outline-none` utility can turn it off. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* A field box (input, number input, select trigger) shows one ring around the whole box,
+     whether the box itself or the input inside it has focus. */
+  .field-box:focus-visible,
+  .field-box:has(:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+  }
 }
 
 /* Overflowing or overlapping panel slots. */

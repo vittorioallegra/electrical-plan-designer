@@ -201,7 +201,7 @@ for (const scheme of ['light', 'dark'] as const) {
   test.describe(`keyboard focus in ${scheme}`, () => {
     test.use({ colorScheme: scheme, viewport: { width: 1280, height: 800 } });
 
-    // protects=a visible focus ring on every route; fails_when=Tab reaches an element with no 2px focus-coloured outline, or never leaves the first element; no_claim=the order of the focus
+    // protects=a visible focus ring on every route; fails_when=Tab reaches an element with no 2px focus-coloured outline (on its field box for an input), an input draws a second ring inside its box, or never leaves the first element; no_claim=the order of the focus
     test(`Tab shows the focus ring on every route in the ${scheme} theme`, async ({ page }) => {
       await openDemo(page);
       for (const path of routes) {
@@ -213,7 +213,9 @@ for (const scheme of ['light', 'dark'] as const) {
           const ring = await page.evaluate(() => {
             const el = document.activeElement as HTMLElement;
             if (!el || el === document.body) return null;
-            const style = getComputedStyle(el);
+            // A field box draws the ring around the input inside it; the input draws none.
+            const box = el.closest<HTMLElement>('.field-box') ?? el;
+            const style = getComputedStyle(box);
             const token = getComputedStyle(document.documentElement)
               .getPropertyValue('--color-focus')
               .trim();
@@ -223,6 +225,7 @@ for (const scheme of ['light', 'dark'] as const) {
               width: style.outlineWidth,
               style: style.outlineStyle,
               color: style.outlineColor,
+              inner: box === el ? 'none' : getComputedStyle(el).outlineStyle,
               token,
             };
           });
@@ -231,10 +234,15 @@ for (const scheme of ['light', 'dark'] as const) {
           expect(ring.visible, `${path} ${ring.id}`).toBe(true);
           expect(ring.style, `${path} ${ring.id}`).not.toBe('none');
           expect(ring.width, `${path} ${ring.id}`).toBe('2px');
+          expect(ring.inner, `${path} ${ring.id} draws a second ring`).toBe('none');
           // Buttons fade the outline colour in over 80 ms: wait for it to settle on the token.
           await expect
             .poll(
-              () => page.evaluate(() => getComputedStyle(document.activeElement!).outlineColor),
+              () =>
+                page.evaluate(() => {
+                  const el = document.activeElement!;
+                  return getComputedStyle(el.closest('.field-box') ?? el).outlineColor;
+                }),
               { message: `${path} ${ring.id}` },
             )
             .toBe(rgb(ring.token));

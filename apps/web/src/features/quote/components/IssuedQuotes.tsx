@@ -220,7 +220,7 @@ function NoteField({
     <input
       aria-label={t('quote.noteFor', { number })}
       placeholder={t('quote.notePlaceholder')}
-      className={cn(fieldBox, 'w-full min-w-48 border-border outline-none')}
+      className={cn(fieldBox, 'w-full min-w-48 border-border')}
       value={text}
       disabled={disabled}
       onChange={(e) => setText(e.target.value)}
