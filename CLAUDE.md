@@ -1,100 +1,79 @@
 # Electrical Plan Designer
 
 Electron desktop app (macOS, Windows; no backend) for electricians: floor plan, panel, circuits,
-BOM, checks, PDF/CSV exports, quotes. A project is one `.epd` file. Specs and plans:
-docs/specs/{electrical-plan-designer,desktop-app}.md, docs/plans/{local-first,desktop-app}.md;
-release: docs/release.md.
+BOM, checks, PDF/CSV exports, quotes. A project is one `.epd` file. Specs and plans in
+docs/specs/ and docs/plans/ (desktop-app, local-first, ui-redesign); release: docs/release.md.
 
 ## Commands
 
-Node 24 via nvm (`export PATH=~/.nvm/versions/node/v24.22.1/bin:$PATH` if `node` is
-missing), pnpm 12. No Docker, backend or env vars needed.
+Node 24 via nvm (`export PATH=~/.nvm/versions/node/v24.22.1/bin:$PATH` if `node` is missing),
+pnpm 12. No Docker, backend or env vars needed.
 
 - `pnpm setup` — install dependencies and Playwright's Chromium
 - `pnpm dev` — the renderer alone in a browser on :5173 (in-memory fakes; development only)
 - `pnpm desktop:dev` — Electron on the Vite dev server (:5173, stop `pnpm dev` first)
 - `pnpm desktop:build` — typecheck, then the unpacked app in `apps/desktop/release`;
   `pnpm --filter @epd/desktop dist` — the installers (dmg, NSIS; docs/release.md)
-- `pnpm typecheck` (TS 7 via the `typescript7` alias; `typescript` 6.0 stays for
-  typescript-eslint) / `pnpm lint` / `pnpm format`
-- `pnpm test` — Vitest (projects: web/jsdom, domain/node, desktop/node, repo). Quiet, failures
-  only: `pnpm exec vitest run --reporter=dot --silent`. One file, from the root:
+- `pnpm typecheck` (TS 7 via the `typescript7` alias) / `pnpm lint` / `pnpm format`
+- `pnpm test` — Vitest (projects: web/jsdom, domain/node, desktop/node, repo). Quiet:
+  `pnpm exec vitest run --reporter=dot --silent`; one file:
   `pnpm exec vitest run packages/domain/src/lengths.test.ts --reporter=dot` (one test: `-t "riser"`)
-- `pnpm test:e2e` — browser Playwright (`apps/web/e2e`, dev server :5174 in `e2e` mode); quiet:
-  `pnpm test:e2e --reporter=dot`
-- `pnpm test:e2e:desktop` — builds `apps/desktop/out`, then Playwright drives the real Electron
-  app (`apps/desktop/e2e`, temp `userData`); quiet: add `--reporter=dot`
+- `pnpm test:e2e` — browser Playwright (`apps/web/e2e`, dev server :5174); quiet: `--reporter=dot`
+- `pnpm test:e2e:desktop` — builds `apps/desktop/out`, Playwright drives the real Electron app
+  (`apps/desktop/e2e`, temp `userData`); quiet: `--reporter=dot`
 - `pnpm verify` — typecheck, lint, test, test:e2e, test:e2e:desktop (CI: `.github/workflows/desktop.yml`)
-- `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (from `demo-project.json` and
-  `scripts/build-demo-epd.mjs`; a unit test checks drift)
+- `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (a unit test checks drift)
 
 ## Layout
 
-pnpm workspace (Bulletproof React folders). Root: one ESLint config, `vitest.config.ts`
-(projects), `tsconfig.base.json`, `.env*` (Vite `envDir`). `src/` = `apps/web/src/` (`@epd/web`,
-the renderer: Vite/Vitest/Playwright configs, `e2e/`).
+pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`, the renderer).
 
-- `apps/desktop/` — `@epd/desktop`: Electron shell. `src/main` (window, `app://` scheme + CSP,
-  `files.ts` dialogs and atomic writes, `recovery.ts` `userData/recovery/`, `library.ts`
-  `userData/library/`, `menu.ts` native menu, `recent.ts`, `openRequests.ts` files the OS opens),
-  `src/preload` (`window.epd`), `e2e/`, `build/` icons; electron-vite builds main, preload and the
-  renderer (apps/web source); `electron-builder.yml` (macOS ad-hoc signed, no Developer ID)
-- `packages/bridge/` — `@epd/bridge`: IPC contract (`EpdBridge`, channels), types only
-- `packages/domain/` — `@epd/domain`: pure TS (model, geometry, lengths, routing, BOM, checks,
-  quotes, library, catalogs with CSV/`.epc` import, `.epd` schema and migrations);
-  source-only, imported as `@epd/domain/<module>`, no barrel
-- `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx` (`createRoutes()`), `layouts/`, `routes/`
-- `src/features/<name>/` — start, editor, panel, circuits, app-settings (the app Settings
-  screen), bom, checks, quote, exports, project-details (the per-project view); sub-folders `components/ hooks/ utils/`
-- `src/api/keys.ts` (query keys), `src/components/` (`ui/`, `symbols/`, shared forms),
-  `src/hooks/` (`useCatalog` = project copies, `useItemsOf` = pickers), `src/config/`
-- `src/lib/` — `repositories/` (`types.ts`, `fileAccess.ts`, `recovery.ts`, `library.ts`,
-  `windowHost.ts`; over `window.epd` or an in-memory fake), `i18n/` (`locales/en.json` base,
-  `it.json`), `projectFile/` (`.epd` zip), `libraryFile/` (`.epl` zip), `theme/` (resolved light/dark), formatting helpers
-- `src/stores/editor/` — `workspace.ts` (the window's one open project), editor store
-  (`ProjectFile` + assets, zustand + immer), undo/redo, autosave to the recovery copy;
-  `src/stores/library/` — the app library
-- `src/testing/` (`renderApp`, `editor`, `pdfText`, setup), `scripts/`, `tests/fixtures/`
-  (shared; e2e `fixture(name)`), `tests/lint/` (boundaries, no colour literals), `tests/design/` (DESIGN.md tokens, contrast)
+- `apps/desktop/` — Electron shell: `src/main` (window, `app://` + CSP, `files.ts` dialogs and
+  atomic writes, `recovery.ts`, `library.ts`, `preferences.ts` theme, `menu.ts`, `recent.ts`,
+  `openRequests.ts`), `src/preload` (`window.epd`), `e2e/`, `build/` icons, `electron-builder.yml`
+- `packages/bridge/` — IPC contract (`EpdBridge`, channels), types only
+- `packages/domain/` — pure TS (model, geometry, routing, BOM, checks, quotes, library, catalogs,
+  `.epd` schema and migrations); imported as `@epd/domain/<module>`, no barrel
+- `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx`, `layouts/`, `routes/`, `styles.css` (tokens)
+- `src/features/<name>/` — start, editor, panel, circuits, app-settings (Settings screen), bom,
+  checks, quote, exports, project-details (per-project view); `components/ hooks/ utils/`
+- `src/components/` (`ui/` kit, `symbols/`, shared forms), `src/hooks/`, `src/api/keys.ts`, `src/config/`
+- `src/lib/` — `repositories/` (over `window.epd` or an in-memory fake), `i18n/` (`en.json` base,
+  `it.json`), `projectFile/` (`.epd` zip), `libraryFile/` (`.epl` zip), `theme/`, `platform.ts`
+- `src/stores/editor/` — `workspace.ts` (the window's open project), editor store (zustand +
+  immer), undo/redo, autosave to the recovery copy; `src/stores/library/` — the app library
+- `src/testing/`, `scripts/`, `tests/fixtures/`, `tests/lint/` (boundaries, colour literals),
+  `tests/design/` (DESIGN.md tokens, contrast)
 
 ## Conventions
 
-- Design system: read DESIGN.md before any UI work (tokens, fonts, components); ask before
-  departing from it, and flag UI code that does not match it in reviews. Colours only via
-  tokens in `src/app/styles.css` (no hex/rgb literals elsewhere; the canvas reads `canvas-*`).
-- Controls come from `src/components/ui` (Radix + tokens); no native `<select>` (use `ui/Select`;
-  tests pick with `pickOption` from `@/testing/select`).
-- Repo in English; UI strings only via `t('...')` (`i18next/no-literal-string` on `.tsx` in
-  `app`, `components`, `features`, `lib`); every key in both `en.json` and `it.json` (tested).
-- Imports (ESLint): features never import other features; shared folders (`api`, `components`,
-  `config`, `hooks`, `lib`, `stores`) never import `features` or `app`; no barrels;
-  `@epd/domain` imports nothing from the app. Alias `@/` = `src/`.
-- Data: the open project lives in the workspace's editor store; every change goes through
-  `applyCommand` (undoable; issuing a quote is the exception). The library store is loaded
-  before the first route and is not undoable. A project holds only `items` and `cablePrices`
-  (copies of what it uses); BOM, checks and quotes read those, never the library (only "Update
-  from library" pulls changes in). Services (`recovery`, `fileAccess`, `windowHost`, `workspace`,
-  `library`) come from `useEditorServices()`. TanStack Query only for local async reads.
+- UI: read DESIGN.md first; ask before departing from it and flag mismatches in reviews. Colours
+  only via tokens in `styles.css` (the canvas reads `canvas-*`). Controls come from
+  `components/ui` (Radix + tokens): no native `<select>` (`ui/Select`; tests use `pickOption`
+  from `@/testing/select`), no hand-styled buttons in features (`Button`, `IconButton`, `ListRow`).
+- Repo in English; UI strings only via `t('...')`; every key in both `en.json` and `it.json` (tested).
+- Imports (ESLint): features never import other features; shared folders never import
+  `features` or `app`; no barrels; `@epd/domain` imports nothing from the app. Alias `@/` = `src/`.
+- Data: every project change goes through `applyCommand` (undoable; issuing a quote is the
+  exception). UI state (panels open, sizes) lives in the store's `ui`, outside undo, dirty flag
+  and recovery. A project holds copies of the `items` and `cablePrices` it uses; BOM, checks and
+  quotes read those, never the library ("Update from catalog" pulls changes in). Services come
+  from `useEditorServices()`. TanStack Query only for local async reads.
 - Routes: `/` start; `/settings/<general|company|catalog|presets|new-projects>` (project stays
-  open; `/library/*` redirects); `/project/<plan|panel|quote|details>` (none → `/`);
-  every route has an `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)`
-  opens the demo project for `/project/...` (`project: null` to skip).
+  open; `/library/*` redirects); `/project/<plan|panel|quote|details>`; every route has an
+  `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo project.
 - Tests sit next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
-- File formats: `.epd` has `manifest.schemaVersion` (`projectFile/migrations.ts`) and
-  `doc.schemaVersion` (`load.ts`); `.epc` and the library have their own. Before the first
-  release they stay at 1 and change in place (update `projectFile/fixtures/v1.json`, run
-  `pnpm demo:epd`). After it, every schema change bumps the version, adds a pure migration with
-  a test and freezes a fixture of the previous version: old files open, newer ones are refused.
+- File formats: `.epd` (`manifest.schemaVersion`, `doc.schemaVersion`), `.epc` and the library
+  are versioned. Before the first release they stay at 1 and change in place (update
+  `projectFile/fixtures/v1.json`, run `pnpm demo:epd`); after it, a bump, a tested migration and
+  a frozen fixture of the previous version.
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents. PDFs (jsPDF
-  Helvetica) use WinAnsi characters only; PDF tests run in `@vitest-environment node`.
-- jsdom has no canvas: canvas behavior is tested in the browser E2E via `window.__epd.store`.
-  Browser E2E (no `window.epd`) uses in-memory files (`window.__epd.files`, `.library`); real
-  files are tested in the Electron E2E, where native dialogs are stubbed in main.
-  The OS may refuse window focus and full screen (locked screen): Electron E2E drives them with
-  `focusWindow` (helpers.ts) and emitted window events, never by waiting for real focus.
-- Title bar (macOS `hiddenInset`): the page is the drag region (`app-drag`); every control inside
-  needs `app-no-drag`. `useTitleBarInset()` (`lib/platform.ts`) gives the traffic-light room; the
-  Electron E2E (`titleBar.spec.ts`) checks it. The bottom panel's open state lives in `ui`.
+  Helvetica) use WinAnsi only; PDF tests run in `@vitest-environment node`.
+- jsdom has no canvas: canvas behavior is tested in the browser E2E via `window.__epd.store`,
+  which uses in-memory files (`window.__epd.files`). Electron E2E stubs native dialogs in main and
+  drives focus/full screen with `focusWindow` and emitted events (the OS may refuse them).
+- macOS title bar (`hiddenInset`): the page is the drag region (`app-drag`); every control in it
+  needs `app-no-drag`; `useTitleBarInset()` gives the traffic-light room.
 - Save writes the bound path in place (no path: Save As); exports go through `useExportFile`.
 - `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).
