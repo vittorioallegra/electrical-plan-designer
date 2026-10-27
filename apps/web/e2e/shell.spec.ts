@@ -36,3 +36,37 @@ test('the bottom panel opens from the status bar and collapses when dragged shut
   await page.getByRole('toolbar', { name: 'Panels' }).getByRole('button', { name: 'BOM' }).click();
   await expect.poll(height).toBeGreaterThan(60);
 });
+
+// protects=the bottom panel reopens at the height it had before a drag shut it; fails_when=reopening after a drag-to-close uses the minimum height; no_claim=exact pixel heights
+test('the bottom panel reopens at its previous height after being dragged shut', async ({
+  page,
+}) => {
+  await newProject(page, `Shell ${Date.now()}`);
+  const panel = page.getByRole('region', {
+    name: /Circuits, bill of materials/,
+    includeHidden: true,
+  });
+  const height = async () => (await panel.boundingBox())?.height ?? 0;
+  const bomButton = page
+    .getByRole('toolbar', { name: 'Panels' })
+    .getByRole('button', { name: 'BOM' });
+  const dragSeparator = async (dy: number) => {
+    const box = (await page.getByTestId('drawer-separator').boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + dy, { steps: 12 });
+    await page.mouse.up();
+  };
+
+  await bomButton.click();
+  await expect.poll(height).toBeGreaterThan(150);
+  await dragSeparator(-150);
+  await expect.poll(height).toBeGreaterThan(300);
+  await page.waitForTimeout(300);
+  const before = await height();
+
+  await dragSeparator(600);
+  await expect.poll(height).toBe(0);
+  await bomButton.click();
+  await expect.poll(async () => Math.abs((await height()) - before)).toBeLessThan(25);
+});

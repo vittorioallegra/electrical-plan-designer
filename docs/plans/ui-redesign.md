@@ -243,10 +243,11 @@ Approved: yes (2026-10-27)
 - [x] 10. Plan view — `feat: restyle the plan view with a tool rail, resizable side panels, zoom control and conduit legend`
 - [x] 11. Panel, circuits, BOM, warnings, quote, project details — `feat: restyle the project details page and settings form with grouped rows and a kit run elevation select`
 - [x] 12. Dialogs and states pass — `feat: restyle dialogs and states with ghost cancel, wide dialogs, shared loading and empty states and reduced motion`
-- [x] 13. E2E and docs — `test: add web and desktop E2E for the redesign and update the docs for Settings`
+- [x] 13. E2E and docs — `test: add web E2E for the warnings badge, catalog search and price edit, dark theme, canvas size, overflow and focus rings`
 
 ### Verification
 - qa: pending
+  - Bottom panel reopened at the minimum height after being dragged shut — `fix: remember the bottom panel height only when a drag ends so reopening restores it`
 - review: pending
 
 ### Decisions

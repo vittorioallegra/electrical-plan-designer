@@ -34,7 +34,19 @@ export function ProjectBody({ children }: { children: ReactNode }) {
   }, [open, panel, store]);
 
   return (
-    <Group orientation="vertical" className="panel-slide min-h-0 flex-1">
+    <Group
+      orientation="vertical"
+      className="panel-slide min-h-0 flex-1"
+      onLayoutChanged={(layout) => {
+        // Remember the height only once a drag ends: while dragging shut the panel passes through
+        // every smaller size, and reopening would then use the minimum.
+        const { ui, setUi } = store.getState();
+        const size = layout.drawer;
+        if (!ui.drawerOpen || size === undefined || size <= 0.5) return;
+        const pct = Math.round(size);
+        if (ui.drawerSize !== pct) setUi({ drawerSize: pct });
+      }}
+    >
       <Panel id="editor" minSize="30%">
         {children}
       </Panel>
@@ -55,14 +67,9 @@ export function ProjectBody({ children }: { children: ReactNode }) {
         maxSize="70%"
         defaultSize={initial.drawerOpen ? `${initial.drawerSize}%` : '0%'}
         onResize={(size) => {
-          // The separator is disabled while closed, so a size while the store says closed is the
-          // panel collapsing (or about to expand); only a drag changes an open panel by itself.
+          // Only a drag that collapses an open panel closes it; the height is saved on layout end.
           const { ui, setUi } = store.getState();
-          if (!ui.drawerOpen) return;
-          if (size.asPercentage > 0.5) {
-            const pct = Math.round(size.asPercentage);
-            if (ui.drawerSize !== pct) setUi({ drawerSize: pct });
-          } else if (panel.current?.isCollapsed()) {
+          if (ui.drawerOpen && size.asPercentage <= 0.5 && panel.current?.isCollapsed()) {
             setUi({ drawerOpen: false });
           }
         }}
