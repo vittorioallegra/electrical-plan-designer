@@ -1,5 +1,5 @@
 import * as RadixMenu from '@radix-ui/react-dropdown-menu';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
 export interface MenuItem {
@@ -27,7 +27,7 @@ export function Menu({ trigger, items }: { trigger: ReactNode; items: MenuItem[]
           className="z-50 min-w-44 rounded-md border border-border bg-raised p-1 shadow-pop"
         >
           {items.map((item) => (
-            <div key={item.key}>
+            <Fragment key={item.key}>
               {item.separatorBefore ? (
                 <RadixMenu.Separator className="my-1 h-px bg-border" />
               ) : null}
@@ -46,7 +46,7 @@ export function Menu({ trigger, items }: { trigger: ReactNode; items: MenuItem[]
                   <kbd className="font-mono text-label text-text-faint">{item.shortcut}</kbd>
                 ) : null}
               </RadixMenu.Item>
-            </div>
+            </Fragment>
           ))}
         </RadixMenu.Content>
       </RadixMenu.Portal>
