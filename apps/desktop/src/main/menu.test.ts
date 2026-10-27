@@ -83,4 +83,46 @@ describe('application menu', () => {
       view(build({ development: true }).template).some((i) => i.role === 'toggleDevTools'),
     ).toBe(true);
   });
+
+  // protects=Settings, Export and Import JSON in the native menu; fails_when=Settings is missing from the macOS app menu (after About) or the Windows File menu, lacks Cmd/Ctrl+comma, is disabled without a project, or Export and Import JSON are enabled without one or send the wrong command; no_claim=what the renderer does with the commands
+  it('has Settings, Export and Import JSON', () => {
+    const click = (item: MenuItemConstructorOptions) =>
+      item.click?.(undefined as never, undefined, undefined as never);
+
+    const win = build({ hasProject: false });
+    const file = items(find(win.template, 'file'));
+    const settings = find(file, 'settings')!;
+    expect(settings.accelerator).toBe('CmdOrCtrl+,');
+    expect(settings.enabled).toBeUndefined();
+    click(settings);
+    expect(win.sent.at(-1)).toEqual({ command: 'settings' });
+    expect(file.findIndex((i) => i.label === 'L:settings')).toBeLessThan(
+      file.findIndex((i) => i.role === 'quit'),
+    );
+    expect(find(file, 'export')!.enabled).toBe(false);
+    expect(find(file, 'importJson')!.enabled).toBe(false);
+
+    const open = build();
+    const openFile = items(find(open.template, 'file'));
+    expect(find(openFile, 'export')!.enabled).toBe(true);
+    expect(find(openFile, 'importJson')!.enabled).toBe(true);
+    const exports = items(find(openFile, 'export'));
+    expect(exports.map((i) => i.label)).toEqual(['L:exportPdf', 'L:exportJson']);
+    click(exports[0]!);
+    click(exports[1]!);
+    click(find(openFile, 'importJson')!);
+    expect(open.sent).toEqual([
+      { command: 'exportPdf' },
+      { command: 'exportJson' },
+      { command: 'importJson' },
+    ]);
+
+    const mac = build({ platform: 'darwin', hasProject: false }).template;
+    expect(find(items(find(mac, 'file')), 'settings')).toBeUndefined();
+    const app = items(mac[0]);
+    expect(app[0]!.role).toBe('about');
+    const appSettings = app.find((i) => i.label === 'L:settings')!;
+    expect(app.indexOf(appSettings)).toBeGreaterThan(0);
+    expect(appSettings.accelerator).toBe('CmdOrCtrl+,');
+  });
 });

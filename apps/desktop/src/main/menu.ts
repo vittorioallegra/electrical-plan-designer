@@ -7,7 +7,7 @@ import type { MenuCommand, MenuLabels, RecentFile } from '@epd/bridge/bridge';
 export interface MenuInput {
   labels: MenuLabels;
   platform: NodeJS.Platform;
-  /** A project is open: Save, Save As and Close project are available. */
+  /** The focused window has a project: Save, Save As, Export, Import JSON and Close project are available. */
   hasProject: boolean;
   recent: RecentFile[];
   /** Developer tools in the View menu (an unpackaged app). */
@@ -32,6 +32,13 @@ export function buildMenuTemplate(input: MenuInput): MenuItemConstructorOptions[
           click: () => send({ command: 'openRecent', path: file.path }),
         }));
 
+  // Always available: the app's Settings do not need a project.
+  const settingsItem: MenuItemConstructorOptions = {
+    label: l.settings,
+    accelerator: 'CmdOrCtrl+,',
+    click: () => send({ command: 'settings' }),
+  };
+
   const fileMenu: MenuItemConstructorOptions = {
     label: l.file,
     submenu: [
@@ -53,13 +60,35 @@ export function buildMenuTemplate(input: MenuInput): MenuItemConstructorOptions[
       },
       { type: 'separator' },
       {
+        label: l.export,
+        enabled: hasProject,
+        submenu: [
+          { label: l.exportPdf, click: () => send({ command: 'exportPdf' }) },
+          { label: l.exportJson, click: () => send({ command: 'exportJson' }) },
+        ],
+      },
+      {
+        label: l.importJson,
+        enabled: hasProject,
+        click: () => send({ command: 'importJson' }),
+      },
+      { type: 'separator' },
+      {
         label: l.close,
         // Cmd+W closes the window on macOS by convention; the project has its own shortcut.
         accelerator: 'CmdOrCtrl+Shift+W',
         enabled: hasProject,
         click: () => send({ command: 'close' }),
       },
-      ...(mac ? [] : ([{ type: 'separator' }, { role: 'quit' }] as MenuItemConstructorOptions[])),
+      // On macOS Settings and Quit live in the app menu.
+      ...(mac
+        ? []
+        : ([
+            { type: 'separator' },
+            settingsItem,
+            { type: 'separator' },
+            { role: 'quit' },
+          ] as MenuItemConstructorOptions[])),
     ],
   };
 
@@ -107,6 +136,8 @@ export function buildMenuTemplate(input: MenuInput): MenuItemConstructorOptions[
             label: input.appName,
             submenu: [
               { role: 'about' },
+              { type: 'separator' },
+              settingsItem,
               { type: 'separator' },
               { role: 'hide' },
               { role: 'hideOthers' },

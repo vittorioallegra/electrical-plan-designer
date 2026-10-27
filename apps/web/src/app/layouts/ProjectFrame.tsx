@@ -1,22 +1,18 @@
 import { Download, Library, Redo2, Save, Undo2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet } from 'react-router';
-import { loadDoc } from '@epd/domain/load';
-import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { useEditor, useEditorContext, useEditorServices } from '@/stores/editor/EditorContext';
 import type { DrawerTab } from '@/stores/editor/editorStore';
 import { Button } from '@/components/ui/Button';
-import { fileSafe } from '@/lib/download';
-import { exportFilters, useExportFile } from '@/hooks/useExportFile';
 import { Menu } from '@/components/ui/Menu';
 import { Tabs } from '@/components/ui/Tabs';
 import { cn } from '@/lib/cn';
-import { useToast } from '@/components/ui/Toast';
 import { LanguageSwitch } from '@/components/ui/LanguageSwitch';
 import { BomTab } from '@/features/bom/components/BomTab';
 import { WarningsBadge, WarningsTab } from '@/features/checks/components/WarningsTab';
 import { UpdateFromCatalogDialog } from '@/features/app-settings/components/UpdateFromCatalogDialog';
-import { useProjectPdfExport } from '@/features/exports/hooks/useProjectPdfExport';
+import { useProjectTransfer } from '@/features/exports/hooks/useProjectTransfer';
 import { CircuitsTab } from '@/features/circuits/components/CircuitsTab';
 import { ProgressStrip } from '@/features/editor/components/ProgressStrip';
 import { SaveStatus } from '@/features/editor/components/SaveStatus';
@@ -38,7 +34,6 @@ function isTyping(target: EventTarget | null): boolean {
 export function ProjectFrame() {
   const { t } = useTranslation();
   const { store } = useEditorContext();
-  const toast = useToast();
   const meta = useEditor((s) => s.data.meta);
   const readOnly = useEditor((s) => s.readOnly);
   const canUndo = useEditor((s) => s.past.length > 0 && !s.readOnly);
@@ -73,44 +68,28 @@ export function ProjectFrame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [save]);
 
-  const projectPdf = useProjectPdfExport();
-  const [exporting, setExporting] = useState(false);
-  async function exportPdf() {
-    setExporting(true);
-    try {
-      await projectPdf();
-    } catch {
-      toast(t('editor.exportPdfFailed'), 'error');
-    } finally {
-      setExporting(false);
-    }
-  }
+  const { exporting, exportPdf, exportJson, importJson } = useProjectTransfer();
 
-  const exportFile = useExportFile();
-  const exportJson = () =>
-    void exportFile(
-      `${fileSafe(store.getState().data.meta.name)}.json`,
-      new Blob([JSON.stringify(store.getState().data.doc, null, 2)], { type: 'application/json' }),
-      exportFilters.json,
-    );
-
-  async function importJson(file: File) {
-    try {
-      const { doc, readOnly: newer } = loadDoc(JSON.parse(await file.text()));
-      if (newer) {
-        // A newer app's doc would lose the fields this version does not know when saved.
-        toast(t('editor.importNewer'), 'error');
-        return;
-      }
-      const result = store.getState().applyCommand('import', (d) => {
-        d.doc = doc;
-      });
-      if (!result.ok) throw new Error(result.reason);
-      toast(t('editor.importDone'), 'success');
-    } catch {
-      toast(t('editor.importFailed'), 'error');
-    }
-  }
+  // The native menu's Export and Import JSON. Run from another page (Settings), the menu sent the
+  // user here first and left the command in the location state.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { windowHost } = useEditorServices();
+  const run = useRef<(command: string) => void>(() => undefined);
+  useEffect(() => {
+    run.current = (command) => {
+      if (command === 'exportPdf') void exportPdf();
+      else if (command === 'exportJson') exportJson();
+      else if (command === 'importJson' && !store.getState().readOnly) importInput.current?.click();
+    };
+  });
+  useEffect(() => windowHost.onMenuCommand(({ command }) => run.current(command)), [windowHost]);
+  const fromMenu = (location.state as { command?: string } | null)?.command;
+  useEffect(() => {
+    if (!fromMenu) return;
+    run.current(fromMenu);
+    void navigate(location.pathname, { replace: true, state: null });
+  }, [fromMenu, location.pathname, navigate]);
 
   return (
     <div data-density="compact" className="flex h-screen flex-col bg-surface text-text">

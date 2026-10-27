@@ -1,27 +1,29 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useProjectOpener } from '@/features/start/hooks/useProjectOpener';
-import { useEditorServices } from '@/stores/editor/EditorContext';
+import { useEditorServices, useWorkspace } from '@/stores/editor/EditorContext';
 
 /**
- * The native menu's project commands (New, Open, Open Recent, Close project) and the files the OS
+ * The native menu's app commands (New, Open, Open Recent, Close project, Settings) and the files the OS
  * asks to open. They run the start screen's own actions, so they ask the same unsaved-changes
- * question. Save, Save As, Undo and Redo are handled by `WindowSync`.
+ * question. Save, Save As, Undo and Redo are handled by `WindowSync`; Export and Import JSON by the project frame.
  */
 export function MenuCommands() {
   const { windowHost } = useEditorServices();
   const navigate = useNavigate();
   const opener = useProjectOpener();
+  const location = useLocation();
+  const hasProject = useWorkspace((s) => s.current !== null);
   // The listeners are set once: a gap while they are replaced would lose a request from the OS.
-  const latest = useRef({ opener, navigate });
+  const latest = useRef({ opener, navigate, location, hasProject });
   useEffect(() => {
-    latest.current = { opener, navigate };
+    latest.current = { opener, navigate, location, hasProject };
   });
 
   useEffect(
     () =>
       windowHost.onMenuCommand((command) => {
-        const { opener, navigate } = latest.current;
+        const { opener, navigate, location, hasProject } = latest.current;
         switch (command.command) {
           case 'new':
             // The start screen opens its new-project form (after the same question).
@@ -35,6 +37,17 @@ export function MenuCommands() {
             break;
           case 'close':
             opener.closeProject();
+            break;
+          case 'settings':
+            // The project stays open (the workspace keeps it) while Settings are on screen.
+            void navigate('/settings/general');
+            break;
+          case 'exportPdf':
+          case 'exportJson':
+          case 'importJson':
+            // The project frame runs these; from another page the user is taken there first.
+            if (hasProject && !location.pathname.startsWith('/project'))
+              void navigate('/project/plan', { state: { command: command.command } });
             break;
         }
       }),

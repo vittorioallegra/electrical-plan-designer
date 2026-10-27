@@ -146,3 +146,16 @@ export async function menuLabels(app: ElectronApplication, ...labels: string[]):
     return items.map((i) => i.label);
   }, labels);
 }
+
+/** Whether a native menu item is enabled, e.g. `menuEnabled(app, 'File', 'Save')`. */
+export async function menuEnabled(app: ElectronApplication, ...labels: string[]): Promise<boolean> {
+  return app.evaluate(({ Menu }, path) => {
+    let items = Menu.getApplicationMenu()?.items ?? [];
+    let found: Electron.MenuItem | undefined;
+    for (const label of path) {
+      found = items.find((i) => i.label === label);
+      items = found?.submenu?.items ?? [];
+    }
+    return found?.enabled ?? false;
+  }, labels);
+}

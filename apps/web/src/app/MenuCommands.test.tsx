@@ -1,6 +1,6 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { writeEpd } from '@/lib/projectFile/epd';
 import { demoProjectFile } from '@/testing/editor';
 import { renderApp } from '@/testing/renderApp';
@@ -71,5 +71,43 @@ describe('native menu commands', () => {
     expect(router.state.location.pathname).toBe('/');
     expect(await recovery.get()).toBeNull();
     expect(screen.queryByRole('region', { name: 'Recovered project' })).toBeNull();
+  });
+
+  // protects=Settings from the native menu; fails_when=Settings does not open /settings/general, or it closes the open project or asks the unsaved-changes question; no_claim=the Settings screen (its own tests)
+  it('Settings opens General and keeps the project open', async () => {
+    const { windowHost, router, workspace } = await openDemoWithEdit();
+    act(() => windowHost.menuCommand({ command: 'settings' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/settings/general'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(workspace.getState().current).not.toBeNull();
+  });
+
+  // protects=Export PDF, Export JSON and Import JSON from the native menu; fails_when=a command does nothing in the project frame, from Settings it does not return to the project and run, or the import is attempted without a project; no_claim=the file contents (export and import tests)
+  it('Export and Import JSON run in the project, also from Settings', async () => {
+    const { windowHost, router, fileAccess } = await openDemoWithEdit();
+    act(() => windowHost.menuCommand({ command: 'exportJson' }));
+    await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house.json']));
+
+    act(() => windowHost.menuCommand({ command: 'settings' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/settings/general'));
+    act(() => windowHost.menuCommand({ command: 'exportPdf' }));
+    await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house.json', 'Demo-house.pdf']));
+    expect(router.state.location.pathname).toBe('/project/plan');
+    expect(router.state.location.state).toBeNull();
+
+    const picked = vi.fn();
+    const input = screen.getByTestId('import-json');
+    input.addEventListener('click', picked);
+    act(() => windowHost.menuCommand({ command: 'importJson' }));
+    expect(picked).toHaveBeenCalledTimes(1);
+  });
+
+  // protects=the project commands need a project; fails_when=Export from the menu on the start screen navigates to a project route that is not there; no_claim=the menu enablement (menu.test)
+  it('ignores Export and Import without a project', async () => {
+    const { windowHost, router } = await renderApp('/', { project: null });
+    await screen.findByRole('heading', { name: 'Start' });
+    act(() => windowHost.menuCommand({ command: 'exportPdf' }));
+    act(() => windowHost.menuCommand({ command: 'importJson' }));
+    expect(router.state.location.pathname).toBe('/');
   });
 });

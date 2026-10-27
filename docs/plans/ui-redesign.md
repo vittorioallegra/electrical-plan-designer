@@ -235,7 +235,7 @@ Approved: yes (2026-10-27)
 - [x] 2. Theme preference end to end — `feat: add the theme preference end to end`
 - [x] 3. UI kit — `feat: replace native selects and the catalog badge with the UI kit`
 - [x] 4. Routes and names: Settings and Project — `refactor: rename library to app-settings and settings to project-details, with Settings and Project routes`
-- [ ] 5. Native menu: Settings and Export
+- [x] 5. Native menu: Settings and Export — `feat: add Settings and Export items to the native menu`
 - [ ] 6. Settings screen
 - [ ] 7. Catalog
 - [ ] 8. Start screen
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 5.
+Implement step 6.

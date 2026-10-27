@@ -131,6 +131,11 @@ export const menuLabelKeys = [
   'missing',
   'save',
   'saveAs',
+  'export',
+  'exportPdf',
+  'exportJson',
+  'importJson',
+  'settings',
   'close',
   'edit',
   'undo',
@@ -154,7 +159,20 @@ export type MenuLabels = Record<MenuLabelKey, string>;
 
 /** A menu item the user chose; the renderer runs the matching in-app action. */
 export type MenuCommand =
-  | { command: 'new' | 'open' | 'save' | 'saveAs' | 'close' | 'undo' | 'redo' }
+  | {
+      command:
+        | 'new'
+        | 'open'
+        | 'save'
+        | 'saveAs'
+        | 'close'
+        | 'undo'
+        | 'redo'
+        | 'settings'
+        | 'exportPdf'
+        | 'exportJson'
+        | 'importJson';
+    }
   | { command: 'openRecent'; path: string };
 
 /** The API the preload script exposes to the renderer as `window.epd`. Grows with each step. */

@@ -133,7 +133,7 @@ export async function initPreferences(): Promise<void> {
   });
 }
 
-export function registerIpc(): void {
+export function registerIpc({ openWindow }: { openWindow(): void }): void {
   recent = createRecentService({ file: join(app.getPath('userData'), 'recent.json') });
   files = createFileService<BrowserWindow>({
     dialogs,
@@ -142,9 +142,19 @@ export function registerIpc(): void {
   });
   const send = (channel: string, ...args: unknown[]) =>
     mainWindow()?.webContents.send(channel, ...args);
+  // A menu command goes to the focused window. On macOS the menu outlives the windows: Settings
+  // then opens one and is delivered once its page listens (the page tells main it is ready).
+  let pendingCommand: MenuCommand | null = null;
   appMenu = createAppMenu({
     recent,
-    send: (command: MenuCommand) => send(channels.menuCommand, command),
+    send: (command: MenuCommand) => {
+      const win = BrowserWindow.getFocusedWindow() ?? mainWindow();
+      if (win) win.webContents.send(channels.menuCommand, command);
+      else if (command.command === 'settings') {
+        pendingCommand = command;
+        openWindow();
+      }
+    },
   });
   recent.onChange(() => void appMenu.refresh());
   openRequests = createOpenRequests({
@@ -163,7 +173,11 @@ export function registerIpc(): void {
   invoke(channels.filesOpenPath, (_win, args) => files.openPath(parsePathArg(args)));
   invoke(channels.recentList, () => recent.list());
   invoke(channels.recentRemove, (_win, args) => recent.remove(parsePathArg(args)));
-  on(channels.openRequestReady, () => openRequests.ready());
+  on(channels.openRequestReady, (win) => {
+    openRequests.ready();
+    if (pendingCommand) win.webContents.send(channels.menuCommand, pendingCommand);
+    pendingCommand = null;
+  });
   on(channels.menuLabels, (_win, [labels]) => appMenu.setLabels(parseMenuLabels(labels)));
   invoke(channels.filesSave, (_win, args) => {
     const { path, bytes, expected } = parseSaveArgs(args);
@@ -197,7 +211,7 @@ export function registerIpc(): void {
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);
     windowContexts.get(win)?.guard.setUnsaved(state.unsaved);
-    appMenu.setHasProject(state.name !== null);
+    appMenu.setHasProject(win, state.name !== null);
     win.setTitle(windowTitle(state.name, state.unsaved, process.platform));
     if (process.platform === 'darwin') win.setDocumentEdited(state.unsaved);
   });

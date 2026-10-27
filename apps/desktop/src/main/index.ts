@@ -60,7 +60,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(async () => {
     // In dev the renderer comes from the Vite dev server; otherwise from the built files.
     if (!process.env['ELECTRON_RENDERER_URL']) serveRenderer(join(__dirname, '../renderer'));
-    registerIpc();
+    registerIpc({ openWindow: () => void openWindow() });
     // The theme is in place before the first window exists: no flash of the wrong one.
     await initPreferences();
     // The E2E tests open a second window to see a preference reach every window.
@@ -73,6 +73,7 @@ if (!app.requestSingleInstanceLock()) {
     });
     // A file may have appeared or vanished since the menu was built.
     app.on('browser-window-focus', () => void appMenu.refresh());
+    app.on('browser-window-blur', () => void appMenu.refresh());
   });
 
   // Quitting closes every window (each may ask about unsaved changes first); once they are all

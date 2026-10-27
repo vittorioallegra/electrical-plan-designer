@@ -1,5 +1,5 @@
 // The application menu: builds it from `menu.ts` once the renderer has sent its labels, and again
-// when the labels, the recent list or whether a project is open change.
+// when the labels, the recent list or whether the focused window has a project change.
 import { app, BrowserWindow, dialog, Menu } from 'electron';
 import type { MenuCommand, MenuLabels } from '@epd/bridge/bridge';
 import { buildMenuTemplate } from './menu';
@@ -8,7 +8,8 @@ import { APP_NAME } from './windowTitle';
 
 export interface AppMenu {
   setLabels(labels: MenuLabels): void;
-  setHasProject(hasProject: boolean): void;
+  /** Whether `win` has a project open; the menu follows the focused window's. */
+  setHasProject(win: BrowserWindow, hasProject: boolean): void;
   refresh(): Promise<void>;
 }
 
@@ -20,7 +21,7 @@ export function createAppMenu({
   send(command: MenuCommand): void;
 }): AppMenu {
   let labels: MenuLabels | null = null;
-  let hasProject = false;
+  const projectWindows = new WeakSet<BrowserWindow>();
   let latest = 0;
 
   async function refresh(): Promise<void> {
@@ -30,6 +31,8 @@ export function createAppMenu({
     const list = await recent.list();
     // A newer refresh started while the list was read: let that one win.
     if (run !== latest) return;
+    const focused = BrowserWindow.getFocusedWindow();
+    const hasProject = focused !== null && projectWindows.has(focused);
     const template = buildMenuTemplate({
       labels: current,
       platform: process.platform,
@@ -57,9 +60,10 @@ export function createAppMenu({
       labels = next;
       void refresh();
     },
-    setHasProject(next) {
-      if (next === hasProject) return;
-      hasProject = next;
+    setHasProject(win, next) {
+      if (next === projectWindows.has(win)) return;
+      if (next) projectWindows.add(win);
+      else projectWindows.delete(win);
       void refresh();
     },
     refresh,
