@@ -246,7 +246,7 @@ Approved: yes (2026-10-27)
 - [x] 13. E2E and docs — `test: add web E2E for the warnings badge, catalog search and price edit, dark theme, canvas size, overflow and focus rings`
 
 ### Verification
-- qa: pending
+- qa: done
   - Bottom panel reopened at the minimum height after being dragged shut — `fix: remember the bottom panel height only when a drag ends so reopening restores it`
   - Catalog table needed horizontal scrolling at 1024px, hiding the price column — `fix: hide the catalog column and narrow the detail panel below 1180px so the price column stays visible`
 - review: pending
