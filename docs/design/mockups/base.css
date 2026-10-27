@@ -15,7 +15,7 @@
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --chrome: #141517; --panel: #1B1C1F; --raised: #232529; --hover: #26282C; --pressed: #2E3135;
+  --chrome: #141517; --panel: #202226; --raised: #282a2f; --hover: #2b2d32; --pressed: #33363b;
   --border: #2A2D32; --border-strong: #3A3E44;
   --text: #E4E6E9; --text-muted: #9AA0A9; --text-faint: #6E747D;
   --accent: #2DB3A6; --accent-hover: #45C2B6; --on-accent: #062320; --accent-subtle: #163633; --accent-text: #5CCFC3;
