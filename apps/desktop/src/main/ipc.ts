@@ -214,7 +214,7 @@ export function registerIpc({ openWindow }: { openWindow(): void }): void {
   on(channels.windowState, (win, [value]) => {
     const state = parseWindowState(value);
     windowContexts.get(win)?.guard.setUnsaved(state.unsaved);
-    appMenu.setHasProject(win, state.name !== null);
+    appMenu.setProject(win, state.name === null ? null : { readOnly: state.readOnly });
     win.setTitle(windowTitle(state.name, state.unsaved, process.platform));
     if (process.platform === 'darwin') win.setDocumentEdited(state.unsaved);
   });

@@ -8,8 +8,8 @@ import { APP_NAME } from './windowTitle';
 
 export interface AppMenu {
   setLabels(labels: MenuLabels): void;
-  /** Whether `win` has a project open; the menu follows the focused window's. */
-  setHasProject(win: BrowserWindow, hasProject: boolean): void;
+  /** The project `win` has open (null: none) and whether it is read-only; the menu follows the focused window's. */
+  setProject(win: BrowserWindow, project: { readOnly: boolean } | null): void;
   refresh(): Promise<void>;
 }
 
@@ -21,7 +21,7 @@ export function createAppMenu({
   send(command: MenuCommand): void;
 }): AppMenu {
   let labels: MenuLabels | null = null;
-  const projectWindows = new WeakSet<BrowserWindow>();
+  const projectWindows = new WeakMap<BrowserWindow, { readOnly: boolean }>();
   let latest = 0;
 
   async function refresh(): Promise<void> {
@@ -32,11 +32,12 @@ export function createAppMenu({
     // A newer refresh started while the list was read: let that one win.
     if (run !== latest) return;
     const focused = BrowserWindow.getFocusedWindow();
-    const hasProject = focused !== null && projectWindows.has(focused);
+    const project = focused ? projectWindows.get(focused) : undefined;
     const template = buildMenuTemplate({
       labels: current,
       platform: process.platform,
-      hasProject,
+      hasProject: project !== undefined,
+      readOnly: project?.readOnly ?? false,
       recent: list,
       development: !app.isPackaged,
       appName: APP_NAME,
@@ -60,9 +61,10 @@ export function createAppMenu({
       labels = next;
       void refresh();
     },
-    setHasProject(win, next) {
-      if (next === projectWindows.has(win)) return;
-      if (next) projectWindows.add(win);
+    setProject(win, next) {
+      const before = projectWindows.get(win);
+      if (before?.readOnly === next?.readOnly && (before === undefined) === (next === null)) return;
+      if (next) projectWindows.set(win, next);
       else projectWindows.delete(win);
       void refresh();
     },

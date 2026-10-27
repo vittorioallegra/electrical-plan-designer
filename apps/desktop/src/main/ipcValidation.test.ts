@@ -50,12 +50,16 @@ describe('ipc validation', () => {
 
   // protects=window messages; fails_when=a state without a boolean, a choice other than close/cancel, or a foreign origin is accepted; no_claim=the trusted-sender check on the Electron event (E2E)
   it('validates window state, the close choice and the sender origin', () => {
-    expect(parseWindowState({ name: 'House', unsaved: true })).toEqual({
+    expect(parseWindowState({ name: 'House', unsaved: true, readOnly: true })).toEqual({
       name: 'House',
       unsaved: true,
+      readOnly: true,
     });
-    expect(parseWindowState({ name: null, unsaved: false }).name).toBeNull();
-    expect(() => parseWindowState({ name: 'x', unsaved: 'yes' })).toThrow(InvalidArgument);
+    expect(parseWindowState({ name: null, unsaved: false, readOnly: false }).name).toBeNull();
+    expect(() => parseWindowState({ name: 'x', unsaved: 'yes', readOnly: false })).toThrow(
+      InvalidArgument,
+    );
+    expect(() => parseWindowState({ name: 'x', unsaved: false })).toThrow(InvalidArgument);
     expect(() => parseWindowState(null)).toThrow(InvalidArgument);
     expect(parseCloseChoice('close')).toBe('close');
     expect(() => parseCloseChoice('quit')).toThrow(InvalidArgument);

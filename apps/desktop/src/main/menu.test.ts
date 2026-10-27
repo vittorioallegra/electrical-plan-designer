@@ -84,7 +84,7 @@ describe('application menu', () => {
     ).toBe(true);
   });
 
-  // protects=Settings, Export and Import JSON in the native menu; fails_when=Settings is missing from the macOS app menu (after About) or the Windows File menu, lacks Cmd/Ctrl+comma, is disabled without a project, or Export and Import JSON are enabled without one or send the wrong command; no_claim=what the renderer does with the commands
+  // protects=Settings, Export and Import JSON in the native menu; fails_when=Import JSON stays enabled for a read-only project, Settings is missing from the macOS app menu (after About) or the Windows File menu, lacks Cmd/Ctrl+comma, is disabled without a project, or Export and Import JSON are enabled without one or send the wrong command; no_claim=what the renderer does with the commands
   it('has Settings, Export and Import JSON', () => {
     const click = (item: MenuItemConstructorOptions) =>
       item.click?.(undefined as never, undefined, undefined as never);
@@ -106,6 +106,10 @@ describe('application menu', () => {
     const openFile = items(find(open.template, 'file'));
     expect(find(openFile, 'export')!.enabled).toBe(true);
     expect(find(openFile, 'importJson')!.enabled).toBe(true);
+    // A read-only project can be exported but not imported into.
+    const readOnly = items(find(build({ readOnly: true }).template, 'file'));
+    expect(find(readOnly, 'export')!.enabled).toBe(true);
+    expect(find(readOnly, 'importJson')!.enabled).toBe(false);
     const exports = items(find(openFile, 'export'));
     expect(exports.map((i) => i.label)).toEqual(['L:exportPdf', 'L:exportJson']);
     click(exports[0]!);

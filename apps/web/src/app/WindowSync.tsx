@@ -31,6 +31,7 @@ export function WindowSync() {
       const state = {
         name: s ? s.data.meta.name : null,
         unsaved: s ? hasUnsavedChanges(s) : false,
+        readOnly: s ? s.readOnly : false,
       };
       const key = JSON.stringify(state);
       if (key === last) return;

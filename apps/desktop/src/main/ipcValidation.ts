@@ -119,11 +119,16 @@ export function parseFilters(filters: unknown): ExportFilter[] {
 
 export function parseWindowState(value: unknown): WindowState {
   const state = value as Partial<WindowState> | null;
-  if (typeof state !== 'object' || state === null || typeof state.unsaved !== 'boolean')
+  if (
+    typeof state !== 'object' ||
+    state === null ||
+    typeof state.unsaved !== 'boolean' ||
+    typeof state.readOnly !== 'boolean'
+  )
     fail('window state');
   if (state.name !== null && (typeof state.name !== 'string' || state.name.length > 512))
     fail('window state');
-  return { name: state.name ?? null, unsaved: state.unsaved };
+  return { name: state.name ?? null, unsaved: state.unsaved, readOnly: state.readOnly };
 }
 
 export function parseCloseChoice(value: unknown): CloseChoice {

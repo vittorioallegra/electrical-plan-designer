@@ -54,6 +54,8 @@ export interface WindowState {
   name: string | null;
   /** The project has changes that are not in its file. */
   unsaved: boolean;
+  /** The project is open read-only (a newer file or a failed lock): nothing can be imported into it. */
+  readOnly: boolean;
 }
 
 /** The answer to a close request: close the window anyway, or keep it open. */

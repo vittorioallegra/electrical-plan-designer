@@ -16,15 +16,17 @@ describe('window sync', () => {
   // protects=title state; fails_when=the window is not told the project name, the unsaved state after an edit and after a save, or that no project is open; no_claim=how main shows it (title, dot)
   it('reports the project name and whether it has unsaved changes', async () => {
     const { windowHost, workspace } = await openDemo();
-    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: false });
+    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: false, readOnly: false });
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
-    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: true });
+    expect(windowHost.state).toEqual({ name: 'Demo house', unsaved: true, readOnly: false });
     await userEvent.keyboard('{Control>}s{/Control}');
     await waitFor(() => expect(windowHost.state?.unsaved).toBe(false));
     await userEvent.click(screen.getByRole('button', { name: 'Add floor' }));
     expect(windowHost.state?.unsaved).toBe(true);
     act(() => workspace.getState().close());
-    await waitFor(() => expect(windowHost.state).toEqual({ name: null, unsaved: false }));
+    await waitFor(() =>
+      expect(windowHost.state).toEqual({ name: null, unsaved: false, readOnly: false }),
+    );
   });
 
   // protects=AC 8 close and quit prompt; fails_when=a close request with unsaved changes closes without asking, Cancel closes, Don't save keeps the window, or Save closes without writing the file; no_claim=the real window and quit (Electron E2E)

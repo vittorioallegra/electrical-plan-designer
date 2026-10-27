@@ -9,6 +9,8 @@ export interface MenuInput {
   platform: NodeJS.Platform;
   /** The focused window has a project: Save, Save As, Export, Import JSON and Close project are available. */
   hasProject: boolean;
+  /** The project is read-only: Import JSON is unavailable (Export still works). */
+  readOnly?: boolean;
   recent: RecentFile[];
   /** Developer tools in the View menu (an unpackaged app). */
   development: boolean;
@@ -19,6 +21,7 @@ export interface MenuInput {
 
 export function buildMenuTemplate(input: MenuInput): MenuItemConstructorOptions[] {
   const { labels: l, platform, hasProject, recent, send } = input;
+  const readOnly = input.readOnly ?? false;
   const mac = platform === 'darwin';
 
   const recentItems: MenuItemConstructorOptions[] =
@@ -69,7 +72,7 @@ export function buildMenuTemplate(input: MenuInput): MenuItemConstructorOptions[
       },
       {
         label: l.importJson,
-        enabled: hasProject,
+        enabled: hasProject && !readOnly,
         click: () => send({ command: 'importJson' }),
       },
       { type: 'separator' },
