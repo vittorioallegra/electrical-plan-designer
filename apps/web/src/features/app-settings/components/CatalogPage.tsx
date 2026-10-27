@@ -185,6 +185,7 @@ export function CatalogPage() {
     },
     {
       key: 'catalog',
+      className: 'max-[1180px]:hidden',
       header: t('catalog.catalogColumn'),
       cell: (item) => <span className="text-text-muted">{catalogName(item)}</span>,
     },
@@ -302,7 +303,7 @@ export function CatalogPage() {
       </div>
       <aside
         aria-label={t('catalog.detail')}
-        className="w-80 flex-none overflow-hidden border-l border-border bg-panel"
+        className="w-80 flex-none overflow-hidden border-l border-border bg-panel max-[1180px]:w-64"
       >
         {selected ? (
           <ItemDetail

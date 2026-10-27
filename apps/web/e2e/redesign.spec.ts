@@ -150,6 +150,22 @@ for (const [name, locale] of [
   });
 }
 
+test.describe('catalog at the minimum window width', () => {
+  test.use({ locale: 'it-IT', viewport: { width: 1024, height: 700 } });
+
+  // protects=the price column of the catalog table is visible without scrolling at 1024px; fails_when=the table scroller overflows horizontally next to the detail panel; no_claim=other widths or the table body scroll
+  test('the catalog table fits next to the detail panel at 1024px', async ({ page }) => {
+    await openDemo(page, 'Apri file…');
+    await go(page, '/settings/catalog');
+    const overflow = await page.evaluate(() => {
+      const table = document.querySelector('main table')!;
+      const scroller = table.parentElement!;
+      return scroller.scrollWidth - scroller.clientWidth;
+    });
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`keyboard focus in ${scheme}`, () => {
     test.use({ colorScheme: scheme, viewport: { width: 1280, height: 800 } });

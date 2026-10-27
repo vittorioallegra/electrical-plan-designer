@@ -248,6 +248,7 @@ Approved: yes (2026-10-27)
 ### Verification
 - qa: pending
   - Bottom panel reopened at the minimum height after being dragged shut — `fix: remember the bottom panel height only when a drag ends so reopening restores it`
+  - Catalog table needed horizontal scrolling at 1024px, hiding the price column — `fix: hide the catalog column and narrow the detail panel below 1180px so the price column stays visible`
 - review: pending
 
 ### Decisions

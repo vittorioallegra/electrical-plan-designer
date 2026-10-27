@@ -7,6 +7,8 @@ export interface Column<T> {
   cell: (row: T) => ReactNode;
   /** `right` also sets the cells in mono tabular figures (numeric columns). */
   align?: 'left' | 'right';
+  /** Extra classes on the header and the cells, e.g. to hide the column on narrow windows. */
+  className?: string;
 }
 
 export function Table<T>({
@@ -40,6 +42,7 @@ export function Table<T>({
               className={cn(
                 'sticky top-0 z-[1] h-8 border-b border-border bg-panel px-3 text-small font-medium text-text-muted',
                 c.align === 'right' && 'text-right',
+                c.className,
               )}
             >
               {c.header}
@@ -82,7 +85,11 @@ export function Table<T>({
               {columns.map((c) => (
                 <td
                   key={c.key}
-                  className={cn('px-3', c.align === 'right' && 'text-right font-mono tabular-nums')}
+                  className={cn(
+                    'px-3',
+                    c.align === 'right' && 'text-right font-mono tabular-nums',
+                    c.className,
+                  )}
                 >
                   {c.cell(row)}
                 </td>
