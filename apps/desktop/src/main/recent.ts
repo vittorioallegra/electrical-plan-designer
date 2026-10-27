@@ -83,14 +83,11 @@ export function createRecentService({
     async list() {
       const current = await serialized(paths);
       return Promise.all(
-        current.map(async (path) => ({
-          path,
-          name: basename(path),
-          missing: await fs.stat(path).then(
-            (s) => !s.isFile(),
-            () => true,
-          ),
-        })),
+        current.map(async (path): Promise<RecentFile> => {
+          const stat = await fs.stat(path).catch(() => null);
+          if (!stat?.isFile()) return { path, name: basename(path), missing: true };
+          return { path, name: basename(path), missing: false, modifiedAt: stat.mtimeMs };
+        }),
       );
     },
     add: (path) =>

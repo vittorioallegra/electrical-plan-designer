@@ -92,6 +92,8 @@ export interface RecentFile {
   path: string;
   name: string;
   missing: boolean;
+  /** Last modification of the file (ms since the epoch); absent when it is missing. */
+  modifiedAt?: number;
 }
 
 /** The app's colour theme: follow the OS, or force light or dark. */

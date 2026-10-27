@@ -1,4 +1,12 @@
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -43,7 +51,7 @@ describe('recent files', () => {
     rmSync(a);
     const second = createRecentService({ file: file() });
     expect(await second.list()).toEqual([
-      { path: b, name: 'b.epd', missing: false },
+      { path: b, name: 'b.epd', missing: false, modifiedAt: statSync(b).mtimeMs },
       { path: a, name: 'a.epd', missing: true },
     ]);
     expect(await second.has(a)).toBe(true);
@@ -51,6 +59,19 @@ describe('recent files', () => {
     expect((await second.list()).map((f) => f.path)).toEqual([b]);
     expect(await second.has(a)).toBe(false);
     expect(JSON.parse(readFileSync(file(), 'utf8')).paths).toEqual([b]);
+  });
+
+  // protects=the start screen's modified date; fails_when=modifiedAt is not the file's mtime, or a missing file reports one; no_claim=how the renderer formats it
+  it('reports the modification time of a present file and none for a missing one', async () => {
+    const present = touch('present.epd');
+    utimesSync(present, new Date('2026-10-20T10:00:00Z'), new Date('2026-10-20T10:00:00Z'));
+    const recent = createRecentService({ file: file() });
+    await recent.add(present);
+    await recent.add(join(dir, 'gone.epd'));
+    const [gone, here] = await recent.list();
+    expect(here!.modifiedAt).toBe(Date.parse('2026-10-20T10:00:00Z'));
+    expect(gone!.missing).toBe(true);
+    expect('modifiedAt' in gone!).toBe(false);
   });
 
   // protects=a damaged recent.json never blocks the app; fails_when=a corrupt or odd file throws or yields non-string entries; no_claim=recovering the lost entries
