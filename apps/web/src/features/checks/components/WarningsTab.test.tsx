@@ -68,7 +68,11 @@ describe('warnings tab', () => {
     const row = within(tab).getByRole('row', { name: /Not connected to the panel/ });
     // Severity badge and the floor the element sits on.
     expect(row).toHaveTextContent('Warning');
-    expect(row).toHaveTextContent(store().getState().data.doc.floors[0]!.name);
+    expect(row).toHaveTextContent(
+      store()
+        .getState()
+        .data.doc.floors.find((f) => f.id === 'f1')!.name,
+    );
     await userEvent.click(row);
     expect(ui().selection).toEqual(['n_loose']);
     expect(ui().floorId).toBe('f1');
