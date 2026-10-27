@@ -240,7 +240,7 @@ Approved: yes (2026-10-27)
 - [x] 7. Catalog — `feat: add the catalog table with detail panel, sidebar catalog actions and kit selects`
 - [x] 8. Start screen — `feat: add the start screen sidebar layout, app mark and recent file dates`
 - [x] 9. Editor shell — `feat: add the editor shell with title bar, status bar, bottom panel and progress control`
-- [ ] 10. Plan view
+- [x] 10. Plan view — `feat: restyle the plan view with a tool rail, resizable side panels, zoom control and conduit legend`
 - [ ] 11. Panel, circuits, BOM, warnings, quote, project details
 - [ ] 12. Dialogs and states pass
 - [ ] 13. E2E and docs
@@ -275,4 +275,4 @@ Approved: yes (2026-10-27)
 - (none)
 
 ### Next
-Implement step 10.
+Implement step 11.
