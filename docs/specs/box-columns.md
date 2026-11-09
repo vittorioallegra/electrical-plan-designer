@@ -1,6 +1,7 @@
 # Spec: Box columns (boxes stacked at one plan point)
 
-Status: draft (2026-11-09), to be agreed before implementation and before the first release
+Status: agreed (2026-11-09), pending the mockup of the column symbol and the exploded list;
+to be implemented before the first release
 (the `.epd` schema is still at version 1 and can change in place).
 
 ## Context
@@ -63,14 +64,25 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 - **Placing**: placing a box on an existing box (within the current 12 px) adds it to that
   box's column, creating the column when needed. The new box takes its preset's mounting, as
   today. Placing on a panel or a riser point is still refused.
-- **Plan symbol**: a column is drawn once, with the symbol of its top member and a count
-  badge (`×2`, `×3`); the label lists the members' labels from top to bottom (`S4 · S1`).
-  Badge and label follow DESIGN.md (tokens, sizes); a mockup is agreed before coding.
-  Vertical segments have no plan length: no line and no length label is drawn for them.
-- **Selection**: a click on a column selects its top member, or the member selected last in
-  that column; a box selection includes every member. Conduit drawing that starts or ends on
-  a column asks which member with a small menu (label and height, top to bottom); with the
-  keyboard the menu is a list with arrows and Enter.
+- **Plan symbol**: a column must read as "several boxes here" at a glance. It is drawn once
+  as a stack: the top member's symbol in front with one offset outline behind it per further
+  member (up to two outlines), plus a count badge (`×2`, `×3`); the label lists the members'
+  labels from top to bottom (`S4 · S1`). Symbol, badge and label follow DESIGN.md (tokens,
+  sizes); a mockup is agreed before coding. Vertical segments have no plan length: no line
+  and no length label is drawn for them.
+- **Selection by exploding**: a click on a column does not select a box; it **explodes** the
+  column. A list of the members, top to bottom, opens anchored next to the point, each row
+  with the member's symbol, label and height (and a warning mark when it has one); the column
+  symbol stays highlighted while it is open. A click on a row selects that box (inspector,
+  highlight in the list) and keeps the list open, so another member is one click away;
+  Escape, a click elsewhere on the plan or a tool change closes it. Hovering a row highlights
+  that member's conduits on the plan.
+  - Keyboard: with the column focused, Enter explodes it; arrows move between rows, Enter
+    selects, Escape closes.
+  - Conduit drawing that starts or ends on a column explodes it the same way, and the row
+    picked is the conduit's end.
+  - A box selection (drag rectangle) includes every member without exploding.
+  - Dragging a column (press and move) moves it without exploding.
 - **Inspector** of a member: a **Column** section lists the members top to bottom (label,
   height); a click selects one. Actions: **Add box above**, **Add box below** (preset picker as
   for the box tool; the height defaults to the preset's mounting) and **Take out of column**
@@ -109,7 +121,9 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 3. Changing the socket box to a custom height of 0.50 m updates the vertical conduit to
    0.60 m; moving it above the switch box (custom 1.40 m) reorders the column and its
    vertical segment, and a manual route through the removed segment is reported invalid.
-4. A conduit drawn to a column asks which box; the chosen box is its end.
+4. A click on a column explodes it into the list of its boxes, top to bottom; a click on a row
+   selects that box and the list stays open; Escape or a click elsewhere closes it. A conduit
+   drawn to a column explodes it too, and the row picked is the conduit's end.
 5. Dragging a column moves every member; X/Y in the inspector does the same.
 6. Delete on one member keeps the others; with one member left, the badge disappears and
    the box is a plain box. Undo restores the column in one step.
@@ -124,8 +138,8 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 |---|---|---|
 | Domain unit | `rebuildStacks`: ordering, one segment per neighbour pair, conduit kept, removal ids, single member loses `stackId`; schema invariants; paste remaps `stackId`; move keeps members together | `packages/domain/src/stacks.test.ts`, `edits.test.ts`, `projectFile.test.ts` |
 | Domain unit | Lengths and routing through a column; BOM conduit meters; `stack_same_height` | `lengths.test.ts`, `routing.test.ts`, `bom.test.ts`, `checks.test.ts` |
-| Component | Inspector Column section (list, select, add above/below, take out); member picker menu | `features/editor/components/*.test.tsx` |
-| Browser E2E | Place a box on a box, badge and labels, draw a conduit to a column, drag, delete, undo | `apps/web/e2e/` (canvas via `window.__epd.store`) |
+| Component | Inspector Column section (list, select, add above/below, take out); exploded list (rows, keyboard, close) | `features/editor/components/*.test.tsx` |
+| Browser E2E | Place a box on a box, stacked symbol and badge, explode and select a member, draw a conduit to a column, drag without exploding, delete, undo | `apps/web/e2e/` (canvas via `window.__epd.store`) |
 | Fixtures | `v1.json` and the demo project include a column; the drift test stays green | `projectFile/fixtures/v1.json`, `tests/fixtures/demo-project.epd` |
 
 Each test carries its `// protects=...; fails_when=...; no_claim=...` card.
@@ -149,11 +163,8 @@ exports and E2E half a day.
 - Columns across floors (that is what riser points are for).
 - A column member that is a panel or a riser point.
 
-## Open Questions
+## Decisions
 
-1. Should a click on a column always select the top member, or the one selected last?
-   (Proposed: the one selected last, top member the first time.)
-2. Is one vertical conduit between each pair of neighbours right, or do some installations
-   run a separate conduit from each box (e.g. both from a junction box above)? The proposal
-   covers the chained case only; separate conduits can still be drawn by hand with boxes
-   slightly apart.
+- Selecting inside a column: the column explodes into a list of its boxes (agreed 2026-11-09).
+- One vertical conduit between each pair of neighbours (chained); separate conduits from each
+  box stay drawable by hand with boxes slightly apart (agreed 2026-11-09).
