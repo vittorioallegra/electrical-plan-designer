@@ -216,6 +216,25 @@
 
 /* In the base layer so a component's `outline-none` utility can turn it off. */
 @layer base {
+  /* Tailwind's preflight leaves buttons with the arrow cursor: every enabled control that acts
+     on a click shows the pointer (DESIGN.md, Components). Disabled ones keep the arrow. */
+  button:enabled,
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not([aria-disabled='true']),
+  [role='menuitem']:not([aria-disabled='true']),
+  [role='option']:not([aria-disabled='true']),
+  [role='radio']:not([aria-disabled='true']),
+  [role='checkbox']:not([aria-disabled='true']),
+  [role='switch']:not([aria-disabled='true']),
+  a[href],
+  summary,
+  input[type='checkbox']:enabled,
+  input[type='radio']:enabled,
+  input[type='file']:enabled,
+  label:has(> input[type='checkbox']:enabled, > input[type='radio']:enabled) {
+    cursor: pointer;
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;

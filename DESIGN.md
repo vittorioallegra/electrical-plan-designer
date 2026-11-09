@@ -296,6 +296,10 @@ buttons in features.
 
 Every component designs its empty, loading, error and long-content states.
 
+Every enabled control that acts on a click (buttons, list rows, tabs, menu items, options,
+checkboxes, links) shows the pointer cursor; disabled controls keep the arrow. The rule lives
+once in the base layer of `styles.css`; the plan canvas sets its own cursors per tool.
+
 ## Do's and Don'ts
 
 - Do keep exactly one primary button per view or dialog.
@@ -330,3 +334,4 @@ Every component designs its empty, loading, error and long-content states.
 | 2026-10-27 | IBM Plex Sans + Plex Mono, bundled | Engineering register, Italian coverage, tabular numerals; offline CSP |
 | 2026-10-27 | Conduit runs: one neutral colour, laying type by dash pattern | Cyan collided with teal and blue reads as the neutral conductor; the user chose dash patterns only |
 | 2026-10-27 | Theme System / Light / Dark, canvas follows it | Agreed in docs/specs/ui-redesign.md |
+| 2026-11-09 | Pointer cursor on every enabled clickable control | The user found buttons (e.g. on the start screen) that did not change the cursor; one base rule instead of per-component classes |
