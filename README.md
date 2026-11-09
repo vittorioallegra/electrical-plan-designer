@@ -22,9 +22,8 @@ Italian.
 
 ## Install
 
-There are no published releases yet. Build the installers yourself (see below) or download them
-from a run of the `desktop` GitHub Actions workflow. The apps are not code-signed, so the first
-launch needs a manual approval: see [docs/release.md](docs/release.md#opening-unsigned-apps).
+Download the installers from the repository's Releases page, or build them yourself (see below).
+The apps are not code-signed, so the first launch needs a manual approval: see [docs/release.md](docs/release.md#opening-unsigned-apps).
 
 ## Development
 

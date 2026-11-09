@@ -21,7 +21,7 @@ pnpm 12. No Docker, backend or env vars needed.
 - `pnpm test:e2e` — browser Playwright (`apps/web/e2e`, dev server :5174); quiet: `--reporter=dot`
 - `pnpm test:e2e:desktop` — builds `apps/desktop/out`, Playwright drives the real Electron app
   (`apps/desktop/e2e`, temp `userData`); quiet: `--reporter=dot`
-- `pnpm verify` — typecheck, lint, test, test:e2e, test:e2e:desktop (CI: `.github/workflows/desktop.yml`)
+- `pnpm verify` — typecheck, lint, test, test:e2e, test:e2e:desktop (CI: `.github/workflows/ci.yml`; installers and releases: `desktop.yml`, docs/release.md)
 - `pnpm demo:epd` — regenerate `tests/fixtures/demo-project.epd` (a unit test checks drift)
 
 ## Layout

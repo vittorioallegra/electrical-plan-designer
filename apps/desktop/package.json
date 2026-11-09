@@ -8,7 +8,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "build:app": "electron-vite build && electron-builder --dir",
-    "dist": "electron-vite build && electron-builder",
+    "dist": "electron-vite build && electron-builder --publish never",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

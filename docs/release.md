@@ -19,13 +19,26 @@ install a new one over the old one.
 
 ## CI
 
-`.github/workflows/desktop.yml` runs on manual dispatch and on tags `v*`:
+- `.github/workflows/ci.yml` runs on every push to `main` and every pull request: typecheck,
+  lint, unit tests, browser E2E (ubuntu; Electron is not run on Linux).
+- `.github/workflows/desktop.yml` runs on manual dispatch and on tags `v*`: the same checks,
+  then on macos-latest and windows-latest it builds the installers, runs the Electron E2E
+  project and uploads the installers as workflow artifacts (`installers-macos-latest`,
+  `installers-windows-latest`). On a tag it also creates a **draft** GitHub Release with the
+  installers attached. electron-builder never publishes by itself (`--publish never`).
 
-- ubuntu: typecheck, lint, unit tests, browser E2E (Electron is not run on Linux);
-- macos-latest and windows-latest: build the installers, run the Electron E2E project,
-  upload the installers as workflow artifacts (`installers-macos-latest`, `installers-windows-latest`).
+## Release a version
 
-Download the artifacts from the workflow run page. Nothing is published automatically.
+1. Set `version` in `apps/desktop/package.json` (semver, e.g. `0.2.0`), commit and push to `main`.
+2. Tag that commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`. The workflow
+   fails at once when the tag is not `v` + that version.
+3. When the run is green, open the draft on the repository's Releases page, check the notes
+   (generated from the commits since the previous tag) and the attached `.dmg`/`.exe`, then
+   **Publish release**.
+
+A failed run leaves no release: fix, delete the tag (`git push origin :v0.2.0`, `git tag -d
+v0.2.0`), and tag again. To build installers without releasing, run the `desktop` workflow by
+hand from the Actions tab and download the artifacts from the run page.
 
 ## Opening unsigned apps
 
