@@ -65,9 +65,9 @@ pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`
   `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo project.
 - Tests sit next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
 - File formats: `.epd` (`manifest.schemaVersion`, `doc.schemaVersion`), `.epc` and the library
-  are versioned. Before the first release they stay at 1 and change in place (update
-  `projectFile/fixtures/v1.json`, run `pnpm demo:epd`); after it, a bump, a tested migration and
-  a frozen fixture of the previous version.
+  are versioned. Released since v0.1.0 at version 1: never change them in place. A change is a
+  bump, a tested migration and a frozen fixture of the previous version
+  (`projectFile/fixtures/v1.json` is frozen); then run `pnpm demo:epd`.
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents. PDFs (jsPDF
   Helvetica) use WinAnsi only; PDF tests run in `@vitest-environment node`.
 - jsdom has no canvas: canvas behavior is tested in the browser E2E via `window.__epd.store`,
