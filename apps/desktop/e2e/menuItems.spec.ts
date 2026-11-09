@@ -87,8 +87,9 @@ test('the native menu has Settings, Export and Import JSON that follow the focus
     await expect(page.getByTestId('project-name')).toHaveText('Demo house');
     await stubOpenDialog(app, json);
     await clickMenu(app, 'File', 'Import JSON…');
+    // Exact: the toast's screen reader announcement repeats the text after "Notification".
     await expect(
-      page.getByText('Project imported. Undo restores the previous version.'),
+      page.getByText('Project imported. Undo restores the previous version.', { exact: true }),
     ).toBeVisible();
 
     // Saved, so quitting at the end of the test does not ask about the import.
