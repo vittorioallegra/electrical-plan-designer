@@ -1,6 +1,13 @@
 // Editor store: one per open project. Every document change goes through applyCommand,
 // which records immer patches for undo/redo.
-import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch } from 'immer';
+import {
+  applyPatches,
+  enablePatches,
+  produce,
+  produceWithPatches,
+  type Draft,
+  type Patch,
+} from 'immer';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProjectFile } from '@epd/domain/projectFile';
 import { copyUsedItems, referenceSignature, type LibrarySource } from '@epd/domain/catalog/copies';
@@ -150,7 +157,9 @@ export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): Edit
     };
 
     return {
-      data: init.data,
+      // Columns as the boxes stand (e.g. boxes at one point in a file saved before columns),
+      // outside undo and without marking the project changed; the next save writes them.
+      data: produce(init.data, (d) => void rebuildStacks(d.doc, d.settings, newId)),
       assets: init.assets ?? new Map(),
       readOnly: init.readOnly ?? false,
       revision: 0,

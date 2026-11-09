@@ -62,7 +62,9 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 ### 3. Editor
 
 - **Placing**: placing a box on an existing box (within the current 12 px) adds it to that
-  box's column, creating the column when needed. The new box takes its preset's mounting, as
+  box's column, creating the column when needed. Boxes that end up at one point any other way (dragged
+  onto a box, typed coordinates, pasted, or a file saved before columns) join one column too,
+  and two columns that meet merge; this also runs when a project is opened. The new box takes its preset's mounting, as
   today. Placing on a panel or a riser point is still refused.
 - **Plan symbol**: a column must read as "several boxes here" at a glance. It is drawn once
   as a stack: the top member's symbol in front with one offset outline behind it per further

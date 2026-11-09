@@ -101,6 +101,24 @@ describe('rebuildStacks', () => {
     expect(docIntegrityIssues(d)).toEqual([]);
   });
 
+  // protects=boxes at one point are one column however they got there; fails_when=two boxes moved or typed onto one point stay separate, two columns meeting do not merge, or a panel joins; no_claim=snapping
+  it('joins boxes that share a point, merging columns that meet', () => {
+    const d = columnDoc();
+    const gen = ids();
+    d.nodes.push(node('X', 'f0', 'terminal_box', 2, 0, { mounting: 'custom', customHeight: 2 }));
+    d.nodes.push(node('Y', 'f0', 'terminal_box', 5, 5, { stackId: 'z', mounting: 'socket' }));
+    d.nodes.push(node('Z', 'f0', 'junction_box', 5, 5, { stackId: 'z', customHeight: 2.3 }));
+    d.nodes.push(node('Q', 'f0', 'panel', 2, 0));
+    rebuildStacks(d, settings, gen);
+    expect(columnMembers(d, settings, 'k').map((n) => n.id)).toEqual(['X', 'SW', 'SO']);
+    moveNodes(d, ['Y'], { x: -3, y: -5 });
+    rebuildStacks(d, settings, gen);
+    expect(columnMembers(d, settings, 'k').map((n) => n.id)).toEqual(['Z', 'X', 'SW', 'SO', 'Y']);
+    expect(d.nodes.find((n) => n.id === 'Q')!.stackId).toBeUndefined();
+    expect(vertical(d)).toHaveLength(4);
+    expect(docIntegrityIssues(d).map((x) => x.message)).toEqual([]);
+  });
+
   // protects=chained only; fails_when=a hand-drawn conduit between non-neighbours of a column survives; no_claim=—
   it('removes segments between boxes of a column that are not neighbours', () => {
     const d = columnDoc();

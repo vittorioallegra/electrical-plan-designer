@@ -52,8 +52,32 @@ export function isColumnSegment(
 }
 
 /**
+ * Gives boxes that share a floor and a plan point one stackId (they are one column however they
+ * got there: placed, dragged, typed coordinates, pasted, or an older file). Columns that meet
+ * merge. Touches nothing when they already match.
+ */
+function joinCoincidentBoxes(doc: ProjectDoc, genId: IdGenerator): void {
+  const atPoint = new Map<string, PlanNode[]>();
+  for (const n of doc.nodes) {
+    if (!isStackable(n.kind)) continue;
+    const key = `${n.floorId}|${n.position.x}|${n.position.y}`;
+    atPoint.set(key, [...(atPoint.get(key) ?? []), n]);
+  }
+  for (const members of atPoint.values()) {
+    if (members.length < 2) continue;
+    const existing = members
+      .map((n) => n.stackId)
+      .filter((id): id is string => id !== undefined)
+      .sort();
+    const stackId = existing[0] ?? genId();
+    for (const n of members) if (n.stackId !== stackId) n.stackId = stackId;
+  }
+}
+
+/**
  * Brings columns and their vertical conduits in line with the boxes (mutates `doc`, draft-safe):
- * drops `stackId` from non-boxes and from a column left with one box, and keeps exactly one
+ * joins boxes at the same point into one column, drops `stackId` from non-boxes and from a
+ * column left with one box, and keeps exactly one
  * segment between each pair of neighbours (by height), `direct` with no vertices. A column's
  * conduit item is kept. Touches nothing when the doc is already consistent. Returns the removed
  * segment ids (manual routes through them become invalid).
@@ -63,6 +87,7 @@ export function rebuildStacks(
   settings: ProjectSettings,
   genId: IdGenerator,
 ): string[] {
+  joinCoincidentBoxes(doc, genId);
   const groups = new Map<string, PlanNode[]>();
   for (const n of doc.nodes) {
     if (n.stackId === undefined) continue;

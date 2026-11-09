@@ -69,3 +69,22 @@ test('stack two boxes, pick them from the exploded column, draw a conduit to one
   await page.keyboard.press('Control+z');
   expect((await boxes()).map((n) => n.position.y)).toEqual([1, 1]);
 });
+
+// protects=boxes dragged onto a box join its column; fails_when=a box dropped on another stays a separate, hidden box instead of joining the column; no_claim=typed coordinates (unit-tested)
+test('drag a box onto another to stack it', async ({ page }) => {
+  await newProject(page, `Drag columns ${Date.now()}`);
+  await page.getByTestId('tool-terminal_box').click();
+  await clickWorld(page, { x: 2, y: 1 });
+  await clickWorld(page, { x: 5, y: 1 });
+  await page.getByTestId('tool-select').click();
+  await dragWorld(page, { x: 5, y: 1 }, { x: 2.05, y: 1.02 });
+  const nodes = await editorState(page, (s) => s.data.doc.nodes);
+  expect(nodes.map((n) => n.position)).toEqual([
+    { x: 2, y: 1 },
+    { x: 2, y: 1 },
+  ]);
+  expect(nodes[0]!.stackId).toBeDefined();
+  expect(nodes[1]!.stackId).toBe(nodes[0]!.stackId);
+  await clickWorld(page, { x: 2, y: 1 });
+  await expect(page.getByTestId('column-list').getByRole('button')).toHaveCount(2);
+});
