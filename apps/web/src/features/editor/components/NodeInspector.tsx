@@ -1,9 +1,10 @@
-import { ArrowDown, ArrowUp, Link2Off, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BetweenHorizontalEnd, Link2Off, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { linkRiser, unlinkRiser } from '@epd/domain/edits';
+import { linkRiser, moveNodes, unlinkRiser } from '@epd/domain/edits';
 import { newId } from '@epd/domain/ids';
 import { createLengthContext } from '@epd/domain/lengths';
-import type { Mounting, PlanNode } from '@epd/domain/types';
+import { columnMembers } from '@epd/domain/stacks';
+import type { Mounting, PlanNode, Point } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
 import { formatLength } from '@/lib/format';
@@ -13,6 +14,10 @@ import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
+import { ElectricalSymbol } from '@/components/symbols/ElectricalSymbol';
+import { ListRow } from '@/components/ui/ListRow';
+import { symbolOf } from '@/features/editor/canvas/planScene';
+import { addBoxToColumn, takeBoxOutOfColumn } from '@/features/editor/utils/commands';
 import { BoxContents } from './BoxContents';
 
 const mountings: Mounting[] = ['socket', 'switch', 'ceiling', 'custom'];
@@ -32,6 +37,18 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
       const n = d.doc.nodes.find((x) => x.id === node.id);
       if (n) fn(n);
     });
+
+  // A column moves as one (its boxes share one plan point).
+  const moveTo = (p: Point) =>
+    store
+      .getState()
+      .applyCommand(
+        'move node',
+        (d) =>
+          void moveNodes(d.doc, [node.id], { x: p.x - node.position.x, y: p.y - node.position.y }),
+      );
+  const column = node.stackId ? columnMembers(doc, settings, node.stackId) : [];
+  const lengths = createLengthContext(doc, settings);
 
   const floors = [...doc.floors].sort((a, b) => a.order - b.order);
   const floorIndex = floors.findIndex((f) => f.id === node.floorId);
@@ -63,18 +80,14 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
               value={node.position.x}
               unit="m"
               disabled={readOnly}
-              onValueChange={(x) =>
-                update('move node', (n) => void (n.position = { ...n.position, x }))
-              }
+              onValueChange={(x) => moveTo({ x, y: node.position.y })}
             />
             <NumberInput
               aria-label={t('inspector.node.y')}
               value={node.position.y}
               unit="m"
               disabled={readOnly}
-              onValueChange={(y) =>
-                update('move node', (n) => void (n.position = { ...n.position, y }))
-              }
+              onValueChange={(y) => moveTo({ x: node.position.x, y })}
             />
           </div>
 
@@ -204,6 +217,53 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
           ) : null}
         </div>
       </PanelSection>
+
+      {node.kind === 'terminal_box' || node.kind === 'junction_box' ? (
+        <PanelSection title={t('inspector.column.title')}>
+          <div className="flex flex-col gap-1" data-testid="column-section">
+            {column.length > 0 ? (
+              <>
+                <span className="text-small text-text-muted">
+                  {t('inspector.column.members', { count: column.length })}
+                </span>
+                {column.map((m) => (
+                  <ListRow
+                    key={m.id}
+                    icon={<ElectricalSymbol kind={symbolOf(m)} size={16} />}
+                    label={m.label}
+                    meta={formatLength(lengths.nodeHeightMm(m.id) / 1000, locale)}
+                    selected={m.id === node.id}
+                    aria-current={m.id === node.id}
+                    onClick={() => store.getState().setUi({ selection: [m.id] })}
+                  />
+                ))}
+              </>
+            ) : (
+              <span className="text-small text-text-muted">{t('inspector.column.none')}</span>
+            )}
+            <div className="flex flex-wrap gap-1">
+              <Button disabled={readOnly} onClick={() => addBoxToColumn(store, node.id, 'above')}>
+                <ArrowUp size={16} />
+                {t('inspector.column.addAbove')}
+              </Button>
+              <Button disabled={readOnly} onClick={() => addBoxToColumn(store, node.id, 'below')}>
+                <ArrowDown size={16} />
+                {t('inspector.column.addBelow')}
+              </Button>
+              {column.length > 0 ? (
+                <Button
+                  variant="ghost"
+                  disabled={readOnly}
+                  onClick={() => takeBoxOutOfColumn(store, node.id)}
+                >
+                  <BetweenHorizontalEnd size={16} />
+                  {t('inspector.column.takeOut')}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </PanelSection>
+      ) : null}
 
       {node.kind === 'terminal_box' ? <BoxContents node={node} /> : null}
 

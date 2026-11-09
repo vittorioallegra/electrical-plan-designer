@@ -159,7 +159,23 @@
               "itemId": "builtin:plate_3m",
               "qty": 1
             }
-          ]
+          ],
+          "stackId": "K"
+        },
+        {
+          "id": "SW",
+          "floorId": "f0",
+          "kind": "terminal_box",
+          "position": {
+            "x": 5,
+            "y": 3
+          },
+          "label": "SW",
+          "status": "active",
+          "mounting": "switch",
+          "boxItemId": "builtin:box_503",
+          "contents": [],
+          "stackId": "K"
         }
       ],
       "segments": [
@@ -178,6 +194,14 @@
           "vertices": [],
           "conduitItemId": "builtin:conduit_20",
           "runElevation": "floor"
+        },
+        {
+          "id": "S3",
+          "fromNodeId": "SW",
+          "toNodeId": "S",
+          "vertices": [],
+          "conduitItemId": "builtin:conduit_20",
+          "runElevation": "direct"
         }
       ],
       "panels": [

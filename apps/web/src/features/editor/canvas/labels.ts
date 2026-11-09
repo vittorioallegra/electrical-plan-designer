@@ -29,9 +29,10 @@ function unit(v: Point): Point | null {
 
 /**
  * Places a node label on the side farthest from the conduits leaving the node.
- * `legs` are the directions (world vectors) of the first leg of each attached segment.
+ * `legs` are the directions (world vectors) of the first leg of each attached segment; `gap`
+ * is the distance from the node (a column symbol is larger than a single one).
  */
-export function nodeLabelBox(legs: readonly Point[]): LabelBox {
+export function nodeLabelBox(legs: readonly Point[], gap = NODE_GAP_PX): LabelBox {
   const dirs = legs.map(unit).filter((d): d is Point => d !== null);
   let best = sides[0]!;
   let bestScore = Infinity;
@@ -46,15 +47,15 @@ export function nodeLabelBox(legs: readonly Point[]): LabelBox {
   const half = LABEL_FONT_PX / 2;
   switch (best.side) {
     case 'right':
-      return { x: NODE_GAP_PX, y: -half, width: LABEL_WIDTH_PX, align: 'left' };
+      return { x: gap, y: -half, width: LABEL_WIDTH_PX, align: 'left' };
     case 'left':
-      return { x: -NODE_GAP_PX - LABEL_WIDTH_PX, y: -half, width: LABEL_WIDTH_PX, align: 'right' };
+      return { x: -gap - LABEL_WIDTH_PX, y: -half, width: LABEL_WIDTH_PX, align: 'right' };
     case 'below':
-      return { x: -LABEL_WIDTH_PX / 2, y: NODE_GAP_PX, width: LABEL_WIDTH_PX, align: 'center' };
+      return { x: -LABEL_WIDTH_PX / 2, y: gap, width: LABEL_WIDTH_PX, align: 'center' };
     case 'above':
       return {
         x: -LABEL_WIDTH_PX / 2,
-        y: -NODE_GAP_PX - LABEL_FONT_PX,
+        y: -gap - LABEL_FONT_PX,
         width: LABEL_WIDTH_PX,
         align: 'center',
       };

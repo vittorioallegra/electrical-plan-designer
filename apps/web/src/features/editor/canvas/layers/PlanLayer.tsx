@@ -1,5 +1,6 @@
-import { Circle, Group, Layer, Line, Path, Text } from 'react-konva';
+import { Circle, Group, Layer, Line, Path, Rect, Text } from 'react-konva';
 import type { LengthContext } from '@epd/domain/lengths';
+import type { ReactNode } from 'react';
 import type { ConduitSegment, PlanNode, Point, Wall } from '@epd/domain/types';
 import { provisionDash, symbolPaths } from '@/components/symbols/symbols';
 import { formatLength, type Locale } from '@/lib/format';
@@ -22,6 +23,10 @@ export interface PlanScene {
   highlighted: ReadonlySet<string>;
   activeTargets: ReadonlySet<string>;
   linkedRisers: ReadonlySet<string>;
+  /** Box columns on the floor: members top to bottom, by stackId. */
+  columns: ReadonlyMap<string, readonly PlanNode[]>;
+  /** The column opened as a list of its boxes. */
+  explodedStackId: string | null;
   /** Copies shown while duplicating with Alt-drag. */
   ghost: { nodes: PlanNode[]; delta: Point } | null;
 }
@@ -120,6 +125,37 @@ export function PlanLayer({
       })}
       {scene.nodes.map((n) => {
         const pos = posOf(n);
+        const members = n.stackId ? scene.columns.get(n.stackId) : undefined;
+        if (members) {
+          // A column is drawn once, by its top box.
+          if (members[0]?.id !== n.id) return null;
+          return (
+            <ColumnSymbol
+              key={n.id}
+              members={members}
+              pos={pos}
+              scale={scale}
+              colors={colors}
+              selected={members.some((m) => selected.has(m.id))}
+              target={members.some((m) => scene.activeTargets.has(m.id))}
+              exploded={scene.explodedStackId === n.stackId}
+              label={
+                scale >= LABEL_MIN_SCALE / 2 ? (
+                  <Text
+                    {...labelProps(
+                      nodeLabelBox(
+                        members.flatMap((m) => scene.legs.get(m.id) ?? []),
+                        COLUMN_LABEL_GAP_PX,
+                      ),
+                      colors.node,
+                    )}
+                    text={members.map((m) => m.label).join(' · ')}
+                  />
+                ) : null
+              }
+            />
+          );
+        }
         return (
           <Group key={n.id} x={pos.x} y={pos.y}>
             {selected.has(n.id) ? (
@@ -184,5 +220,97 @@ export function PlanLayer({
           ))
         : null}
     </Layer>
+  );
+}
+
+/** Plate size of a column symbol, screen px. */
+const PLATE_PX = 28;
+/** Offset of each plate behind the front one, screen px. */
+const PLATE_STEP_PX = 5;
+/** Label distance from a column, clear of the plates and the badge, screen px. */
+const COLUMN_LABEL_GAP_PX = 26;
+
+/**
+ * A box column: the top box's symbol on a plate, one offset plate behind it per further box (two
+ * at most) and a count badge, so several boxes at one point read at a glance.
+ */
+function ColumnSymbol({
+  members,
+  pos,
+  scale,
+  colors,
+  selected,
+  target,
+  exploded,
+  label,
+}: {
+  members: readonly PlanNode[];
+  pos: Point;
+  scale: number;
+  colors: CanvasColors;
+  selected: boolean;
+  target: boolean;
+  exploded: boolean;
+  label: ReactNode;
+}) {
+  const px = (v: number) => v / scale;
+  const top = members[0]!;
+  const behind = Math.min(members.length - 1, 2);
+  const plate = (offset: number, front: boolean) => (
+    <Rect
+      key={offset}
+      x={px(-PLATE_PX / 2 + offset)}
+      y={px(-PLATE_PX / 2 - offset)}
+      width={px(PLATE_PX)}
+      height={px(PLATE_PX)}
+      cornerRadius={px(4)}
+      fill={colors.background}
+      stroke={front ? (exploded ? colors.selection : colors.node) : colors.label}
+      strokeWidth={front ? 1.5 : 1.2}
+      strokeScaleEnabled={false}
+    />
+  );
+  const badge = `×${members.length}`;
+  return (
+    <Group x={pos.x} y={pos.y}>
+      {selected || exploded ? (
+        <Circle radius={px(22)} fill={colors.selection} opacity={0.2} />
+      ) : null}
+      {target ? (
+        <Circle
+          radius={px(21)}
+          stroke={colors.highlight}
+          strokeWidth={2.5}
+          strokeScaleEnabled={false}
+        />
+      ) : null}
+      {Array.from({ length: behind }, (_, i) => plate((behind - i) * PLATE_STEP_PX, false))}
+      {plate(0, true)}
+      <Path
+        data={symbolPaths[symbolOf(top)]}
+        x={px(-11)}
+        y={px(-11)}
+        scaleX={px(22 / 24)}
+        scaleY={px(22 / 24)}
+        stroke={colors.node}
+        strokeWidth={1.6}
+        strokeScaleEnabled={false}
+        {...(top.status === 'provision' ? { dash: provisionDash } : {})}
+      />
+      <Group x={px(PLATE_PX / 2 - 4)} y={px(PLATE_PX / 2 - 6)}>
+        <Rect width={px(22)} height={px(15)} cornerRadius={px(7.5)} fill={colors.selection} />
+        <Text
+          width={px(22)}
+          height={px(15)}
+          align="center"
+          verticalAlign="middle"
+          fontSize={px(10)}
+          fontStyle="500"
+          fill={colors.background}
+          text={badge}
+        />
+      </Group>
+      {label}
+    </Group>
   );
 }

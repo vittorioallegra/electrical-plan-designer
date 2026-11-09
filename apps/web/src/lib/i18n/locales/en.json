@@ -118,6 +118,11 @@
     },
     "legend": {
       "title": "Conduit runs"
+    },
+    "column": {
+      "list_one": "Column · {{count}} box, top to bottom",
+      "list_other": "Column · {{count}} boxes, top to bottom",
+      "warning": "Has a warning"
     }
   },
   "catalog": {
@@ -424,6 +429,15 @@
       "link": "Link to {{floor}}",
       "linked": "Linked to {{floor}}",
       "unlink": "Unlink"
+    },
+    "column": {
+      "title": "Column",
+      "members_one": "{{count}} box at this point, top to bottom",
+      "members_other": "{{count}} boxes at this point, top to bottom",
+      "none": "The only box at this point. Place a box on it, or add one above or below.",
+      "addAbove": "Add box above",
+      "addBelow": "Add box below",
+      "takeOut": "Take out of column"
     }
   },
   "background": {
@@ -645,7 +659,8 @@
       "height_clamped": "Heights above the floor height",
       "missing_item": "Missing catalog items",
       "item_dropped": "Items missing from their new catalog",
-      "price_only": "Price-only items"
+      "price_only": "Price-only items",
+      "stack_same_height": "Boxes of a column at the same height"
     },
     "messages": {
       "no_rcd": "{{name}} has no RCD or RCBO upstream",
@@ -665,7 +680,8 @@
       "height_clamped": "{{name}}: mounting height capped at the floor height",
       "missing_item": "{{name}}: catalog item {{id}} no longer exists",
       "item_dropped": "{{name}}: {{item}} is no longer in its catalog",
-      "price_only": "{{name}}: {{item}} has no modules or sizes (price only)"
+      "price_only": "{{name}}: {{item}} has no modules or sizes (price only)",
+      "stack_same_height": "{{name}}: at the same height as another box of its column"
     }
   },
   "progress": {

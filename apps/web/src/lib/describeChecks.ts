@@ -18,6 +18,7 @@ export const checkOrder: CheckId[] = [
   'box_empty',
   'riser_mixed_elevation',
   'height_clamped',
+  'stack_same_height',
   'missing_item',
   'item_dropped',
   'price_only',

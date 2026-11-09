@@ -2,6 +2,7 @@ import type Konva from 'konva';
 import { useRef, useState } from 'react';
 import { backgroundMetersPerPixel } from '@epd/domain/geometry';
 import { newId } from '@epd/domain/ids';
+import { columnIds, withColumns } from '@epd/domain/stacks';
 import type { BoxPreset, Floor, PlanNode, Point, ProjectDoc, Wall } from '@epd/domain/types';
 import type { WallEnd } from '@epd/domain/walls';
 import {
@@ -9,6 +10,7 @@ import {
   addConduitToNewJunction,
   moveSelection,
   nodeAt,
+  placeInColumn,
   placeNode,
   resizeWall,
   translateWall,
@@ -20,6 +22,15 @@ import { snapPoint, snapWallMove, type SnapResult } from '../snapping';
 import { screenToWorld, snapStep, zoomAt, type View } from '../viewport';
 
 type PickOwner = { kind: 'circuit' | 'extra'; id: string };
+
+/**
+ * A box column opened as a list of its boxes: to select one, to end (or start) the conduit
+ * being drawn on one, or to toggle one as a circuit target.
+ */
+export interface ExplodedColumn {
+  stackId: string;
+  purpose: 'select' | 'conduit' | 'target';
+}
 
 /** Circuit picking edits, injected so the canvas does not depend on the circuits feature. */
 export interface CanvasPickHandlers {
@@ -96,6 +107,7 @@ export function usePlanPointer(input: PlanPointerInput) {
   const [calibration, setCalibration] = useState<Point[]>([]);
   const [conduit, setConduit] = useState<{ fromNodeId: string; vertices: Point[] } | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [exploded, setExploded] = useState<ExplodedColumn | null>(null);
   /** What a select-tool press would grab, for the pointer cursor. */
   const [hover, setHover] = useState<'wall' | 'handle' | null>(null);
   const suppressClick = useRef(false);
@@ -109,6 +121,34 @@ export function usePlanPointer(input: PlanPointerInput) {
     setWallStart(null);
     setCalibration([]);
     setConduit(null);
+    setExploded(null);
+  }
+
+  /** The column of a node, if it is in one. */
+  function stackOf(nodeId: string | undefined): string | undefined {
+    return nodeId ? nodeById.get(nodeId)?.stackId : undefined;
+  }
+
+  /** A box of the exploded column was picked in its list. */
+  function pickMember(nodeId: string) {
+    if (!exploded) return;
+    if (exploded.purpose === 'select') {
+      select([nodeId]);
+      return;
+    }
+    if (exploded.purpose === 'target') {
+      if (pick?.mode === 'targets' && pick.owner.kind === 'circuit')
+        input.pickHandlers?.toggleTarget(store, pick.owner.id, nodeId);
+      return;
+    }
+    setExploded(null);
+    if (!conduit) {
+      setConduit({ fromNodeId: nodeId, vertices: [] });
+      return;
+    }
+    if (columnIds(doc, conduit.fromNodeId).includes(nodeId)) return;
+    if (addConduit(store, conduit.fromNodeId, nodeId, conduit.vertices))
+      setConduit({ fromNodeId: nodeId, vertices: [] });
   }
 
   function snapped(raw: Point, alt: boolean): SnapResult {
@@ -175,9 +215,11 @@ export function usePlanPointer(input: PlanPointerInput) {
     }
     if (top?.kind === 'node' && !store.getState().readOnly) {
       const current = store.getState().ui.selection;
-      const nodeIds = current.includes(top.id)
-        ? current.filter((id) => nodeById.has(id))
-        : [top.id];
+      // A column moves as one: its boxes share one plan point.
+      const nodeIds = withColumns(
+        doc,
+        current.includes(top.id) ? current.filter((id) => nodeById.has(id)) : [top.id],
+      );
       setDrag({
         kind: 'move',
         nodeIds,
@@ -304,6 +346,12 @@ export function usePlanPointer(input: PlanPointerInput) {
       if (pick.mode === 'targets' && pick.owner.kind === 'circuit') {
         const node = hits.find((h) => h.kind === 'node');
         const kind = node ? nodeById.get(node.id)?.kind : undefined;
+        const stackId = stackOf(node?.id);
+        if (stackId) {
+          setExploded({ stackId, purpose: 'target' });
+          return;
+        }
+        setExploded(null);
         if (node && (kind === 'terminal_box' || kind === 'junction_box'))
           pickHandlers.toggleTarget(store, pick.owner.id, node.id);
       } else if (pick.mode === 'route') {
@@ -317,6 +365,13 @@ export function usePlanPointer(input: PlanPointerInput) {
       const hits = hitTest(doc, floorId, world, view.scale);
       lastHits.current = { hits, index: 0 };
       const top = hits[0];
+      // A click on a column opens the list of its boxes instead of selecting one.
+      const stackId = top?.kind === 'node' ? stackOf(top.id) : undefined;
+      if (stackId) {
+        setExploded({ stackId, purpose: 'select' });
+        return;
+      }
+      setExploded(null);
       if (!top) {
         if (!e.evt.shiftKey) select([]);
         return;
@@ -368,6 +423,12 @@ export function usePlanPointer(input: PlanPointerInput) {
 
     if (tool === 'conduit') {
       const target = snap.kind === 'node' ? snap.nodeId : undefined;
+      const stackId = stackOf(target);
+      if (stackId && !(conduit && stackOf(conduit.fromNodeId) === stackId)) {
+        setExploded({ stackId, purpose: 'conduit' });
+        return;
+      }
+      setExploded(null);
       if (!conduit) {
         if (target) setConduit({ fromNodeId: target, vertices: [] });
         return;
@@ -394,8 +455,21 @@ export function usePlanPointer(input: PlanPointerInput) {
       tool === 'terminal_box' ||
       tool === 'riser_point'
     ) {
-      if (snap.kind === 'node' || nodeAt(doc, floorId, snap.point, NODE_HIT_PX / view.scale))
+      const existing =
+        snap.kind === 'node' && snap.nodeId
+          ? nodeById.get(snap.nodeId)
+          : nodeAt(doc, floorId, snap.point, NODE_HIT_PX / view.scale);
+      if (existing) {
+        // A box placed on a box joins its column; nothing else stacks.
+        if (tool === 'junction_box' || tool === 'terminal_box')
+          placeInColumn(
+            store,
+            tool,
+            existing.id,
+            tool === 'terminal_box' ? input.boxPreset : undefined,
+          );
         return;
+      }
       const onSegment =
         tool === 'junction_box'
           ? hitTest(doc, floorId, snap.point, view.scale).find((h) => h.kind === 'segment')?.id
@@ -422,6 +496,16 @@ export function usePlanPointer(input: PlanPointerInput) {
     lastHits,
     select,
     finishConduitAtVertex,
+    exploded,
+    pickMember,
+    /** Opens the column of a node as a list (keyboard: Enter on a selected column box). */
+    explode(nodeId: string) {
+      const stackId = stackOf(nodeId);
+      if (stackId) setExploded({ stackId, purpose: 'select' });
+    },
+    closeExploded() {
+      setExploded(null);
+    },
     hasAction: Boolean(wallStart || calibration.length > 0 || conduit),
     cancelAction() {
       setWallStart(null);

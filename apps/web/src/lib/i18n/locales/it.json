@@ -118,6 +118,11 @@
     },
     "legend": {
       "title": "Tubi"
+    },
+    "column": {
+      "list_one": "Colonna · {{count}} scatola, dall’alto in basso",
+      "list_other": "Colonna · {{count}} scatole, dall’alto in basso",
+      "warning": "Ha un avviso"
     }
   },
   "catalog": {
@@ -424,6 +429,15 @@
       "link": "Collega a {{floor}}",
       "linked": "Collegato a {{floor}}",
       "unlink": "Scollega"
+    },
+    "column": {
+      "title": "Colonna",
+      "members_one": "{{count}} scatola in questo punto, dall’alto in basso",
+      "members_other": "{{count}} scatole in questo punto, dall’alto in basso",
+      "none": "È l’unica scatola in questo punto. Posiziona una scatola sopra, oppure aggiungine una sopra o sotto.",
+      "addAbove": "Aggiungi scatola sopra",
+      "addBelow": "Aggiungi scatola sotto",
+      "takeOut": "Togli dalla colonna"
     }
   },
   "background": {
@@ -645,7 +659,8 @@
       "height_clamped": "Altezze oltre l’altezza del piano",
       "missing_item": "Articoli di catalogo mancanti",
       "item_dropped": "Articoli assenti dal nuovo catalogo",
-      "price_only": "Articoli solo prezzo"
+      "price_only": "Articoli solo prezzo",
+      "stack_same_height": "Scatole di una colonna alla stessa altezza"
     },
     "messages": {
       "no_rcd": "{{name}} non ha un differenziale o un RCBO a monte",
@@ -665,7 +680,8 @@
       "height_clamped": "{{name}}: altezza di montaggio limitata all’altezza del piano",
       "missing_item": "{{name}}: l’articolo {{id}} non esiste più",
       "item_dropped": "{{name}}: {{item}} non è più nel suo catalogo",
-      "price_only": "{{name}}: {{item}} non ha moduli o misure (solo prezzo)"
+      "price_only": "{{name}}: {{item}} non ha moduli o misure (solo prezzo)",
+      "stack_same_height": "{{name}}: alla stessa altezza di un’altra scatola della sua colonna"
     }
   },
   "progress": {

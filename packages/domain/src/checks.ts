@@ -6,6 +6,7 @@ import type { CatalogLookup } from './catalog/lookup';
 import { bundleDiameter, conduitTooSmall, estimatedOuterDiameter } from './conduitFill';
 import { routeDoc, type RoutingResult } from './routing';
 import { MAX_UPSTREAM_DEPTH } from './schema';
+import { sameHeightColumnNodeIds } from './stacks';
 import type { Panel, PanelDevice, ProjectDoc, ProjectSettings } from './types';
 
 export type CheckId =
@@ -22,6 +23,7 @@ export type CheckId =
   | 'target_unreachable'
   | 'riser_mixed_elevation'
   | 'height_clamped'
+  | 'stack_same_height'
   | 'missing_item' // 10
   | 'item_dropped' // 10
   | 'price_only'; // 10
@@ -228,6 +230,8 @@ export function runChecks(
     warn('riser_mixed_elevation', { kind: 'node', id }, {});
   }
   for (const id of routing.ctx.clampedNodeIds) warn('height_clamped', { kind: 'node', id }, {});
+  for (const id of sameHeightColumnNodeIds(doc, settings))
+    warn('stack_same_height', { kind: 'node', id }, {});
   // Check 10: items gone from the catalog, dropped by a catalog replace, or price only.
   for (const { itemId, ref } of itemReferences(doc)) {
     const item = catalog(itemId);

@@ -32,8 +32,9 @@ pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`
   atomic writes, `recovery.ts`, `library.ts`, `preferences.ts` theme, `menu.ts`, `recent.ts`,
   `openRequests.ts`), `src/preload` (`window.epd`), `e2e/`, `build/` icons, `electron-builder.yml`
 - `packages/bridge/` — IPC contract (`EpdBridge`, channels), types only
-- `packages/domain/` — pure TS (model, geometry, routing, BOM, checks, quotes, library, catalogs,
-  `.epd` schema and migrations); imported as `@epd/domain/<module>`, no barrel
+- `packages/domain/` — pure TS (model, geometry, routing, risers and box columns, BOM, checks,
+  quotes, library, catalogs, `.epd` schema and migrations); imported as `@epd/domain/<module>`,
+  no barrel
 - `src/app/` — `main.tsx`, `provider.tsx`, `router.tsx`, `layouts/`, `routes/`, `styles.css` (tokens)
 - `src/features/<name>/` — start, editor, panel, circuits, app-settings (Settings screen), bom,
   checks, quote, exports, project-details (per-project view); `components/ hooks/ utils/`

@@ -246,10 +246,23 @@ function drawFloor(
   const nodes = doc.nodes.filter((n) => n.floorId === floor.id);
   const ids = new Set(nodes.map((n) => n.id));
   const position = new Map(nodes.map((n) => [n.id, n.position]));
-  // Risers join two floors: only their riser points appear on each plan.
+  // Risers join two floors: only their riser points appear on each plan. A column's vertical
+  // conduits have no plan length: the column is one symbol.
+  const stackOf = new Map(nodes.map((n) => [n.id, n.stackId]));
   const segments = doc.segments.filter(
-    (s) => ids.has(s.fromNodeId) && ids.has(s.toNodeId) && !analysis.routing.ctx.isRiser(s),
+    (s) =>
+      ids.has(s.fromNodeId) &&
+      ids.has(s.toNodeId) &&
+      !analysis.routing.ctx.isRiser(s) &&
+      !(stackOf.get(s.fromNodeId) && stackOf.get(s.fromNodeId) === stackOf.get(s.toNodeId)),
   );
+  // Box columns, boxes top to bottom.
+  const columns = new Map<string, typeof nodes>();
+  for (const n of nodes)
+    if (n.stackId) columns.set(n.stackId, [...(columns.get(n.stackId) ?? []), n]);
+  const height = (id: string) => analysis.routing.ctx.nodeHeightMm(id);
+  for (const members of columns.values())
+    members.sort((a, b) => height(b.id) - height(a.id) || (a.id < b.id ? -1 : 1));
   const paths = segments.map((s) => ({
     s,
     points: [position.get(s.fromNodeId)!, ...s.vertices, position.get(s.toNodeId)!],
@@ -332,11 +345,18 @@ function drawFloor(
   d.setDrawColor(30);
   d.setFillColor(255, 255, 255);
   for (const n of nodes) {
+    const members = n.stackId ? columns.get(n.stackId) : undefined;
+    // A column is drawn once, by its top box, with an outline behind it and every label.
+    if (members && members[0]!.id !== n.id) continue;
     const p = page(n.position);
+    if (members) d.rect(p.x - 0.6, p.y - 2, 2.6, 2.6, 'FD');
     if (n.kind === 'panel') d.rect(p.x - 2, p.y - 1.5, 4, 3, 'FD');
     else if (n.kind === 'junction_box') d.rect(p.x - 1.3, p.y - 1.3, 2.6, 2.6, 'FD');
     else d.circle(p.x, p.y, 1.3, 'FD');
-    if (n.label) d.text(n.label, p.x + 2, p.y + 3);
+    const label = members
+      ? `${members.map((m) => m.label).join(' · ')} (×${members.length})`
+      : n.label;
+    if (label) d.text(label, p.x + 2, p.y + 3);
   }
 
   // Legend.

@@ -35,14 +35,19 @@ export function segmentPolyline(doc: ProjectDoc, segmentId: string): Point[] | n
 export function hitTest(doc: ProjectDoc, floorId: string, p: Point, scale: number): Hit[] {
   const hits: Hit[] = [];
   const nodeIds = new Set<string>();
+  const stackOf = new Map<string, string | undefined>();
   for (const n of doc.nodes) {
     if (n.floorId !== floorId) continue;
     nodeIds.add(n.id);
+    stackOf.set(n.id, n.stackId);
     const d = distance(n.position, p);
     if (d <= NODE_HIT_PX / scale) hits.push({ kind: 'node', id: n.id, distance: d });
   }
   for (const s of doc.segments) {
     if (!nodeIds.has(s.fromNodeId) || !nodeIds.has(s.toNodeId)) continue;
+    // A column's vertical conduit has no plan length: it is reached from the column's list.
+    const stack = stackOf.get(s.fromNodeId);
+    if (stack && stack === stackOf.get(s.toNodeId)) continue;
     const line = segmentPolyline(doc, s.id);
     if (!line) continue;
     const d = projectOnPolyline(line, p).distance;

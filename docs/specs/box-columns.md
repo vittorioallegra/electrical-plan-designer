@@ -1,7 +1,7 @@
 # Spec: Box columns (boxes stacked at one plan point)
 
-Status: agreed (2026-11-09), pending the mockup of the column symbol and the exploded list;
-to be implemented before the first release
+Status: implemented (2026-11-09); mockup of the column symbol and the exploded list agreed
+the same day.
 (the `.epd` schema is still at version 1 and can change in place).
 
 ## Context
@@ -83,10 +83,11 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
     picked is the conduit's end.
   - A box selection (drag rectangle) includes every member without exploding.
   - Dragging a column (press and move) moves it without exploding.
-- **Inspector** of a member: a **Column** section lists the members top to bottom (label,
-  height); a click selects one. Actions: **Add box above**, **Add box below** (preset picker as
-  for the box tool; the height defaults to the preset's mounting) and **Take out of column**
-  (moves the box 0.30 m to the side, keeping its conduits).
+- **Inspector** of a box: a **Column** section lists the members top to bottom (label,
+  height); a click selects one. Actions: **Add box above** and **Add box below** (a terminal box
+  0.20 m above or below, as a custom height the user then adjusts, with mounting and contents set
+  as for any box; also on a box not yet in a column) and **Take out of column** (moves the box
+  0.30 m to the side, keeping its conduits).
 - **Move**: dragging a column or editing X/Y of a member moves the whole column.
 - **Delete** removes the selected member only; its vertical segments are rebuilt around it.
 - **Copy/paste**: a copied column is pasted as a new column (new `stackId`, as pasted riser
@@ -108,8 +109,8 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 ### 6. File format
 
 - `stackId` is optional, so files without columns load unchanged. Schema versions stay at 1:
-  update `projectFile/fixtures/v1.json` and add a column to the demo project
-  (`scripts/build-demo-epd.mjs`, `pnpm demo:epd`).
+  `projectFile/fixtures/v1.json` gets a column. The demo project stays as it is (its BOM and
+  quote figures are the baseline of many tests).
 
 ## Acceptance Criteria
 
@@ -140,7 +141,7 @@ spot on the wall, and the vertical conduit has to be drawn by hand.
 | Domain unit | Lengths and routing through a column; BOM conduit meters; `stack_same_height` | `lengths.test.ts`, `routing.test.ts`, `bom.test.ts`, `checks.test.ts` |
 | Component | Inspector Column section (list, select, add above/below, take out); exploded list (rows, keyboard, close) | `features/editor/components/*.test.tsx` |
 | Browser E2E | Place a box on a box, stacked symbol and badge, explode and select a member, draw a conduit to a column, drag without exploding, delete, undo | `apps/web/e2e/` (canvas via `window.__epd.store`) |
-| Fixtures | `v1.json` and the demo project include a column; the drift test stays green | `projectFile/fixtures/v1.json`, `tests/fixtures/demo-project.epd` |
+| Fixtures | `v1.json` includes a column | `projectFile/fixtures/v1.json` |
 
 Each test carries its `// protects=...; fails_when=...; no_claim=...` card.
 

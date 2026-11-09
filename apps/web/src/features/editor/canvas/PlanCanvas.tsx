@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stage } from 'react-konva';
 import { createLengthContext } from '@epd/domain/lengths';
@@ -7,6 +7,7 @@ import { useLibrary } from '@/stores/library/useLibrary';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { useCanvasColors, useFontsReady } from './canvasColors';
+import { ColumnList } from './ColumnList';
 import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
 import { draggedWall, usePlanPointer, type CanvasPickHandlers } from './hooks/usePlanPointer';
 import { useStageSize } from './hooks/useStageSize';
@@ -24,7 +25,7 @@ import {
 } from './planScene';
 import { useBackgroundImage } from './useBackgroundImage';
 import { ZoomControl } from './ZoomControl';
-import { centerOn } from './viewport';
+import { centerOn, worldToScreen } from './viewport';
 
 export interface PlanCanvasProps {
   onCalibrationPoints: (p1: Point, p2: Point) => void;
@@ -57,7 +58,7 @@ export function PlanCanvas({
   const presetId = useEditor((s) => s.ui.presetId);
   const pick = useEditor((s) => s.ui.pick);
   const activeOwner = useEditor((s) => s.ui.activeOwner);
-  const { routing } = useAnalysis();
+  const { routing, warnings } = useAnalysis();
   const colors = useCanvasColors();
   const fontsReady = useFontsReady();
 
@@ -71,6 +72,18 @@ export function PlanCanvas({
 
   const lengths = useMemo(() => createLengthContext(doc, settings), [doc, settings]);
   const floorNodes = useMemo(() => doc.nodes.filter((n) => n.floorId === floorId), [doc, floorId]);
+  // Box columns on this floor, boxes top to bottom.
+  const columns = useMemo(() => {
+    const map = new Map<string, PlanNode[]>();
+    for (const n of floorNodes)
+      if (n.stackId) map.set(n.stackId, [...(map.get(n.stackId) ?? []), n]);
+    for (const members of map.values())
+      members.sort(
+        (a, b) => lengths.nodeHeightMm(b.id) - lengths.nodeHeightMm(a.id) || (a.id < b.id ? -1 : 1),
+      );
+    return map;
+  }, [floorNodes, lengths]);
+  const [hoveredMember, setHoveredMember] = useState<string | null>(null);
   const nodeById = useMemo(() => new Map(doc.nodes.map((n) => [n.id, n])), [doc]);
   const snapTargets = useMemo(() => {
     const ids = new Set(floorNodes.map((n) => n.id));
@@ -105,7 +118,17 @@ export function PlanCanvas({
     moving && moving.nodeIds.includes(n.id)
       ? { x: n.position.x + moving.delta.x, y: n.position.y + moving.delta.y }
       : n.position;
-  const segments = floorSegmentsOf(doc, nodeById, floorId);
+  // A column's vertical conduits have no plan length: they are not drawn.
+  const segments = floorSegmentsOf(doc, nodeById, floorId).filter((s) => {
+    const stack = nodeById.get(s.fromNodeId)?.stackId;
+    return !stack || stack !== nodeById.get(s.toNodeId)?.stackId;
+  });
+  const exploded = pointer.exploded;
+  const explodedMembers = exploded ? columns.get(exploded.stackId) : undefined;
+  const highlighted = highlightedSegments(doc, routing, pick, activeOwner);
+  if (explodedMembers && hoveredMember)
+    for (const s of segments)
+      if (s.fromNodeId === hoveredMember || s.toNodeId === hoveredMember) highlighted.add(s.id);
   const walls = (floor?.walls ?? []).map((w) => draggedWall(w, drag));
   const handleWall =
     tool === 'select' && !readOnly && selection.length === 1
@@ -120,9 +143,11 @@ export function PlanCanvas({
     posOf,
     legs: legsByNode(segments, nodeById, posOf),
     selected: new Set(selection),
-    highlighted: highlightedSegments(doc, routing, pick, activeOwner),
+    highlighted,
     activeTargets: activeTargetNodes(doc, activeOwner),
     linkedRisers: linkedRisers(doc, nodeById),
+    columns,
+    explodedStackId: explodedMembers ? exploded!.stackId : null,
     ghost: ghost
       ? { nodes: doc.nodes.filter((n) => ghost.nodeIds.includes(n.id)), delta: ghost.delta }
       : null,
@@ -176,6 +201,32 @@ export function PlanCanvas({
           runElevation={settings.defaultRunElevation}
         />
       </Stage>
+      {exploded && explodedMembers ? (
+        <ColumnList
+          key={`${exploded.stackId}|${exploded.purpose}`}
+          members={explodedMembers}
+          heightM={(id) => lengths.nodeHeightMm(id) / 1000}
+          anchor={worldToScreen(view, explodedMembers[0]!.position)}
+          boundsWidth={size.width}
+          selected={new Set(exploded.purpose === 'select' ? selection : [])}
+          disabled={
+            exploded.purpose === 'conduit' && pointer.conduit
+              ? new Set([pointer.conduit.fromNodeId])
+              : undefined
+          }
+          warned={
+            new Set(
+              warnings.flatMap((w) => (w.elementRef.kind === 'node' ? [w.elementRef.id] : [])),
+            )
+          }
+          onPick={pointer.pickMember}
+          onHover={setHoveredMember}
+          onClose={() => {
+            setHoveredMember(null);
+            pointer.closeExploded();
+          }}
+        />
+      ) : null}
       <ZoomControl size={size} />
     </div>
   );

@@ -1,6 +1,7 @@
 // Structural edits shared by editor commands (mutate `doc`; safe on an immer draft).
 import type { IdGenerator } from './ids';
 import { rebuildRisers } from './risers';
+import { withColumns } from './stacks';
 import type { ConduitSegment, PlanNode, Point, ProjectDoc } from './types';
 
 export interface CascadeSummary {
@@ -109,9 +110,12 @@ function renumberFloors(doc: ProjectDoc): void {
     });
 }
 
-/** Moves nodes; vertices of segments with both ends moved follow along. */
+/**
+ * Moves nodes, each with its whole column; vertices of segments with both ends moved follow
+ * along.
+ */
 export function moveNodes(doc: ProjectDoc, nodeIds: string[], delta: Point): void {
-  const ids = new Set(nodeIds);
+  const ids = new Set(withColumns(doc, nodeIds));
   for (const n of doc.nodes) {
     if (ids.has(n.id)) n.position = { x: n.position.x + delta.x, y: n.position.y + delta.y };
   }
@@ -140,7 +144,9 @@ export function copyNodes(doc: ProjectDoc, nodeIds: string[]): Clipboard {
 
 /**
  * Pastes a clipboard onto `floorId` shifted by `offset`, with new ids. Pasted riser points
- * get a new riserGroupId (unlinked). Returns the new node ids.
+ * get a new riserGroupId (unlinked) and pasted columns a new stackId (a box pasted without the
+ * rest of its column becomes a column of one, which rebuildStacks dissolves). Returns the new
+ * node ids.
  */
 export function pasteNodes(
   doc: ProjectDoc,
@@ -151,6 +157,7 @@ export function pasteNodes(
 ): string[] {
   const idMap = new Map<string, string>();
   const groupMap = new Map<string, string>();
+  const stackMap = new Map<string, string>();
   const created: string[] = [];
   for (const n of clipboard.nodes) {
     const id = genId();
@@ -166,6 +173,11 @@ export function pasteNodes(
       const group = groupMap.get(copy.riserGroupId) ?? genId();
       groupMap.set(copy.riserGroupId, group);
       copy.riserGroupId = group;
+    }
+    if (copy.stackId !== undefined) {
+      const stack = stackMap.get(copy.stackId) ?? genId();
+      stackMap.set(copy.stackId, stack);
+      copy.stackId = stack;
     }
     doc.nodes.push(copy);
   }

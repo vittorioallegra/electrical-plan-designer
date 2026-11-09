@@ -12,10 +12,12 @@ import {
 } from '@epd/domain/edits';
 import { distance, projectOnPolyline } from '@epd/domain/geometry';
 import { newId } from '@epd/domain/ids';
+import { createLengthContext } from '@epd/domain/lengths';
 import { splitSegment } from '@epd/domain/routing';
+import { addToColumn, isStackable, takeOutOfColumn } from '@epd/domain/stacks';
 import type { BoxPreset, NodeKind, PlanNode, Point, ProjectDoc } from '@epd/domain/types';
 import { moveWall, moveWallEnd, type WallEnd } from '@epd/domain/walls';
-import type { EditorStore } from '@/stores/editor/editorStore';
+import { CommandError, type EditorStore } from '@/stores/editor/editorStore';
 import { segmentPolyline } from '@/features/editor/canvas/hitTest';
 
 export const DEFAULT_TERMINAL_BOX_ID = 'builtin:box_503';
@@ -86,6 +88,66 @@ export function placeNode(
   if (!result.ok) return null;
   s.setUi({ selection: [node.id] });
   return node.id;
+}
+
+/**
+ * Places a box on an existing box: it joins that box's column (created when needed), with the
+ * preset's mounting as height. Returns the new box id.
+ */
+export function placeInColumn(
+  store: EditorStore,
+  kind: NodeKind,
+  targetId: string,
+  preset?: BoxPreset,
+): string | null {
+  const s = store.getState();
+  const target = s.data.doc.nodes.find((n) => n.id === targetId);
+  if (!target || !isStackable(kind) || !isStackable(target.kind)) return null;
+  const node = createNode(s.data.doc, kind, target.floorId, target.position);
+  if (kind === 'terminal_box' && preset) applyPresetTo(node, preset);
+  const result = s.applyCommand(`place ${kind} in column`, (d) => {
+    if (!addToColumn(d.doc, targetId, node, newId)) throw new CommandError('not_stackable');
+  });
+  if (!result.ok) return null;
+  s.setUi({ selection: [node.id] });
+  return node.id;
+}
+
+/** Height step of a box added above or below another one in its column, m. */
+export const COLUMN_STEP_M = 0.2;
+
+/**
+ * Adds a terminal box to the column of `nodeId`, `COLUMN_STEP_M` above or below it (custom
+ * height, never below the floor). Returns the new box id.
+ */
+export function addBoxToColumn(
+  store: EditorStore,
+  nodeId: string,
+  where: 'above' | 'below',
+): string | null {
+  const s = store.getState();
+  const target = s.data.doc.nodes.find((n) => n.id === nodeId);
+  if (!target || !isStackable(target.kind)) return null;
+  const heightMm = createLengthContext(s.data.doc, s.data.settings).nodeHeightMm(nodeId);
+  const stepMm = where === 'above' ? COLUMN_STEP_M * 1000 : -COLUMN_STEP_M * 1000;
+  const node = createNode(s.data.doc, 'terminal_box', target.floorId, target.position);
+  node.mounting = 'custom';
+  node.customHeight = Math.max(0, heightMm + stepMm) / 1000;
+  const result = s.applyCommand(`add box ${where}`, (d) => {
+    if (!addToColumn(d.doc, nodeId, node, newId)) throw new CommandError('not_stackable');
+  });
+  if (!result.ok) return null;
+  s.setUi({ selection: [node.id] });
+  return node.id;
+}
+
+/** Offset of a box taken out of its column, m (to the side, so both stay visible). */
+export const TAKE_OUT_OFFSET: Point = { x: 0.3, y: 0 };
+
+export function takeBoxOutOfColumn(store: EditorStore, nodeId: string): boolean {
+  return store.getState().applyCommand('take out of column', (d) => {
+    if (!takeOutOfColumn(d.doc, nodeId, TAKE_OUT_OFFSET)) throw new CommandError('not_in_column');
+  }).ok;
 }
 
 export function addConduit(
@@ -209,7 +271,7 @@ export function pasteClipboard(store: EditorStore, offset: Point = { x: 0.5, y: 
   return created;
 }
 
-/** True when `p` is within `tolerance` of a node on the floor (no stacking boxes). */
+/** The node within `tolerance` of `p` on the floor, if any (a box placed there joins its column). */
 export function nodeAt(
   doc: ProjectDoc,
   floorId: string,

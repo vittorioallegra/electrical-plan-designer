@@ -41,6 +41,9 @@ describe('project file', () => {
     expect(file.cablePrices['cable:2.5:brown']).toEqual({ unitPrice: 55, code: 'C25M' });
     expect(file.quote.issued[0]).toMatchObject({ number: 1, status: 'approved', note: 'Signed' });
     expect(file.doc.nodes.length).toBeGreaterThan(0);
+    // A box column (S under SW) with its vertical conduit.
+    expect(file.doc.nodes.filter((n) => n.stackId === 'K').map((n) => n.id)).toEqual(['S', 'SW']);
+    expect(file.doc.segments.find((s) => s.id === 'S3')?.runElevation).toBe('direct');
   });
 
   // protects=save then open gives the same project; fails_when=serialize drops or alters a field; no_claim=asset bytes

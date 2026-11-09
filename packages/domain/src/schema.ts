@@ -101,6 +101,8 @@ export const planNodeSchema = z.object({
   contents: z.array(contentLineSchema).optional(),
   status: z.enum(['active', 'provision']),
   riserGroupId: id.optional(),
+  /** Boxes on one floor with the same stackId form a column at one plan point (stacks.ts). */
+  stackId: id.optional(),
 });
 
 export const conduitSegmentSchema = z.object({
@@ -206,6 +208,31 @@ export function docIntegrityIssues(
     if (!floorIds.has(n.floorId))
       issues.push({ path: ['nodes', i, 'floorId'], message: `unknown floor ${n.floorId}` });
   });
+
+  // Box columns: boxes only, at least two, one floor and one plan point.
+  const stacks = new Map<string, { node: DocShape['nodes'][number]; index: number }[]>();
+  doc.nodes.forEach((n, index) => {
+    if (n.stackId === undefined) return;
+    if (n.kind !== 'junction_box' && n.kind !== 'terminal_box')
+      issues.push({ path: ['nodes', index, 'stackId'], message: 'only boxes can be stacked' });
+    stacks.set(n.stackId, [...(stacks.get(n.stackId) ?? []), { node: n, index }]);
+  });
+  for (const members of stacks.values()) {
+    const [first, ...rest] = members;
+    if (rest.length === 0) {
+      issues.push({ path: ['nodes', first!.index, 'stackId'], message: 'column of one box' });
+      continue;
+    }
+    for (const { node, index } of rest) {
+      const a = first!.node;
+      if (
+        node.floorId !== a.floorId ||
+        node.position.x !== a.position.x ||
+        node.position.y !== a.position.y
+      )
+        issues.push({ path: ['nodes', index, 'stackId'], message: 'column boxes apart' });
+    }
+  }
 
   doc.segments.forEach((s, i) => {
     if (s.fromNodeId === s.toNodeId) {

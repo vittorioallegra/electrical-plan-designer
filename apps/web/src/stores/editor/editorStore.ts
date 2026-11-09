@@ -4,8 +4,10 @@ import { applyPatches, enablePatches, produceWithPatches, type Draft, type Patch
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProjectFile } from '@epd/domain/projectFile';
 import { copyUsedItems, referenceSignature, type LibrarySource } from '@epd/domain/catalog/copies';
+import { newId } from '@epd/domain/ids';
 import { addIssuedQuote } from '@epd/domain/issuedQuotes';
 import { docIntegrityIssues } from '@epd/domain/schema';
+import { rebuildStacks } from '@epd/domain/stacks';
 import type { IssuedQuote, Point, ProjectDoc } from '@epd/domain/types';
 import type { FileBinding } from '@/lib/repositories/types';
 import type { ProjectAsset, ProjectAssets } from '@/lib/projectFile/epd';
@@ -185,6 +187,8 @@ export function createEditorStore(init: EditorInit, deps: EditorDeps = {}): Edit
           const signature = referenceSignature(s.data.doc);
           result = produceWithPatches(s.data, (draft) => {
             recipe(draft);
+            // Box columns follow every edit (membership, heights, settings) in the same patches.
+            rebuildStacks(draft.doc, draft.settings, newId);
             // Copies change in the same patches as the drawing, so undo and redo restore them.
             if (deps.librarySource && referenceSignature(draft.doc) !== signature)
               copyUsedItems(draft, deps.librarySource());
