@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
@@ -13,6 +13,7 @@ import {
   stubSaveDialog,
   tempProject,
   type LaunchedApp,
+  removeDir,
 } from './helpers';
 
 /** A file's text, empty until it exists (a poll stops at the first error). */
@@ -96,6 +97,6 @@ test('the native menu has Settings, Export and Import JSON that follow the focus
   } finally {
     await launched?.close().catch(() => undefined);
     project.cleanup();
-    rmSync(scratch, { recursive: true, force: true });
+    removeDir(scratch);
   }
 });

@@ -1,7 +1,7 @@
-import { readFileSync, rmSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { clickMenu, launchApp, type LaunchedApp } from './helpers';
+import { clickMenu, launchApp, type LaunchedApp, removeDir } from './helpers';
 
 /** The stored preferences, empty until main has written the file. */
 function storedPreferences(userData: string): unknown {
@@ -89,7 +89,7 @@ test('the theme chosen in Settings is applied again after a restart', async () =
   } finally {
     await second?.close().catch(() => undefined);
     await first?.close().catch(() => undefined);
-    if (first) rmSync(first.userData, { recursive: true, force: true });
+    if (first) removeDir(first.userData);
   }
 });
 

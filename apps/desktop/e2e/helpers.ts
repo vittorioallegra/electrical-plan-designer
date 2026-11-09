@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { chmodSync, copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -41,11 +41,53 @@ export async function launchApp(
     page,
     userData,
     close: async () => {
-      // A test may have quit the app already.
-      if (app.process().exitCode === null && app.process().signalCode === null) await app.close();
-      if (!reuseUserData) rmSync(userData, { recursive: true, force: true });
+      await closeApp(app);
+      if (!reuseUserData) removeDir(userData);
     },
   };
+}
+
+function running(app: ElectronApplication): boolean {
+  return app.process().exitCode === null && app.process().signalCode === null;
+}
+
+/**
+ * Kills the app with its child processes and waits for it to exit. On Windows a plain kill ends
+ * only the main process: the GPU and renderer processes live on and keep `userData` locked.
+ */
+export async function killApp(app: ElectronApplication): Promise<void> {
+  if (!running(app)) return;
+  const child = app.process();
+  const exited = new Promise<void>((resolve) => child.once('exit', () => resolve()));
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  } else {
+    child.kill('SIGKILL');
+  }
+  await exited;
+}
+
+/**
+ * Quits the app; kills it when it does not exit within 15 s (a native dialog left open would
+ * otherwise block the quit and the Playwright worker's teardown).
+ */
+export async function closeApp(app: ElectronApplication): Promise<void> {
+  // A test may have quit the app already.
+  if (!running(app)) return;
+  const quit = app.close().then(
+    () => true,
+    () => false,
+  );
+  const timeout = new Promise<false>((resolve) => setTimeout(() => resolve(false), 15_000));
+  if (!(await Promise.race([quit, timeout]))) await killApp(app);
+}
+
+/**
+ * Removes a temporary folder. Windows refuses (EPERM, EBUSY) while a just-exited process still
+ * holds a file in it, so the removal is retried for a few seconds.
+ */
+export function removeDir(dir: string): void {
+  rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
 }
 
 /**
@@ -85,7 +127,7 @@ export function tempProject(): { dir: string; path: string; cleanup: () => void 
     path,
     cleanup: () => {
       chmodSync(dir, 0o755);
-      rmSync(dir, { recursive: true, force: true });
+      removeDir(dir);
     },
   };
 }

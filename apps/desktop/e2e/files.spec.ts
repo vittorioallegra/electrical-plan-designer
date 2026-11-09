@@ -3,7 +3,6 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
-  rmSync,
   utimesSync,
   writeFileSync,
 } from 'node:fs';
@@ -18,6 +17,7 @@ import {
   tempProject,
   windowTitle,
   type LaunchedApp,
+  removeDir,
 } from './helpers';
 
 async function withApp(run: (launched: LaunchedApp) => Promise<void>) {
@@ -122,7 +122,7 @@ test('shows the OS error for a read-only folder and saves elsewhere with Save As
     });
   } finally {
     project.cleanup();
-    rmSync(elsewhere, { recursive: true, force: true });
+    removeDir(elsewhere);
   }
 });
 

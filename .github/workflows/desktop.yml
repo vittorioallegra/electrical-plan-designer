@@ -1,11 +1,18 @@
 name: desktop
 
 # Builds the installers on macOS and Windows and runs the Electron E2E project.
-# - Manual run (workflow_dispatch): installers are uploaded as workflow artifacts only.
+# - Manual run (workflow_dispatch, on both OSes or one): installers are uploaded as workflow
+#   artifacts only.
 # - Tag v<version>: the tag must equal apps/desktop/package.json's version; the installers are
 #   also attached to a draft GitHub Release, published by hand (docs/release.md).
 on:
   workflow_dispatch:
+    inputs:
+      os:
+        description: Build on
+        type: choice
+        options: [all, macos-latest, windows-latest]
+        default: all
   push:
     tags: ['v*']
 
@@ -35,7 +42,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        # A manual run can build on one OS only; a tag always builds on both.
+        os: ${{ fromJSON((inputs.os == '' || inputs.os == 'all') && '["macos-latest","windows-latest"]' || format('["{0}"]', inputs.os)) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +55,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @epd/desktop dist
       - run: pnpm test:e2e:desktop
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.os }}
+          path: apps/desktop/test-results
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.os }}

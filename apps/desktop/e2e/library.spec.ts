@@ -3,14 +3,13 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
-  rmSync,
   writeFileSync,
   mkdirSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { launchApp, stubSaveDialog, type LaunchedApp } from './helpers';
+import { launchApp, stubSaveDialog, type LaunchedApp, removeDir } from './helpers';
 
 const library = (userData: string, ...parts: string[]) => join(userData, 'library', ...parts);
 
@@ -75,7 +74,7 @@ test('the library survives a restart', async () => {
     await expect(second.page.getByRole('gridcell', { name: 'Brand socket' })).toBeVisible();
   } finally {
     for (const app of launched) await app.close().catch(() => undefined);
-    rmSync(userData, { recursive: true, force: true });
+    removeDir(userData);
   }
 });
 
@@ -114,7 +113,7 @@ test('an invalid library file is set aside with a notice and never overwritten',
     );
   } finally {
     for (const app of launched) await app.close().catch(() => undefined);
-    rmSync(userData, { recursive: true, force: true });
+    removeDir(userData);
   }
 });
 
@@ -174,6 +173,6 @@ test('export the library, import it on a fresh install; an invalid file is refus
     expect(existsSync(library(target, 'logo.png'))).toBe(true);
   } finally {
     for (const app of launched) await app.close().catch(() => undefined);
-    for (const dir of [source, target, outDir]) rmSync(dir, { recursive: true, force: true });
+    for (const dir of [source, target, outDir]) removeDir(dir);
   }
 });

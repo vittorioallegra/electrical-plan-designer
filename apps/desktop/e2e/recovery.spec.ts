@@ -1,10 +1,18 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { floorCount, launchApp, openProjectFile, tempProject, type LaunchedApp } from './helpers';
+import {
+  floorCount,
+  killApp,
+  launchApp,
+  openProjectFile,
+  tempProject,
+  type LaunchedApp,
+  removeDir,
+} from './helpers';
 
-// protects=AC 9 crash recovery; fails_when=a killed app does not offer the edit on the next start, restoring loses the edit or its unsaved state, Save writes anywhere but the original path, or a saved project is offered again; no_claim=a power cut (the atomic write is unit-tested), Windows process kill semantics
+// protects=AC 9 crash recovery; fails_when=a killed app does not offer the edit on the next start, restoring loses the edit or its unsaved state, Save writes anywhere but the original path, or a saved project is offered again; no_claim=a power cut (the atomic write is unit-tested)
 test('after a kill the edit is offered back and saving writes the original path', async () => {
   const project = tempProject();
   const userData = mkdtempSync(join(tmpdir(), 'epd-recovery-'));
@@ -28,12 +36,8 @@ test('after a kill the edit is offered back and saving writes the original path'
           ).doc.floors.length,
       )
       .toBe(before + 1);
-    // Only the process this test launched.
-    const exited = new Promise<void>((resolve) =>
-      first.app.process().once('exit', () => resolve()),
-    );
-    first.app.process().kill('SIGKILL');
-    await exited;
+    // Only the processes this test launched.
+    await killApp(first.app);
     expect(floorCount(project.path)).toBe(before);
 
     const second = await launchApp(userData);
@@ -53,7 +57,7 @@ test('after a kill the edit is offered back and saving writes the original path'
     await expect.poll(() => existsSync(join(userData, 'recovery'))).toBe(false);
   } finally {
     for (const app of launched) await app.close().catch(() => undefined);
-    rmSync(userData, { recursive: true, force: true });
+    removeDir(userData);
     project.cleanup();
   }
 });
