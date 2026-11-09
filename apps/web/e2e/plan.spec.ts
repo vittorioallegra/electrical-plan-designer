@@ -85,7 +85,8 @@ test('import page 2 of a PDF as background', async ({ page }) => {
   await page.getByTestId('background-file').setInputFiles(fixture('plan-2-pages.pdf'));
   await page.getByRole('option', { name: 'Page 2' }).click();
   await page.getByRole('button', { name: 'Use page 2' }).click();
-  await expect(page.getByTestId('background-panel')).toBeVisible();
+  // Rendering the page (up to 4096 px) takes several seconds on a shared CI runner.
+  await expect(page.getByTestId('background-panel')).toBeVisible({ timeout: 20_000 });
   const bg = await editorState(page, (s) => s.data.doc.floors[0]!.background!);
   expect(bg).toMatchObject({ kind: 'pdf', page: 2 });
   expect(Math.max(bg.widthPx, bg.heightPx)).toBeLessThanOrEqual(4096);
