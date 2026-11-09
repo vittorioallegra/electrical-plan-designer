@@ -35,11 +35,13 @@ const devices: CatalogItem[] = [
   item('dimmer', 'device', 'pcs', { deviceType: 'dimmer' }, 1),
   item('usb_charger', 'device', 'pcs', { deviceType: 'usb' }, 1),
   item('tv_socket', 'device', 'pcs', { deviceType: 'tv' }, 1),
+  item('tv_sat_socket', 'device', 'pcs', { deviceType: 'tv' }, 1),
   item('data_socket_rj45', 'device', 'pcs', { deviceType: 'data' }, 1),
   item('blanking_cover', 'blanking_cover', 'pcs', {}, 1),
 ];
 
-const plates = [1, 2, 3, 4, 5, 6, 7].map((m) => item(`plate_${m}m`, 'plate', 'pcs', {}, m));
+// One plate per built-in wall box size (3, 4 and 7 modules).
+const plates = [3, 4, 7].map((m) => item(`plate_${m}m`, 'plate', 'pcs', {}, m));
 
 const boxes = [
   item('box_503', 'box', 'pcs', {}, 3),
@@ -94,6 +96,16 @@ const mcbs = [6, 10, 16, 20, 25, 32].map((a) =>
   ),
 );
 
+const mcbs2p = [10, 16, 20, 25, 32, 40].map((a) =>
+  item(
+    `mcb_2p_c${a}`,
+    'panel_device',
+    'pcs',
+    { panelDeviceType: 'mcb', poles: '2P', ratingA: a, curve: 'C' },
+    2,
+  ),
+);
+
 const rcds = [25, 40].flatMap((a) =>
   (['A', 'AC'] as const).map((type) =>
     item(
@@ -120,6 +132,23 @@ const rcbos = [10, 16, 20, 25].map((a) =>
       rcdType: 'A',
     },
     2,
+  ),
+);
+
+const rcbos2p = [10, 16, 20, 25, 32].map((a) =>
+  item(
+    `rcbo_2p_c${a}_30ma_a`,
+    'panel_device',
+    'pcs',
+    {
+      panelDeviceType: 'rcbo',
+      poles: '2P',
+      ratingA: a,
+      curve: 'C',
+      sensitivityMa: 30,
+      rcdType: 'A',
+    },
+    4,
   ),
 );
 
@@ -153,8 +182,10 @@ export const builtinCatalog: readonly CatalogItem[] = [
   ...conduits,
   ...cables,
   ...mcbs,
+  ...mcbs2p,
   ...rcds,
   ...rcbos,
+  ...rcbos2p,
   ...otherPanelDevices,
   ...enclosures,
 ];
