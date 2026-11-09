@@ -7,7 +7,7 @@ import { bundleDiameter, conduitTooSmall, estimatedOuterDiameter } from './condu
 import { routeDoc, type RoutingResult } from './routing';
 import { MAX_UPSTREAM_DEPTH } from './schema';
 import { sameHeightColumnNodeIds } from './stacks';
-import type { Panel, PanelDevice, ProjectDoc, ProjectSettings } from './types';
+import type { Panel, PanelDevice, PlanNode, ProjectDoc, ProjectSettings } from './types';
 
 export type CheckId =
   | 'section_type' // 1
@@ -63,6 +63,30 @@ function maxRatingFor(section: number): number | undefined {
   // Above the table's largest section there is no limit in v1.
   const largest = maxRatingBySection[maxRatingBySection.length - 1]![0];
   return section > largest ? undefined : limit;
+}
+
+/**
+ * Modules of a box's contents: `used` by devices and blanking covers; `available` is the plate's
+ * modules when the contents have one (a 503 takes a 1, 2 or 3 module plate), else the box's. A
+ * plate larger than its box counts as using its own modules, so it is reported as not fitting.
+ */
+export function boxModules(
+  node: Pick<PlanNode, 'boxItemId' | 'contents'>,
+  catalog: CatalogLookup,
+): { used: number; available: number | undefined } {
+  const contents = node.contents ?? [];
+  const boxSize = node.boxItemId ? catalog(node.boxItemId)?.modules : undefined;
+  let used = 0;
+  let plateSize: number | undefined;
+  for (const c of contents) {
+    const item = catalog(c.itemId);
+    if (!item) continue;
+    if (item.category === 'plate') plateSize = item.modules ?? plateSize;
+    else used += (item.modules ?? 0) * c.qty;
+  }
+  if (plateSize !== undefined && boxSize !== undefined && plateSize > boxSize)
+    return { used: plateSize, available: boxSize };
+  return { used, available: plateSize ?? boxSize };
 }
 
 export function runChecks(
@@ -184,16 +208,12 @@ export function runChecks(
   // Checks 7 and 9: box contents.
   for (const n of doc.nodes) {
     const contents = n.contents ?? [];
-    const box = n.boxItemId ? catalog(n.boxItemId) : undefined;
-    const used = contents.reduce((sum, c) => {
-      const item = catalog(c.itemId);
-      return item && item.category !== 'plate' ? sum + (item.modules ?? 0) * c.qty : sum;
-    }, 0);
-    if (box?.modules !== undefined && used > box.modules) {
+    const capacity = boxModules(n, catalog);
+    if (capacity.available !== undefined && capacity.used > capacity.available) {
       warn(
         'box_modules',
         { kind: 'node', id: n.id },
-        { label: n.label, used, available: box.modules },
+        { label: n.label, used: capacity.used, available: capacity.available },
       );
     }
     if (n.kind === 'terminal_box' && n.status === 'active') {

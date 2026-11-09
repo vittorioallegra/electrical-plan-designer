@@ -3,7 +3,7 @@ import { isPriceOnly } from './catalog/attributes';
 import { builtinCatalog } from './catalog/builtin';
 import { createCatalogLookup } from './catalog/lookup';
 import type { CatalogItem } from './catalog/types';
-import { runChecks, type CheckId } from './checks';
+import { boxModules, runChecks, type CheckId } from './checks';
 import { bundleDiameter, conduitTooSmall } from './conduitFill';
 import { defaultProjectSettings } from './defaults';
 import { ac4Doc, circuit, node, seg } from './testing/builders';
@@ -193,5 +193,26 @@ describe('conduit fill', () => {
     expect(conduitTooSmall(14.1, 10, 1.3)).toBe(false);
     expect(conduitTooSmall(12.9, 10, 1.3)).toBe(true);
     expect(conduitTooSmall(10, 0, 1.3)).toBe(false);
+  });
+});
+
+describe('box modules', () => {
+  const box = (...contents: [string, number][]) => ({
+    boxItemId: 'builtin:box_503',
+    contents: contents.map(([id, qty]) => ({ itemId: `builtin:${id}`, qty })),
+  });
+
+  // protects=plates smaller than the box (a centred 2-module schuko on a 503); fails_when=a 2-module plate on a 503 still offers 3 modules, devices beyond the plate are not reported, or a plate larger than the box is accepted; no_claim=which plates a manufacturer sells
+  it('counts against the plate when there is one, never beyond the box', () => {
+    expect(boxModules(box(['socket_schuko', 1], ['plate_2m', 1]), catalog)).toEqual({
+      used: 2,
+      available: 2,
+    });
+    expect(boxModules(box(['socket_schuko', 1], ['switch', 1], ['plate_2m', 1]), catalog)).toEqual({
+      used: 3,
+      available: 2,
+    });
+    expect(boxModules(box(['switch', 1]), catalog)).toEqual({ used: 1, available: 3 });
+    expect(boxModules(box(['plate_7m', 1]), catalog)).toEqual({ used: 7, available: 3 });
   });
 });

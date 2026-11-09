@@ -13,6 +13,7 @@ import { useCatalog } from '@/hooks/useCatalog';
 import { useLibrary } from '@/stores/library/useLibrary';
 import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
+import { boxModules } from '@epd/domain/checks';
 
 /** Contents of a terminal box: devices, blanking covers and plate, with a modules counter. */
 export function BoxContents({ node }: { node: PlanNode }) {
@@ -28,12 +29,9 @@ export function BoxContents({ node }: { node: PlanNode }) {
   const [adding, setAdding] = useState('');
 
   const contents = node.contents ?? [];
-  const box = node.boxItemId ? lookup(node.boxItemId) : undefined;
-  const used = contents.reduce((sum, c) => {
-    const item = lookup(c.itemId);
-    return item && item.category !== 'plate' ? sum + (item.modules ?? 0) * c.qty : sum;
-  }, 0);
-  const over = box?.modules !== undefined && used > box.modules;
+  // Available modules: the plate's when there is one, else the box's (checks.ts).
+  const { used, available } = boxModules(node, lookup);
+  const over = available !== undefined && used > available;
 
   const update = (label: string, fn: (n: PlanNode) => void) =>
     store.getState().applyCommand(label, (d) => {
@@ -60,8 +58,8 @@ export function BoxContents({ node }: { node: PlanNode }) {
           )}
           data-testid="modules-counter"
         >
-          {box?.modules !== undefined
-            ? t('contents.modules', { used, available: box.modules })
+          {available !== undefined
+            ? t('contents.modules', { used, available })
             : t('contents.modulesNoBox', { used })}
         </span>
       }

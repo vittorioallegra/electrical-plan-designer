@@ -40,8 +40,9 @@ const devices: CatalogItem[] = [
   item('blanking_cover', 'blanking_cover', 'pcs', {}, 1),
 ];
 
-// One plate per built-in wall box size (3, 4 and 7 modules).
-const plates = [3, 4, 7].map((m) => item(`plate_${m}m`, 'plate', 'pcs', {}, m));
+// A plate can be smaller than its box: a 503 takes a 1, 2 or 3 module plate (e.g. a centred
+// 2-module schuko without blanking covers).
+const plates = [1, 2, 3, 4, 5, 6, 7].map((m) => item(`plate_${m}m`, 'plate', 'pcs', {}, m));
 
 const boxes = [
   item('box_503', 'box', 'pcs', {}, 3),
