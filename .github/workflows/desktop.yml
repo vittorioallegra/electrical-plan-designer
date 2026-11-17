@@ -76,6 +76,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The whole history and tags: the notes list the commits since the previous tag.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
           pattern: installers-*
@@ -86,5 +90,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          node scripts/release-notes.mjs "${GITHUB_REF_NAME}" > notes.md
           gh release create "${GITHUB_REF_NAME}" installers/* \
-            --draft --verify-tag --generate-notes --title "Electrical Plan Designer ${GITHUB_REF_NAME}"
+            --draft --verify-tag --notes-file notes.md --title "${GITHUB_REF_NAME}"

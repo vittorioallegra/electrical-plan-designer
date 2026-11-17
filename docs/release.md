@@ -33,7 +33,10 @@ install a new one over the old one.
 2. Tag that commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`. The workflow
    fails at once when the tag is not `v` + that version.
 3. When the run is green, open the draft on the repository's Releases page, check the notes
-   (generated from the commits since the previous tag) and the attached `.dmg`/`.exe`, then
+   (`scripts/release-notes.mjs` drafts them in the layout of v0.1.0: a summary comment to replace
+   with one paragraph, What's new and Fixes from the `feat` and `fix` commits since the previous
+   tag, Downloads, First launch; the title is the tag; tidy the bullets into short bold-labelled
+   items like v0.1.0's) and the attached `.dmg`/`.exe`, then
    **Publish release**.
 
 A failed run leaves no release: fix, delete the tag (`git push origin :v0.2.0`, `git tag -d
