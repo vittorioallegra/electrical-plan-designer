@@ -11,9 +11,13 @@ import {
   projectSettingsSchema,
   quoteSettingsSchema,
 } from './schema';
+import { companyCountrySchema, DEFAULT_COMPANY_COUNTRY } from './vatRates';
 
-/** Version 1 until the first release; after it every change bumps it and adds a migration. */
-export const LIBRARY_SCHEMA_VERSION = 1;
+/**
+ * Released at 1 with v0.1.0; every change bumps it and adds a migration (`migrateLibrary`).
+ * 2: catalogs may hold the `smart_device` category; the company has a `country`.
+ */
+export const LIBRARY_SCHEMA_VERSION = 2;
 
 /** The business shown on quotes and PDFs. The logo is a separate file, not part of the JSON. */
 export const libraryCompanySchema = z.object({
@@ -22,6 +26,8 @@ export const libraryCompanySchema = z.object({
   address: z.string(),
   phone: z.string(),
   email: z.string(),
+  /** Where the company buys: the VAT removed from store prices (price update). */
+  country: companyCountrySchema,
 });
 
 /** Everything but the catalogs, which are stored one file each. */
@@ -74,7 +80,14 @@ export function matchesLogoType(mimeType: LogoMimeType, bytes: Uint8Array): bool
 }
 
 export function defaultLibraryCompany(): LibraryCompany {
-  return { businessName: '', vatNumber: '', address: '', phone: '', email: '' };
+  return {
+    businessName: '',
+    vatNumber: '',
+    address: '',
+    phone: '',
+    email: '',
+    country: DEFAULT_COMPANY_COUNTRY,
+  };
 }
 
 export function defaultLibraryCore(): LibraryCore {
@@ -119,6 +132,24 @@ export class LibraryError extends Error {
   }
 }
 
+/**
+ * Upgrades a library (or its core) from an older schema version. 1 → 2 adds the company's
+ * `country` (Italy). A version 2 library without it (written by a development build before the
+ * field existed) gets it too. Returns a copy; a missing or newer version is left to the caller.
+ */
+export function migrateLibrary(json: Record<string, unknown>): Record<string, unknown> {
+  const version = json.schemaVersion;
+  if (typeof version !== 'number' || version > LIBRARY_SCHEMA_VERSION) return json;
+  const company = json.company;
+  const needsCountry = typeof company === 'object' && company !== null && !('country' in company);
+  if (version === LIBRARY_SCHEMA_VERSION && !needsCountry) return json;
+  return {
+    ...json,
+    schemaVersion: LIBRARY_SCHEMA_VERSION,
+    ...(needsCountry ? { company: { ...company, country: DEFAULT_COMPANY_COUNTRY } } : {}),
+  };
+}
+
 function parse<S extends z.ZodType>(schema: S, json: unknown, versioned: boolean): z.infer<S> {
   if (versioned) {
     const version = (json as { schemaVersion?: unknown } | null)?.schemaVersion;
@@ -129,7 +160,9 @@ function parse<S extends z.ZodType>(schema: S, json: unknown, versioned: boolean
         { path: 'schemaVersion', message: `library schema version ${version}` },
       ]);
   }
-  const result = schema.safeParse(json);
+  const result = schema.safeParse(
+    versioned ? migrateLibrary(json as Record<string, unknown>) : json,
+  );
   if (!result.success)
     throw new LibraryError(
       'invalid',

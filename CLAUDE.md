@@ -30,7 +30,7 @@ pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`
 
 - `apps/desktop/` — Electron shell: `src/main` (window, `app://` + CSP, `files.ts` dialogs and
   atomic writes, `recovery.ts`, `library.ts`, `preferences.ts` theme, `menu.ts`, `recent.ts`,
-  `openRequests.ts`), `src/preload` (`window.epd`), `e2e/`, `build/` icons, `electron-builder.yml`
+  `openRequests.ts`, `shellyStore.ts` store prices), `src/preload` (`window.epd`), `e2e/`, `build/` icons, `electron-builder.yml`
 - `packages/bridge/` — IPC contract (`EpdBridge`, channels), types only
 - `packages/domain/` — pure TS (model, geometry, routing, risers and box columns, BOM, checks,
   quotes, library, catalogs, `.epd` schema and migrations); imported as `@epd/domain/<module>`,
@@ -64,10 +64,10 @@ pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`
   open; `/library/*` redirects); `/project/<plan|panel|quote|details>`; every route has an
   `ErrorBoundary`; editor, canvas and PDF code are lazy. `renderApp(path)` opens the demo project.
 - Tests sit next to the code, each with a card comment `// protects=...; fails_when=...; no_claim=...`.
-- File formats: `.epd` (`manifest.schemaVersion`, `doc.schemaVersion`), `.epc` and the library
-  are versioned. Released since v0.1.0 at version 1: never change them in place. A change is a
-  bump, a tested migration and a frozen fixture of the previous version
-  (`projectFile/fixtures/v1.json` is frozen); then run `pnpm demo:epd`.
+- File formats: `.epd` (`manifest.schemaVersion` 2, `doc.schemaVersion` 1), `.epc` (2) and the
+  library (2) are versioned and released: never change them in place. A change is a bump, a
+  tested migration and a frozen fixture of the previous version (`projectFile/fixtures/v1.json`,
+  `catalog/fixtures/v1.epc.json`, `library/fixtures/v1.json`); then run `pnpm demo:epd`.
 - Lengths: integer mm in the domain, meters at the edges. Money: integer cents. PDFs (jsPDF
   Helvetica) use WinAnsi only; PDF tests run in `@vitest-environment node`.
 - jsdom has no canvas: canvas behavior is tested in the browser E2E via `window.__epd.store`,
@@ -76,5 +76,7 @@ pnpm workspace (Bulletproof React folders). `src/` = `apps/web/src/` (`@epd/web`
 - macOS title bar (`hiddenInset`): the page is the drag region (`app-drag`); every control in it
   needs `app-no-drag`; `useTitleBarInset()` gives the traffic-light room.
 - Save writes the bound path in place (no path: Save As); exports go through `useExportFile`.
+- Network: the window never goes online (CSP). Only main does, on the user's request, through
+  its own session (`shellyStore.ts`); renderer code reaches it via a repository with a fake.
 - `useEditor(selector)` returns raw store fields; derive arrays with `useMemo` (render loop).
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`).

@@ -49,6 +49,10 @@ const bridge: EpdBridge = {
     setLogo: (logo) => ipcRenderer.invoke(channels.librarySetLogo, logo),
     replace: (replacement) => ipcRenderer.invoke(channels.libraryReplace, replacement),
   },
+  store: {
+    shellyPrices: (country, handles) =>
+      ipcRenderer.invoke(channels.storeShellyPrices, country, handles),
+  },
   preferences: {
     getTheme: () => ipcRenderer.invoke(channels.preferencesGetTheme),
     setTheme: (theme) => ipcRenderer.invoke(channels.preferencesSetTheme, theme),

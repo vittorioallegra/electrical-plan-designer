@@ -2,7 +2,12 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, mkdirSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { defaultLibrary, libraryCoreOf, type Library } from '@epd/domain/library';
+import {
+  defaultLibrary,
+  libraryCoreOf,
+  LIBRARY_SCHEMA_VERSION,
+  type Library,
+} from '@epd/domain/library';
 import * as nodeFs from 'node:fs/promises';
 import { createLibraryService, type LibraryFsOps } from './library';
 
@@ -43,6 +48,7 @@ function filled(): Library {
       address: 'Via Roma',
       phone: '1',
       email: 'a@b.c',
+      country: 'IT',
     },
     catalogs: [catalog('c1'), catalog('c2', '2026-10-27T10:00:00.000Z')],
     priceOverrides: { 'builtin:socket_schuko': { unitPrice: 390 } },
@@ -118,6 +124,19 @@ describe('library storage', () => {
     expect((await service().load()).invalid).toEqual([]);
   });
 
+  // protects=older libraries upgrade on disk; fails_when=a version 1 library.json is not written back at the current version (an older app would then set aside catalogs it cannot read); no_claim=what each migration changes (domain tests)
+  it('writes an older library core back at the current version', async () => {
+    const core = { ...libraryCoreOf(filled()), schemaVersion: 1 };
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'library.json'), JSON.stringify(core));
+    const loaded = await service().load();
+    expect(loaded.invalid).toEqual([]);
+    expect(loaded.library.schemaVersion).toBe(LIBRARY_SCHEMA_VERSION);
+    expect(loaded.library.company).toEqual(core.company);
+    const stored = JSON.parse(readFileSync(join(dir, 'library.json'), 'utf8'));
+    expect(stored).toEqual({ ...core, schemaVersion: LIBRARY_SCHEMA_VERSION });
+  });
+
   // protects=a catalog id is its file name; fails_when=a catalog whose id differs from its file name, or an id that is not a safe file name, is stored or loaded; no_claim=catalog contents
   it('refuses unsafe catalog ids and mismatched files', async () => {
     const files = service();
@@ -150,7 +169,7 @@ describe('library storage', () => {
     await files.setLogo({ mimeType: 'image/png', bytes: png });
 
     await expect(
-      files.replace({ library: { ...old, schemaVersion: 2 }, logo: null }),
+      files.replace({ library: { ...old, schemaVersion: LIBRARY_SCHEMA_VERSION + 1 }, logo: null }),
     ).rejects.toThrow();
     expect(names(root)).toEqual(['library']);
 

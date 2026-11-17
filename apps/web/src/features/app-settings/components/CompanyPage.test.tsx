@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { renderApp } from '@/testing/renderApp';
+import { pickOption } from '@/testing/select';
 
 describe('library company page', () => {
   // protects=AC 10 company data in the library; fails_when=fields or the logo are not stored in the library (and written to its files), the logo is accepted with the wrong content or type, or removing it keeps the file; no_claim=quote PDF layout (quotePdf.test)
@@ -34,5 +35,17 @@ describe('library company page', () => {
     library.company.vatNumber = 'IT01234567890';
     await renderApp('/settings/company', { library: { library } });
     expect(await screen.findByLabelText('VAT number')).toHaveValue('IT01234567890');
+  });
+
+  // protects=company country; fails_when=the country is not offered by name, Italy is not the default, or the choice (a country or Other country) is not stored in the library; no_claim=the VAT it implies (domain tests)
+  it('stores the country the company buys in', async () => {
+    const app = await renderApp('/settings/company');
+    const country = await screen.findByRole('combobox', { name: 'Country' });
+    expect(country).toHaveTextContent('Italy');
+    await pickOption(country, 'Germany');
+    expect(app.library.getState().library.company.country).toBe('DE');
+    await pickOption(country, 'Other country');
+    expect(app.library.getState().library.company.country).toBe('other');
+    await waitFor(() => expect(app.libraryRepository.writes).toContain('core'));
   });
 });

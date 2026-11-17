@@ -19,6 +19,7 @@ export type CheckId =
   | 'box_modules' // 7
   | 'panel_capacity' // 8
   | 'box_empty' // 9
+  | 'box_smart_crowded'
   | 'route_invalid'
   | 'target_unreachable'
   | 'riser_mixed_elevation'
@@ -48,6 +49,13 @@ export const connectivityCheckIds: ReadonlySet<CheckId> = new Set([
 
 /** Minimum cross-section per circuit type, mm² (check 1). */
 export const minSectionByType: Partial<Record<string, number>> = { lighting: 1.5, sockets: 2.5 };
+
+/**
+ * Smart devices behind the plate of a small flush box (a 503, up to 3 modules): more than one
+ * rarely fits with the devices in front. Junction boxes and larger boxes have no limit.
+ */
+export const SMALL_BOX_MODULES = 3;
+export const MAX_SMART_IN_SMALL_BOX = 1;
 
 /** Max protective device rating per cross-section, A (check 2). */
 export const maxRatingBySection: readonly [section: number, maxA: number][] = [
@@ -82,7 +90,8 @@ export function boxModules(
     const item = catalog(c.itemId);
     if (!item) continue;
     if (item.category === 'plate') plateSize = item.modules ?? plateSize;
-    else used += (item.modules ?? 0) * c.qty;
+    // Smart devices sit behind the plate and take no module of it.
+    else if (item.category !== 'smart_device') used += (item.modules ?? 0) * c.qty;
   }
   if (plateSize !== undefined && boxSize !== undefined && plateSize > boxSize)
     return { used: plateSize, available: boxSize };
@@ -215,6 +224,20 @@ export function runChecks(
         { kind: 'node', id: n.id },
         { label: n.label, used: capacity.used, available: capacity.available },
       );
+    }
+    const box = n.boxItemId ? catalog(n.boxItemId) : undefined;
+    if (box?.category === 'box' && box.modules !== undefined && box.modules <= SMALL_BOX_MODULES) {
+      const smart = contents.reduce(
+        (sum, c) => sum + (catalog(c.itemId)?.category === 'smart_device' ? c.qty : 0),
+        0,
+      );
+      if (smart > MAX_SMART_IN_SMALL_BOX) {
+        warn(
+          'box_smart_crowded',
+          { kind: 'node', id: n.id },
+          { label: n.label, count: smart, max: MAX_SMART_IN_SMALL_BOX },
+        );
+      }
     }
     if (n.kind === 'terminal_box' && n.status === 'active') {
       const hasPlateOrDevice = contents.some((c) => {

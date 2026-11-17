@@ -15,6 +15,8 @@ export const catalogCategorySchema = z.enum([
   'cable',
   'panel_device',
   'enclosure',
+  /** Smart relays and meters (Shelly): on a DIN rail or inside a box, see `smartMount`. */
+  'smart_device',
 ]);
 
 export const deviceTypeSchema = z.enum([
@@ -31,6 +33,9 @@ export const deviceTypeSchema = z.enum([
   'data',
   'other',
 ]);
+
+/** Where a smart device goes: on the panel's DIN rail, or inside a flush or junction box. */
+export const smartMountSchema = z.enum(['din', 'box']);
 
 export const panelDeviceTypeSchema = z.enum(['mcb', 'rcd', 'rcbo', 'isolator', 'spd', 'other']);
 
@@ -51,6 +56,10 @@ export const catalogAttributesSchema = z.object({
   /** Enclosure layout. */
   rails: z.number().int().positive().optional(),
   modulesPerRail: z.number().int().positive().optional(),
+  /** Smart devices: DIN items take `modules` on a rail; box items take no plate module. */
+  smartMount: smartMountSchema.optional(),
+  /** Smart devices: outputs (relays) or measured channels. */
+  channels: z.number().int().positive().optional(),
 });
 
 export const catalogItemSchema = z.object({

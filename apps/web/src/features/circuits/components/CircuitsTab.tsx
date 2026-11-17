@@ -2,6 +2,7 @@ import { Plus, Spline } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCatalog } from '@/hooks/useCatalog';
+import { canFeedCircuit } from '@epd/domain/catalog/attributes';
 import type { Circuit, ExtraConductorRun } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -43,7 +44,9 @@ export function CircuitsTab() {
   );
 
   if (!panel) return <EmptyState message={t('circuits.noPanel')} />;
-  const protectiveDevices = devices.filter((d) => {
+  // Smart devices only take room on the rail: a circuit never starts at one.
+  const feeders = devices.filter((d) => canFeedCircuit(lookup(d.itemId)));
+  const protectiveDevices = feeders.filter((d) => {
     const type = lookup(d.itemId)?.attributes.panelDeviceType;
     return type === 'mcb' || type === 'rcbo' || type === 'other';
   });
@@ -60,11 +63,11 @@ export function CircuitsTab() {
         <Toolbar aria-label={t('editor.tabs.circuits')}>
           <Button
             variant="primary"
-            disabled={readOnly || devices.length === 0}
+            disabled={readOnly || feeders.length === 0}
             onClick={() =>
               createCircuit(
                 store,
-                (protectiveDevices[0] ?? devices[0])!.id,
+                (protectiveDevices[0] ?? feeders[0])!.id,
                 nextCircuitName(doc, t('circuits.defaultName')),
               )
             }

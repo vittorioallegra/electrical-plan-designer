@@ -171,11 +171,43 @@ const otherPanelDevices = [
   item('spd_type2', 'panel_device', 'pcs', { panelDeviceType: 'spd', poles: '1P+N' }, 2),
 ];
 
+// Shelly smart devices. The Pro line sits on the DIN rail; widths from Shelly's knowledge base
+// (19 mm: 1 module; Pro 3 and Pro 4PM 53 mm: 3 modules). The in-box models take no plate
+// module; they are the Gen3 models. Codes are the store's product codes (shelly.com, 2026-11-17).
+const shellyDin = (
+  [
+    ['shelly_pro_1', 1, 1, 'FG3800235268001'],
+    ['shelly_pro_1pm', 1, 1, 'FG3800235268018'],
+    ['shelly_pro_2', 1, 2, 'FG3800235268025'],
+    ['shelly_pro_2pm', 1, 2, 'FG3800235268032'],
+    ['shelly_pro_3', 3, 3, 'FG3800235268094'],
+    ['shelly_pro_4pm', 3, 4, 'FG3800235268049'],
+    ['shelly_pro_em_50', 1, 2, 'FG3800235268148'],
+  ] as const
+).map(([slug, modules, channels, code]) => ({
+  ...item(slug, 'smart_device', 'pcs', { smartMount: 'din', channels }, modules),
+  code,
+}));
+
+// The 2PM Gen3 sells only as a 2-pack: its code is the pack's (docs/specs/shelly-prices.md).
+const shellyBox = (
+  [
+    ['shelly_1_gen3', 1, 'FG3800235261767'],
+    ['shelly_1pm_gen3', 1, 'FG3800235261798'],
+    ['shelly_1_mini_gen3', 1, 'FG3800235261576'],
+    ['shelly_1pm_mini_gen3', 1, 'FG3800235261590'],
+    ['shelly_2pm_gen3', 2, 'FG3800235261910'],
+  ] as const
+).map(([slug, channels, code]) => ({
+  ...item(slug, 'smart_device', 'pcs', { smartMount: 'box', channels }),
+  code,
+}));
+
 const enclosures = [1, 2, 3].map((rails) =>
   item(`enclosure_${rails * 12}m`, 'enclosure', 'pcs', { rails, modulesPerRail: 12 }, rails * 12),
 );
 
-export const builtinCatalog: readonly CatalogItem[] = [
+const builtinGenericCatalog: readonly CatalogItem[] = [
   ...devices,
   ...plates,
   ...boxes,
@@ -190,6 +222,37 @@ export const builtinCatalog: readonly CatalogItem[] = [
   ...otherPanelDevices,
   ...enclosures,
 ];
+
+/** The built-in Shelly models: built-in items, listed in Settings as a catalog of their own. */
+export const shellyCatalog: readonly CatalogItem[] = [...shellyDin, ...shellyBox];
+
+/**
+ * The built-in catalogs as Settings lists them: the generic items and the Shelly models. Their
+ * items are all built-ins (ids `builtin:<slug>`, names i18n keys); `nameKey` is the i18n key of
+ * the catalog's name, `badgeKey` of its short name in the Catalog column.
+ */
+export const builtinCatalogs: readonly {
+  id: 'builtin' | 'builtin-shelly';
+  nameKey: string;
+  badgeKey: string;
+  items: readonly CatalogItem[];
+}[] = [
+  {
+    id: 'builtin',
+    nameKey: 'catalog.builtinCatalog',
+    badgeKey: 'catalog.builtinBadge',
+    items: builtinGenericCatalog,
+  },
+  {
+    id: 'builtin-shelly',
+    nameKey: 'catalog.shellyCatalog',
+    badgeKey: 'catalog.shellyBadge',
+    items: shellyCatalog,
+  },
+];
+
+/** Every built-in item, from every built-in catalog. */
+export const builtinCatalog: readonly CatalogItem[] = builtinCatalogs.flatMap((c) => c.items);
 
 export const builtinById: ReadonlyMap<string, CatalogItem> = new Map(
   builtinCatalog.map((i) => [i.id, i]),

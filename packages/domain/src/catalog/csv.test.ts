@@ -69,4 +69,21 @@ describe('CSV price lists', () => {
       { category: 'plate', name: 'Plate', unit: 'pcs', modules: 2, attributes: {} },
     ]);
   });
+
+  // protects=smart devices from price lists; fails_when=a smart category alias is not recognized, or the mount does not follow the module width (width: DIN, none: in a box); no_claim=other attributes
+  it('reads smart devices with their mount from the module width', () => {
+    const rows = [
+      ['Shelly Pro 2PM', 'smart', '1'],
+      ['Shelly 1PM Mini', 'Domotica', ''],
+    ];
+    const { items } = itemsFromCsv(
+      rows,
+      { name: 0, category: 1, modules: 2 },
+      { category: 'device' },
+    );
+    expect(items.map((i) => [i.category, i.modules, i.attributes.smartMount])).toEqual([
+      ['smart_device', 1, 'din'],
+      ['smart_device', undefined, 'box'],
+    ]);
+  });
 });

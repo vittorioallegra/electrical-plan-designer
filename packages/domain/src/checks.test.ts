@@ -51,6 +51,28 @@ describe('checks', () => {
     expect(ids(withChange(change))).toContain(id);
   });
 
+  // protects=smart devices in boxes; fails_when=a smart device takes plate modules, two in a 503 do not warn, or one in a 503, two in a 504 or three in a junction box do; no_claim=which models fit physically
+  it('warns about more than one smart device in a 503, never about their modules', () => {
+    const mini = 'builtin:shelly_1pm_mini_gen3';
+    const withSmart = (qty: number, boxItemId?: string, kind?: 'junction_box') =>
+      withChange((d) => {
+        const box = d.nodes[2]!;
+        if (kind) box.kind = kind;
+        if (boxItemId) box.boxItemId = boxItemId;
+        box.contents = [...(box.contents ?? []), { itemId: mini, qty }];
+      });
+    expect(ids(withSmart(1))).toEqual([]);
+    expect(ids(withSmart(2))).toEqual(['box_smart_crowded']);
+    expect(ids(withSmart(2, 'builtin:box_504'))).not.toContain('box_smart_crowded');
+    expect(
+      ids(withSmart(3, 'builtin:junction_box_118x96', 'junction_box')).filter((id) =>
+        id.startsWith('box_'),
+      ),
+    ).toEqual([]);
+    const crowded = runChecks(withSmart(2), settings, catalog)[0]!;
+    expect(crowded.params).toMatchObject({ count: 2, max: 1 });
+  });
+
   // protects=check 3 accepts RCBOs; fails_when=an RCBO-protected circuit is flagged; no_claim=—
   it('check 3 accepts an RCBO as protecting device', () => {
     const d = withChange((x) => {

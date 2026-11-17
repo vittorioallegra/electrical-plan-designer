@@ -1,6 +1,11 @@
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { defaultLibrary, LibraryError, type Library } from '@epd/domain/library';
+import {
+  defaultLibrary,
+  LibraryError,
+  LIBRARY_SCHEMA_VERSION,
+  type Library,
+} from '@epd/domain/library';
 import { readEpl, writeEpl } from './epl';
 
 const now = new Date('2026-10-26T10:00:00.000Z');
@@ -32,6 +37,7 @@ function filled(): Library {
       address: 'Via Roma',
       phone: '1',
       email: 'a@b.c',
+      country: 'IT',
     },
     catalogs: [catalog('a', '2026-10-26T10:00:00.000Z'), catalog('b', '2026-10-27T10:00:00.000Z')],
     priceOverrides: { 'builtin:socket_schuko': { unitPrice: 390 } },
@@ -85,7 +91,14 @@ describe('.epl files', () => {
     expect(codeOf(() => readEpl(zip({ 'other.txt': 'x' })))).toBe('not_a_library');
     expect(codeOf(() => readEpl(zip({ ...ok, 'library.json': 'oops' })))).toBe('invalid');
     expect(
-      codeOf(() => readEpl(zip({ ...ok, 'library.json': json({ ...core, schemaVersion: 2 }) }))),
+      codeOf(() =>
+        readEpl(
+          zip({
+            ...ok,
+            'library.json': json({ ...core, schemaVersion: LIBRARY_SCHEMA_VERSION + 1 }),
+          }),
+        ),
+      ),
     ).toBe('newer_version');
     expect(
       codeOf(() => readEpl(zip({ ...ok, 'library.json': json({ ...core, defaults: {} }) }))),

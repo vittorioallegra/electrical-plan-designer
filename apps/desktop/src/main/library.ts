@@ -16,6 +16,7 @@ import {
   loadLibrary,
   loadLibraryCatalog,
   loadLibraryCore,
+  LIBRARY_SCHEMA_VERSION,
   logoExtension,
   matchesLogoType,
   MAX_LOGO_BYTES,
@@ -163,9 +164,20 @@ export function createLibraryService({
     load: () =>
       serialized(async () => {
         const invalid: string[] = [];
-        const core =
-          (await loadParsed(join(dir, 'library.json'), loadLibraryCore, invalid)) ??
-          defaultLibraryCore();
+        let upgraded = false;
+        const stored = await loadParsed(
+          join(dir, 'library.json'),
+          (json) => {
+            const version = (json as { schemaVersion?: unknown } | null)?.schemaVersion;
+            upgraded = typeof version === 'number' && version < LIBRARY_SCHEMA_VERSION;
+            return loadLibraryCore(json);
+          },
+          invalid,
+        );
+        // An older library is written back at the current version first, so an older app
+        // refuses it instead of setting aside catalogs that hold what it cannot read.
+        if (stored && upgraded) await writeCore(stored);
+        const core = stored ?? defaultLibraryCore();
         const catalogs: ProjectCatalog[] = [];
         const names = await fs.readdir(catalogsDir).catch(() => [] as string[]);
         for (const name of names.sort()) {

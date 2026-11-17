@@ -17,7 +17,7 @@ import { cn } from '@/lib/cn';
 import { formatMoney } from '@/lib/format';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
-import { BUILTIN_FILTER } from './CatalogList';
+import { builtinCatalogs } from '@epd/domain/catalog/builtin';
 import { categories, ItemDialog, type ItemDraft } from './ItemDialog';
 import { ItemDetail, type ItemEdit } from './ItemDetail';
 import { PageHeader } from './PageHeader';
@@ -46,12 +46,18 @@ export function CatalogPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
 
-  const catalogOf = useMemo(
-    () => new Map(catalogs.flatMap((c) => c.items.map((i) => [i.id, c] as const))),
-    [catalogs],
-  );
-  const catalogName = (item: CatalogItem) =>
-    isBuiltin(item) ? t('catalog.builtinBadge') : (catalogOf.get(item.id)?.name ?? '');
+  // The catalog of each item, built-in ones included: the Catalog column and the sidebar filter.
+  const catalogOf = useMemo(() => {
+    const builtins = builtinCatalogs.map((c) => ({
+      id: c.id,
+      name: t(c.badgeKey),
+      items: c.items,
+    }));
+    return new Map(
+      [...builtins, ...catalogs].flatMap((c) => c.items.map((i) => [i.id, c] as const)),
+    );
+  }, [catalogs, t]);
+  const catalogName = (item: CatalogItem) => catalogOf.get(item.id)?.name ?? '';
 
   // The price an item has in the library: a built-in's is an override.
   const priceOf = useMemo(
@@ -66,9 +72,7 @@ export function CatalogPage() {
       items.filter((i) => {
         if (i.archived && !showArchived) return false;
         if (!catalogFilter) return true;
-        return catalogFilter === BUILTIN_FILTER
-          ? isBuiltin(i)
-          : catalogOf.get(i.id)?.id === catalogFilter;
+        return catalogOf.get(i.id)?.id === catalogFilter;
       }),
     [items, showArchived, catalogFilter, catalogOf],
   );
@@ -175,9 +179,14 @@ export function CatalogPage() {
     {
       key: 'name',
       header: t('catalog.name'),
+      // The name takes the room the other columns leave and truncates (full name on hover), so
+      // long names or codes never push the table wider than its pane.
+      className: 'w-full max-w-0',
       cell: (item) => (
         <span className={cn('flex items-center gap-2', item.archived && 'opacity-50')}>
-          <span className="truncate">{itemName(item)}</span>
+          <span className="min-w-0 truncate" title={itemName(item)}>
+            {itemName(item)}
+          </span>
           {item.archived ? <Badge>{t('catalog.archivedBadge')}</Badge> : null}
           {item.missing ? <Badge tone="warning">{t('catalog.missingBadge')}</Badge> : null}
         </span>
@@ -240,8 +249,8 @@ export function CatalogPage() {
             }
           />
         </div>
-        <div className="flex flex-wrap items-center gap-2 px-5 pb-3">
-          <span className={cn(fieldBox, 'flex w-72 items-center gap-2 border-border')}>
+        <div className="flex items-center gap-2 px-5 pb-3">
+          <span className={cn(fieldBox, 'flex w-72 min-w-0 items-center gap-2 border-border')}>
             <Search size={14} className="text-text-faint" aria-hidden />
             <input
               type="text"
@@ -252,17 +261,7 @@ export function CatalogPage() {
               className="min-w-0 flex-1 bg-transparent outline-none"
             />
           </span>
-          <SegmentedControl
-            aria-label={t('catalog.category')}
-            className="max-w-full flex-wrap"
-            value={category}
-            onValueChange={(v) => setCategory(v as CatalogCategory | 'all')}
-            options={[
-              { value: 'all', label: t('catalog.allCategories') },
-              ...categories.map((c) => ({ value: c, label: t(`catalog.categories.${c}`) })),
-            ]}
-          />
-          <label className="ml-auto flex items-center gap-2 text-text-muted">
+          <label className="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap text-text-muted">
             <input
               type="checkbox"
               checked={showArchived}
@@ -275,7 +274,7 @@ export function CatalogPage() {
               type="button"
               aria-pressed={onlyUnpriced}
               onClick={() => setOnlyUnpriced((v) => !v)}
-              className="rounded-xs focus-visible:outline-2"
+              className="shrink-0 rounded-xs focus-visible:outline-2"
             >
               <Badge
                 tone={onlyUnpriced ? 'accent' : 'warning'}
@@ -288,6 +287,18 @@ export function CatalogPage() {
               </Badge>
             </button>
           ) : null}
+        </div>
+        {/* One row that scrolls sideways when the categories do not fit. */}
+        <div className="mx-5 mb-3 overflow-x-auto [scrollbar-width:thin]">
+          <SegmentedControl
+            aria-label={t('catalog.category')}
+            value={category}
+            onValueChange={(v) => setCategory(v as CatalogCategory | 'all')}
+            options={[
+              { value: 'all', label: t('catalog.allCategories') },
+              ...categories.map((c) => ({ value: c, label: t(`catalog.categories.${c}`) })),
+            ]}
+          />
         </div>
         <div className="min-h-0 flex-1 overflow-auto border-t border-border">
           <Table

@@ -27,6 +27,7 @@ export const bomCategoryOrder: BomCategory[] = [
   'plate',
   'enclosure',
   'panel_device',
+  'smart_device',
   'missing',
 ];
 

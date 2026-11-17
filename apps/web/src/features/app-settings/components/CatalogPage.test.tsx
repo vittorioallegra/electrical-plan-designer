@@ -110,7 +110,9 @@ describe('library catalog page', () => {
     );
     await userEvent.click(await screen.findByRole('button', { name: 'Archive' }));
     expect(catalogs()[0]!.items[0]!.archived).toBe(true);
-    expect(screen.queryByRole('gridcell', { name: 'Schuko socket (copy)' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('gridcell', { name: 'Schuko socket (copy)' }),
+    ).not.toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Show archived'));
     expect(screen.getByRole('gridcell', { name: /Schuko socket \(copy\)/ })).toBeInTheDocument();
   });
@@ -285,7 +287,7 @@ describe('library catalog page', () => {
     ).toBeInTheDocument();
   });
 
-  // protects=catalog filter from the sidebar; fails_when=choosing a catalog row shows items of other catalogs, or the built-ins row shows imported ones; no_claim=import
+  // protects=catalog filter from the sidebar; fails_when=choosing a catalog row shows items of other catalogs, the built-ins row shows imported ones or Shelly models, or the Shelly row shows other built-ins; no_claim=import
   it('filters by the catalog chosen in the sidebar', async () => {
     app = await renderApp('/settings/catalog', {
       project: null,
@@ -299,6 +301,11 @@ describe('library catalog page', () => {
     await userEvent.click(within(list).getByRole('link', { name: /Built-in/ }));
     expect(await screen.findByRole('gridcell', { name: 'Schuko socket' })).toBeInTheDocument();
     expect(screen.queryByRole('gridcell', { name: 'Vimar socket' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Shelly Pro 4PM' })).not.toBeInTheDocument();
+    await userEvent.click(within(list).getByRole('link', { name: /Shelly catalog/ }));
+    expect(await screen.findByRole('gridcell', { name: 'Shelly Pro 4PM' })).toBeInTheDocument();
+    expect(screen.getByRole('gridcell', { name: 'Shelly 1PM Mini Gen3' })).toBeInTheDocument();
+    expect(screen.queryByRole('gridcell', { name: 'Schuko socket' })).not.toBeInTheDocument();
   });
 
   // protects=a large catalog without virtualization; fails_when=a 1,300-item catalog does not render every row, or the search over it stops working; no_claim=render time

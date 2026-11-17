@@ -11,6 +11,7 @@ import { createMemoryFileAccess } from '@/lib/repositories/fileAccess';
 import { createMemoryLibraryRepository } from '@/lib/repositories/library';
 import { createMemoryPreferencesRepository } from '@/lib/repositories/preferences';
 import { createMemoryRecoveryRepository } from '@/lib/repositories/recovery';
+import { createMemoryStorePrices } from '@/lib/repositories/storePrices';
 import { createMemoryWindowHost } from '@/lib/repositories/windowHost';
 import { createWorkspace } from '@/stores/editor/workspace';
 import { createLibraryStore } from '@/stores/library/libraryStore';
@@ -24,6 +25,7 @@ export async function renderApp(
     exposeTestHandle = false,
     project = path.startsWith('/project') ? demoProjectFile() : null,
     library: librarySeed = {},
+    storePrices = createMemoryStorePrices(),
   }: {
     lng?: Language;
     exposeTestHandle?: boolean;
@@ -31,6 +33,8 @@ export async function renderApp(
     project?: ProjectFile | null;
     /** Seeds the library (empty by default); `invalid` lists files set aside at start. */
     library?: Partial<LibraryData> & { invalid?: string[] };
+    /** Answers of the online stores (the sample Shelly prices by default). */
+    storePrices?: ReturnType<typeof createMemoryStorePrices>;
   } = {},
 ) {
   const recovery = createMemoryRecoveryRepository();
@@ -53,6 +57,7 @@ export async function renderApp(
         recent: fileAccess.recent,
         windowHost,
         preferences,
+        storePrices,
         workspace,
         library,
       }}
@@ -81,6 +86,7 @@ export async function renderApp(
     fileAccess,
     windowHost,
     preferences,
+    storePrices,
     workspace,
     queryClient,
     library,

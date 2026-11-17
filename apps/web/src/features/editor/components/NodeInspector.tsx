@@ -265,7 +265,9 @@ export function NodeInspector({ node, onDelete }: { node: PlanNode; onDelete: ()
         </PanelSection>
       ) : null}
 
-      {node.kind === 'terminal_box' ? <BoxContents node={node} /> : null}
+      {node.kind === 'terminal_box' || node.kind === 'junction_box' ? (
+        <BoxContents node={node} />
+      ) : null}
 
       <div className="p-3">
         <Button variant="danger-ghost" disabled={readOnly} onClick={onDelete}>

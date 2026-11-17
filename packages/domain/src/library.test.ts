@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import v1 from './library/fixtures/v1.json';
 import {
   defaultLibrary,
+  LIBRARY_SCHEMA_VERSION,
   libraryCoreOf,
   LibraryError,
   loadLibrary,
@@ -37,6 +39,7 @@ function filled(): Library {
       address: 'Via Roma',
       phone: '1',
       email: 'a@b.c',
+      country: 'DE',
     },
     catalogs: [catalog('c1') as never],
     priceOverrides: { 'builtin:socket_schuko': { unitPrice: 390 } },
@@ -75,13 +78,42 @@ describe('library schema', () => {
   it('refuses with a typed error', () => {
     expect(codeOf(() => loadLibrary(null))).toBe('not_a_library');
     expect(codeOf(() => loadLibrary({ company: {} }))).toBe('not_a_library');
-    expect(codeOf(() => loadLibrary({ ...filled(), schemaVersion: 2 }))).toBe('newer_version');
+    expect(
+      codeOf(() => loadLibrary({ ...filled(), schemaVersion: LIBRARY_SCHEMA_VERSION + 1 })),
+    ).toBe('newer_version');
     expect(
       codeOf(() => loadLibrary({ ...filled(), priceOverrides: { a: { unitPrice: -1 } } })),
     ).toBe('invalid');
     expect(
       codeOf(() => loadLibrary({ ...filled(), defaults: { ...filled().defaults, quote: {} } })),
     ).toBe('invalid');
+  });
+
+  // protects=old libraries always open (frozen v1 fixture); fails_when=a schema change breaks loading a version 1 library, loses its data, or leaves the company without Italy as its country; no_claim=storage on disk (main tests)
+  it('loads the frozen v1 fixture at the current version', () => {
+    const library = loadLibrary(structuredClone(v1));
+    expect(library.schemaVersion).toBe(LIBRARY_SCHEMA_VERSION);
+    expect(library.company.country).toBe('IT');
+    expect({
+      ...library,
+      schemaVersion: 1,
+      company: { ...library.company, country: undefined },
+    }).toEqual({ ...v1, company: { ...v1.company, country: undefined } });
+    expect(loadLibraryCore(libraryCoreOf(structuredClone(v1) as never)).schemaVersion).toBe(
+      LIBRARY_SCHEMA_VERSION,
+    );
+  });
+
+  // protects=company country; fails_when=a version 2 library without a country (development builds) does not open with Italy, or a country outside the euro area is accepted; no_claim=VAT rates (vatRates tests)
+  it('fills a missing country and refuses one outside the euro area', () => {
+    const { country: _country, ...company } = filled().company;
+    expect(loadLibrary({ ...filled(), company }).company.country).toBe('IT');
+    expect(
+      loadLibrary({ ...filled(), company: { ...company, country: 'other' } }).company.country,
+    ).toBe('other');
+    expect(codeOf(() => loadLibrary({ ...filled(), company: { ...company, country: 'US' } }))).toBe(
+      'invalid',
+    );
   });
 
   // protects=catalog integrity; fails_when=two catalogs with one id, or an item outside its catalog's id space, are accepted; no_claim=item attribute rules (catalog schema tests)

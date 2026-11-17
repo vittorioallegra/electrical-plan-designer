@@ -35,6 +35,27 @@ describe('BOM', () => {
     expect(qty(lines, 'builtin:mcb_1pn_c16')).toBe(1);
   });
 
+  // protects=smart devices in the BOM; fails_when=smart devices in boxes or on the rail are not counted, or are not listed after the panel devices; no_claim=pricing
+  it('counts smart devices in boxes and on the rail, after the panel devices', () => {
+    const d = ac4Doc();
+    const jb = d.nodes.find((n) => n.kind === 'junction_box')!;
+    jb.contents = [{ itemId: 'builtin:shelly_2pm_gen3', qty: 2 }];
+    d.panels[0]!.devices.push({
+      id: 'pro',
+      itemId: 'builtin:shelly_pro_4pm',
+      rail: 0,
+      slot: 8,
+      label: 'Pro',
+    });
+    const lines = bom(d);
+    expect(qty(lines, 'builtin:shelly_2pm_gen3')).toBe(2);
+    expect(qty(lines, 'builtin:shelly_pro_4pm')).toBe(1);
+    const categories = lines.map((l) => l.category);
+    expect(categories.indexOf('smart_device')).toBeGreaterThan(
+      categories.lastIndexOf('panel_device'),
+    );
+  });
+
   // protects=AC 8 provision boxes; fails_when=a provision box adds cable or loses its conduit/box; no_claim=check 4
   it('AC 8: a provision box adds conduit and box but no cable', () => {
     const d = ac4Doc();

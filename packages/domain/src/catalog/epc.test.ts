@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CatalogFileError, parseEpc, toEpc } from './epc';
+import v1 from './fixtures/v1.epc.json';
+import { CatalogFileError, EPC_SCHEMA_VERSION, parseEpc, toEpc } from './epc';
 import { createProjectCatalog } from './replace';
 
 describe('.epc catalog files', () => {
@@ -28,7 +29,7 @@ describe('.epc catalog files', () => {
     const file = JSON.parse(JSON.stringify(toEpc(catalog)));
     expect(file).toEqual({
       format: 'epc',
-      schemaVersion: 1,
+      schemaVersion: EPC_SCHEMA_VERSION,
       name: 'Vimar 2026',
       items: [
         {
@@ -49,6 +50,15 @@ describe('.epc catalog files', () => {
     });
   });
 
+  // protects=old .epc files always import (frozen v1 fixture); fails_when=a schema change refuses a version 1 file or changes its items; no_claim=—
+  it('reads the frozen v1 fixture', () => {
+    expect(parseEpc(structuredClone(v1), 'v1.epc')).toEqual({
+      name: v1.name,
+      source: 'v1.epc',
+      items: v1.items,
+    });
+  });
+
   // protects=bad .epc files; fails_when=a non-catalog, newer or broken file is accepted; no_claim=—
   it('refuses files it cannot read', () => {
     const code = (json: unknown) => {
@@ -60,7 +70,9 @@ describe('.epc catalog files', () => {
       return 'ok';
     };
     expect(code({ format: 'epd' })).toBe('not_a_catalog');
-    expect(code({ format: 'epc', schemaVersion: 2, name: 'x', items: [] })).toBe('newer_version');
+    expect(
+      code({ format: 'epc', schemaVersion: EPC_SCHEMA_VERSION + 1, name: 'x', items: [] }),
+    ).toBe('newer_version');
     expect(code({ format: 'epc', schemaVersion: 1, name: 'x', items: [{ name: 1 }] })).toBe(
       'invalid',
     );

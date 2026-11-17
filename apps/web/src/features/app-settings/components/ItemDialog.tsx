@@ -18,6 +18,7 @@ export const categories: CatalogCategory[] = [
   'cable',
   'panel_device',
   'enclosure',
+  'smart_device',
 ];
 /** An item as the dialog edits it; the page gives it its id and catalog. */
 export type ItemDraft = Omit<CatalogItem, 'id'>;
@@ -28,6 +29,8 @@ export const withModules = new Set<CatalogCategory>([
   'plate',
   'box',
   'panel_device',
+  // The width of a DIN smart device; in-box ones leave it empty.
+  'smart_device',
 ]);
 
 export function defaultUnit(category: CatalogCategory): 'pcs' | 'm' {

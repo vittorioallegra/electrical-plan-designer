@@ -11,6 +11,7 @@ export const checkOrder: CheckId[] = [
   'conduit_fill',
   'panel_capacity',
   'box_modules',
+  'box_smart_crowded',
   'route_invalid',
   'target_unreachable',
   'box_not_reached',
@@ -78,6 +79,8 @@ export function describeWarning(w: Warning, doc: ProjectDoc, t: TFunction, local
       });
     case 'box_modules':
       return t('checks.messages.box_modules', { name, used: p.used, available: p.available });
+    case 'box_smart_crowded':
+      return t('checks.messages.box_smart_crowded', { name, count: p.count, max: p.max });
     case 'panel_capacity':
       return t(`checks.messages.panel_${String(p.reason)}`, { name });
     case 'route_invalid':

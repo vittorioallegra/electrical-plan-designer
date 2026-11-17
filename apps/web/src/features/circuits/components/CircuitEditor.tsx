@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { canFeedCircuit } from '@epd/domain/catalog/attributes';
 import { cableColorSchema } from '@epd/domain/schema';
 import type { Circuit } from '@epd/domain/types';
 import { useCatalog } from '@/hooks/useCatalog';
@@ -87,10 +88,15 @@ export function CircuitEditor({ circuit }: { circuit: Circuit }) {
                 value={circuit.panelDeviceId}
                 disabled={readOnly}
                 onValueChange={(v) => update('circuit device', (c) => void (c.panelDeviceId = v))}
-                options={devices.map((d) => ({
-                  value: d.id,
-                  label: d.label || itemName(lookup(d.itemId), d.itemId),
-                }))}
+                options={devices
+                  .filter(
+                    // Smart devices never feed a circuit; the current device always shows.
+                    (d) => d.id === circuit.panelDeviceId || canFeedCircuit(lookup(d.itemId)),
+                  )
+                  .map((d) => ({
+                    value: d.id,
+                    label: d.label || itemName(lookup(d.itemId), d.itemId),
+                  }))}
               />
             </label>
             <label className="flex min-w-0 flex-col gap-1 text-small text-text-muted">

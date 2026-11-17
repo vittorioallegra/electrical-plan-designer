@@ -154,29 +154,31 @@ for (const width of [1024, 1280, 1440]) {
   test.describe(`catalog toolbar at ${width}px`, () => {
     test.use({ locale: 'it-IT', viewport: { width, height: 700 } });
 
-    // protects=the category chips fit the catalog toolbar without a scrollbar in Italian; fails_when=the chips (or a wrapper around them) scroll horizontally or reach past the toolbar; no_claim=other languages or the look of the wrapped chips
-    test('the category chips show no horizontal scrollbar in Italian', async ({ page }) => {
+    // protects=the category chips stay on one row that scrolls sideways in Italian; fails_when=the chips wrap onto a second row, their row reaches past the page, the page itself scrolls sideways, or the last category cannot be scrolled into view; no_claim=other languages or the look of the scrollbar
+    test('the category chips stay on one scrolling row in Italian', async ({ page }) => {
       await openDemo(page, 'Apri file…');
       await go(page, '/settings/catalog');
       const chips = page.getByRole('radiogroup', { name: 'Categoria' });
       await expect(chips).toBeVisible();
-      const fit = await chips.evaluate((el) => {
-        const toolbar = el.parentElement!;
-        const scrolls = (node: Element) => node.scrollWidth - node.clientWidth;
-        const right = el.getBoundingClientRect().right;
-        const toolbarRight = toolbar.getBoundingClientRect().right;
-        const overflowing: string[] = [];
-        for (
-          let node: Element | null = el;
-          node && node !== toolbar.parentElement;
-          node = node.parentElement
-        ) {
-          if (scrolls(node) > 0) overflowing.push(node.tagName);
-        }
-        return { overflowing, past: right - toolbarRight };
+      const row = await chips.evaluate((el) => {
+        const scroller = el.parentElement!;
+        const tops = new Set(
+          [...el.children].map((c) => Math.round(c.getBoundingClientRect().top)),
+        );
+        scroller.scrollLeft = scroller.scrollWidth;
+        const last = el.lastElementChild!.getBoundingClientRect();
+        const box = scroller.getBoundingClientRect();
+        return {
+          rows: tops.size,
+          past: box.right - document.documentElement.clientWidth,
+          lastVisible: last.right <= box.right + 1 && last.left >= box.left - 1,
+          page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
       });
-      expect(fit.overflowing).toEqual([]);
-      expect(fit.past).toBeLessThanOrEqual(0);
+      expect(row.rows).toBe(1);
+      expect(row.past).toBeLessThanOrEqual(0);
+      expect(row.lastVisible).toBe(true);
+      expect(row.page).toBe(0);
     });
   });
 }

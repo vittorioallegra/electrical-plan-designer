@@ -105,11 +105,19 @@ export function parsePrice(text: string): number | undefined {
 
 const METERS = new Set(['m', 'mt', 'ml', 'metri', 'metro', 'meter', 'meters', 'metre', 'metres']);
 
+/** Other names of a category in price lists (Italian and short forms). */
+const CATEGORY_ALIASES: Record<string, CatalogCategory> = {
+  smart: 'smart_device',
+  domotica: 'smart_device',
+  dispositivi_smart: 'smart_device',
+};
+
 function parseCategory(text: string | undefined): CatalogCategory | undefined {
   const value = text
     ?.trim()
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
+  if (value && value in CATEGORY_ALIASES) return CATEGORY_ALIASES[value];
   const parsed = catalogCategorySchema.safeParse(value);
   return parsed.success ? parsed.data : undefined;
 }
@@ -162,7 +170,9 @@ export function itemsFromCsv(
       ...(unitPrice === undefined ? {} : { unitPrice }),
       unit,
       ...(modules === undefined ? {} : { modules }),
-      attributes: {},
+      // A smart device with a width goes on the DIN rail; without one, inside a box.
+      attributes:
+        category === 'smart_device' ? { smartMount: modules === undefined ? 'box' : 'din' } : {},
     });
   });
   return result;

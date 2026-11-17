@@ -7,10 +7,12 @@ import type {
   deviceTypeSchema,
   panelDeviceTypeSchema,
   projectCatalogSchema,
+  smartMountSchema,
 } from './schema';
 
 export type CatalogCategory = z.infer<typeof catalogCategorySchema>;
 export type DeviceType = z.infer<typeof deviceTypeSchema>;
+export type SmartMount = z.infer<typeof smartMountSchema>;
 export type PanelDeviceType = z.infer<typeof panelDeviceTypeSchema>;
 export type CatalogAttributes = z.infer<typeof catalogAttributesSchema>;
 export type CatalogItem = z.infer<typeof catalogItemSchema>;

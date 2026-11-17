@@ -1,0 +1,43 @@
+{
+  "format": "epc",
+  "schemaVersion": 1,
+  "name": "Fixture catalog",
+  "items": [
+    {
+      "category": "device",
+      "name": "Socket",
+      "code": "S1",
+      "unitPrice": 520,
+      "unit": "pcs",
+      "modules": 1,
+      "attributes": {
+        "deviceType": "socket"
+      }
+    },
+    {
+      "category": "panel_device",
+      "name": "MCB C16",
+      "code": "M16",
+      "unitPrice": 800,
+      "unit": "pcs",
+      "modules": 1,
+      "attributes": {
+        "panelDeviceType": "mcb",
+        "poles": "1P+N",
+        "ratingA": 16,
+        "curve": "C"
+      }
+    },
+    {
+      "category": "conduit",
+      "name": "Conduit 20",
+      "code": "C20",
+      "unitPrice": 45,
+      "unit": "m",
+      "attributes": {
+        "outerDiameter": 20,
+        "innerDiameter": 14.1
+      }
+    }
+  ]
+}

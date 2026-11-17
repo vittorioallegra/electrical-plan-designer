@@ -1,10 +1,12 @@
-import { useCallback, useState, type ComponentProps } from 'react';
+import { useCallback, useId, useMemo, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isLogoMimeType, matchesLogoType, MAX_LOGO_BYTES } from '@epd/domain/library';
+import { euroCountries, type CompanyCountry } from '@epd/domain/vatRates';
 import { assetBlob } from '@/lib/projectFile/epd';
 import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibrary } from '@/stores/library/useLibrary';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
 import { TextField } from '@/components/ui/TextField';
 import { useToast } from '@/components/ui/Toast';
 import { PageHeader } from './PageHeader';
@@ -51,6 +53,14 @@ export function CompanyPage() {
           }
         />
       ))}
+      <CountryField
+        value={company.country}
+        onChange={(country) =>
+          library.getState().apply((d) => {
+            d.company.country = country;
+          })
+        }
+      />
       <div className="flex items-center gap-3">
         {logo ? (
           <LogoImage
@@ -77,6 +87,43 @@ export function CompanyPage() {
           </Button>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Where the company buys: the euro-area countries by name in the UI language, then "Other
+ * country". It sets the VAT removed from store prices.
+ */
+function CountryField({
+  value,
+  onChange,
+}: {
+  value: CompanyCountry;
+  onChange: (country: CompanyCountry) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const id = useId();
+  const options = useMemo(() => {
+    const names = new Intl.DisplayNames([i18n.language], { type: 'region' });
+    const countries = euroCountries
+      .map((code) => ({ value: code, label: names.of(code) ?? code }))
+      .sort((a, b) => a.label.localeCompare(b.label, i18n.language));
+    return [...countries, { value: 'other', label: t('company.otherCountry') }];
+  }, [i18n.language, t]);
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-small text-text-muted">
+        {t('company.country')}
+      </label>
+      <Select
+        id={id}
+        aria-label={t('company.country')}
+        value={value}
+        options={options}
+        onValueChange={(v) => onChange(v as CompanyCountry)}
+      />
+      <p className="text-small text-text-faint">{t('company.countryHint')}</p>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   createDesktopRecoveryRepository,
   createMemoryRecoveryRepository,
 } from '@/lib/repositories/recovery';
+import { createDesktopStorePrices, createMemoryStorePrices } from '@/lib/repositories/storePrices';
 import {
   createDesktopLibraryRepository,
   createMemoryLibraryRepository,
@@ -69,6 +70,9 @@ const services = {
         storage: localStorageOrUndefined(),
         root: document.documentElement,
       }),
+  storePrices: bridge
+    ? createDesktopStorePrices(bridge.store)
+    : createMemoryStorePrices(undefined, { delayMs: 1500 }),
   windowHost: bridge
     ? createDesktopWindowHost(bridge.window, bridge.menu, bridge.files)
     : createMemoryWindowHost(),

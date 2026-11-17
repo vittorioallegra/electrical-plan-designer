@@ -255,6 +255,14 @@ export interface EpdBridge {
      */
     replace(replacement: LibraryReplacement): Promise<void>;
   };
+  store: {
+    /**
+     * Asks Shelly's online store for the price of each product (`handles`) as sold in `country`
+     * (a euro-area ISO code), one at a time. Never rejects for a product: each answer carries
+     * its status. Main builds the URLs itself on shelly.com.
+     */
+    shellyPrices(country: string, handles: string[]): Promise<StorePrice[]>;
+  };
   preferences: {
     /** The stored theme preference (`system` until the user picks one). */
     getTheme(): Promise<ThemePreference>;
@@ -280,6 +288,26 @@ export interface EpdBridge {
 }
 
 /** IPC channel names shared by main and preload. Grows with each step. */
+/** How Shelly's store answered for one product (`store.shellyPrices`). */
+export type StorePriceStatus =
+  | 'ok'
+  /** Sold out; the price still came back. */
+  | 'unavailable'
+  | 'not_found'
+  /** The store asked to slow down; the products after this one were not asked. */
+  | 'rate_limited'
+  | 'failed'
+  /** The price was not in EUR. */
+  | 'wrong_currency';
+
+export interface StorePrice {
+  handle: string;
+  status: StorePriceStatus;
+  /** Price with VAT in cents, for `ok` and `unavailable`. */
+  priceCents?: number;
+  sku?: string;
+}
+
 export const channels = {
   filesOpen: 'files:open',
   filesSave: 'files:save',
@@ -302,6 +330,7 @@ export const channels = {
   libraryRemoveCatalog: 'library:remove-catalog',
   librarySetLogo: 'library:set-logo',
   libraryReplace: 'library:replace',
+  storeShellyPrices: 'store:shelly-prices',
   preferencesGetTheme: 'preferences:get-theme',
   preferencesSetTheme: 'preferences:set-theme',
   preferencesThemeChanged: 'preferences:theme-changed',

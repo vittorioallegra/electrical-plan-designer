@@ -1,6 +1,7 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isSmartBox } from '@epd/domain/catalog/attributes';
 import { newId } from '@epd/domain/ids';
 import type { BoxPreset } from '@epd/domain/types';
 import { Button } from '@/components/ui/Button';
@@ -13,7 +14,7 @@ import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
 import { PageHeader } from './PageHeader';
 
-const contentCategories = ['device', 'blanking_cover', 'plate'] as const;
+const contentCategories = ['device', 'smart_device', 'blanking_cover', 'plate'] as const;
 
 /** `/settings/presets`: box presets (a box with its contents) that boxes can be placed with. */
 export function PresetsPage() {
@@ -130,7 +131,14 @@ function PresetCard({
   const itemName = useItemName();
   const [adding, setAdding] = useState('');
   const available = (category: string) =>
-    items.filter((i) => i.category === category && !i.archived && !i.missing);
+    items.filter(
+      (i) =>
+        i.category === category &&
+        !i.archived &&
+        !i.missing &&
+        // Only smart devices that go inside a box; DIN ones belong to the panel.
+        (category !== 'smart_device' || isSmartBox(i)),
+    );
   // The preset's own box stays selectable even when it was archived since.
   const boxes = available('box');
   const ownBox = preset.boxItemId ? lookup(preset.boxItemId) : undefined;

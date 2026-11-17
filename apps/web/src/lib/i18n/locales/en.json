@@ -186,6 +186,18 @@
       "rcd_2p_25a_30ma_ac": "RCD 2P 25 A 30 mA type AC",
       "rcd_2p_40a_30ma_a": "RCD 2P 40 A 30 mA type A",
       "rcd_2p_40a_30ma_ac": "RCD 2P 40 A 30 mA type AC",
+      "shelly_1_gen3": "Shelly 1 Gen3",
+      "shelly_1_mini_gen3": "Shelly 1 Mini Gen3",
+      "shelly_1pm_gen3": "Shelly 1PM Gen3",
+      "shelly_1pm_mini_gen3": "Shelly 1PM Mini Gen3",
+      "shelly_2pm_gen3": "Shelly 2PM Gen3",
+      "shelly_pro_1": "Shelly Pro 1",
+      "shelly_pro_1pm": "Shelly Pro 1PM",
+      "shelly_pro_2": "Shelly Pro 2",
+      "shelly_pro_2pm": "Shelly Pro 2PM",
+      "shelly_pro_3": "Shelly Pro 3",
+      "shelly_pro_4pm": "Shelly Pro 4PM",
+      "shelly_pro_em_50": "Shelly Pro EM-50",
       "socket_10_16": "Socket 10/16 A",
       "socket_schuko": "Schuko socket",
       "socket_universal": "Universal socket",
@@ -208,7 +220,8 @@
       "conduit": "Conduits",
       "cable": "Cables",
       "panel_device": "Panel devices",
-      "enclosure": "Enclosures"
+      "enclosure": "Enclosures",
+      "smart_device": "Smart devices"
     },
     "name": "Name",
     "code": "Code",
@@ -225,6 +238,7 @@
     "duplicateTitle": "Duplicate item",
     "copyOf": "{{name}} (copy)",
     "showArchived": "Show archived",
+    "shellyBadge": "Shelly",
     "builtinBadge": "built-in",
     "archivedBadge": "archived",
     "attr": {
@@ -240,7 +254,9 @@
       "sensitivityMa": "RCD sensitivity",
       "rcdType": "RCD type",
       "rails": "DIN rails",
-      "modulesPerRail": "Modules per rail"
+      "modulesPerRail": "Modules per rail",
+      "smartMount": "Mounting",
+      "channels": "Channels"
     },
     "deviceTypes": {
       "socket": "Socket",
@@ -256,6 +272,10 @@
       "data": "Data socket",
       "other": "Other"
     },
+    "smartMounts": {
+      "din": "DIN rail",
+      "box": "Inside a box"
+    },
     "panelDeviceTypes": {
       "mcb": "MCB",
       "rcd": "RCD",
@@ -266,6 +286,7 @@
     },
     "myItems": "My items",
     "catalogs": "Catalogs",
+    "shellyCatalog": "Shelly catalog",
     "builtinCatalog": "Built-in catalog",
     "catalogColumn": "Catalog",
     "export": "Export .epc",
@@ -512,6 +533,7 @@
     "modules": "{{used}} / {{available}} modules",
     "modulesNoBox": "{{used}} modules",
     "empty": "No devices: add a plate with blanking covers or mark the box as provision.",
+    "emptyJunction": "No smart devices in this box.",
     "less": "One less {{name}}",
     "more": "One more {{name}}",
     "remove": "Remove {{name}}",
@@ -541,6 +563,7 @@
       "plate": "Plates",
       "enclosure": "Enclosure",
       "panel_device": "Panel devices",
+      "smart_device": "Smart devices",
       "missing": "Missing catalog items"
     }
   },
@@ -548,6 +571,7 @@
     "noPanel": "This project has no panel yet. Place one on the plan with the Panel tool.",
     "goToPlan": "Go to the plan",
     "palette": "Panel devices",
+    "smartPalette": "Smart devices",
     "modulesShort": "{{count}} mod.",
     "add": "Add {{name}}",
     "rail": "DIN rail {{n}}",
@@ -662,6 +686,7 @@
       "conduit_fill": "Conduit too full",
       "panel_capacity": "Panel does not fit",
       "box_modules": "Box contents exceed the box",
+      "box_smart_crowded": "Too many smart devices in a 503 box",
       "route_invalid": "Invalid routes",
       "target_unreachable": "Unreachable targets",
       "box_not_reached": "Boxes not reached by a circuit",
@@ -682,6 +707,7 @@
       "panel_overflow": "{{name}} does not fit on the DIN rails",
       "panel_overlap": "{{name}} overlaps another device",
       "box_modules": "{{name}}: {{used}} of {{available}} modules used",
+      "box_smart_crowded": "{{name}}: {{count}} smart devices, at most {{max}} fits behind the plate",
       "route_invalid": "{{name}}: {{problem}}",
       "target_unreachable_one": "{{name}}: {{count}} target unreachable",
       "target_unreachable_other": "{{name}}: {{count}} targets unreachable",
@@ -870,7 +896,10 @@
     "logo": "Logo",
     "removeLogo": "Remove logo",
     "logoType": "The logo must be a PNG or JPG image.",
-    "logoTooLarge": "The logo must be at most 2 MB."
+    "logoTooLarge": "The logo must be at most 2 MB.",
+    "country": "Country",
+    "otherCountry": "Other country",
+    "countryHint": "Where you buy materials: Update prices removes this country's VAT from store prices."
   },
   "library": {
     "open": "Settings",
@@ -998,6 +1027,31 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark"
+    }
+  },
+  "shellyPrices": {
+    "open": "Update prices",
+    "otherCountry": "country outside the euro",
+    "title": "Update Shelly prices",
+    "description": "Prices from shelly.com for {{country}}, without VAT ({{rate}}%). Tick the ones to save in the catalog.",
+    "loading": "Asking shelly.com for the prices…",
+    "loadingHint": "It takes a few seconds: shelly.com is asked one model at a time.",
+    "model": "Model",
+    "current": "Current",
+    "next": "New",
+    "status": "Status",
+    "retry": "Try again",
+    "apply": "Update prices",
+    "done_one": "{{count}} price updated.",
+    "done_other": "{{count}} prices updated.",
+    "statuses": {
+      "ok": "New price",
+      "unchanged": "Unchanged",
+      "unavailable": "Sold out",
+      "not_found": "Not on the store",
+      "rate_limited": "Store busy, try again",
+      "failed": "Not available",
+      "wrong_currency": "Not in euros"
     }
   }
 }

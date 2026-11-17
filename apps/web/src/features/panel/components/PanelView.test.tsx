@@ -19,6 +19,20 @@ describe('panel designer', () => {
     expect(screen.getByTestId('device-inspector')).toBeInTheDocument();
   });
 
+  // protects=DIN smart devices in the panel; fails_when=a Shelly Pro is missing from the palette, or does not take its modules on the rail; no_claim=circuit wiring
+  it('adds a Shelly Pro from the smart devices palette with its width', async () => {
+    await renderApp(panelPath, { exposeTestHandle: true });
+    await screen.findByText('Smart devices');
+    expect(screen.queryByRole('button', { name: 'Add Shelly 1PM Mini Gen3' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Add Shelly Pro 4PM' }));
+    const added = devices().at(-1)!;
+    expect(added.itemId).toBe('builtin:shelly_pro_4pm');
+    const others = devices().filter((d) => d !== added && d.rail === added.rail);
+    // It spans 3 modules without overlapping its neighbours.
+    expect(others.every((d) => d.slot < added.slot || d.slot >= added.slot + 3)).toBe(true);
+    expect(screen.getByTestId(`device-${added.id}`)).not.toHaveAttribute('data-warning');
+  });
+
   // protects=AC 12 + check 8 in the UI; fails_when=an overlap is not shown or more rails do not fix overflow; no_claim=—
   it('flags overlaps and overflow, and a second rail fixes them', async () => {
     await renderApp(panelPath, { exposeTestHandle: true });

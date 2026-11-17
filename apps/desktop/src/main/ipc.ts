@@ -30,11 +30,13 @@ import {
   parseRecoverySaveArgs,
   parseSaveArgs,
   parseSaveAsArgs,
+  parseShellyPricesArgs,
   parseThemePreference,
   parseWindowState,
 } from './ipcValidation';
 import { windowContexts } from './window';
 import { revealWindow } from './revealWindow';
+import { fetchShellyPrices } from './shellyStore';
 import { windowTitle } from './windowTitle';
 
 const dialogs: FileDialogs<BrowserWindow> = {
@@ -207,6 +209,11 @@ export function registerIpc({ openWindow }: { openWindow(): void }): void {
   invoke(channels.libraryRemoveCatalog, (_win, [id]) => library.removeCatalog(id as string));
   invoke(channels.librarySetLogo, (_win, [logo]) => library.setLogo(parseLibraryLogo(logo)));
   invoke(channels.libraryReplace, (_win, args) => library.replace(parseLibraryReplacement(args)));
+
+  invoke(channels.storeShellyPrices, (_win, args) => {
+    const { country, handles } = parseShellyPricesArgs(args);
+    return fetchShellyPrices(country, handles);
+  });
 
   invoke(channels.preferencesGetTheme, () => preferences.theme());
   invoke(channels.preferencesSetTheme, (_win, args) =>

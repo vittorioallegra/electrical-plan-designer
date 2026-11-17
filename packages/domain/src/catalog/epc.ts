@@ -6,7 +6,8 @@ import { catalogItemSchema } from './schema';
 import type { ProjectCatalog } from './types';
 
 export const EPC_FORMAT = 'epc';
-export const EPC_SCHEMA_VERSION = 1;
+/** 2: the `smart_device` category. Version 1 files read as they are. */
+export const EPC_SCHEMA_VERSION = 2;
 
 const incomingItemSchema = catalogItemSchema.omit({
   id: true,
@@ -17,7 +18,7 @@ const incomingItemSchema = catalogItemSchema.omit({
 
 export const epcFileSchema = z.object({
   format: z.literal(EPC_FORMAT),
-  schemaVersion: z.literal(EPC_SCHEMA_VERSION),
+  schemaVersion: z.number().int().min(1).max(EPC_SCHEMA_VERSION),
   name: z.string(),
   items: z.array(incomingItemSchema),
 });

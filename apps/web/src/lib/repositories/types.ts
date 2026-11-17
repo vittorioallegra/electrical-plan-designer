@@ -17,6 +17,7 @@ export type {
   SaveAsResult,
   SaveResult,
   SavedFile,
+  StorePrice,
   ThemePreference,
   WindowState,
 } from '@epd/bridge/bridge';
@@ -33,6 +34,7 @@ import type {
   SaveAsResult,
   SaveResult,
   SavedFile,
+  StorePrice,
   ThemePreference,
   WindowState,
 } from '@epd/bridge/bridge';
@@ -83,6 +85,12 @@ export interface WindowHost {
   onMenuCommand(listener: (command: MenuCommand) => void): () => void;
   /** The OS asks to open a project file (double-click, a second launch). */
   onOpenRequest(listener: (path: string) => void): () => void;
+}
+
+/** Prices from online stores; only the desktop app reaches the network (main). */
+export interface StorePrices {
+  /** Shelly's prices with VAT for `country`, one answer per handle (never rejects per product). */
+  shellyPrices(country: string, handles: readonly string[]): Promise<StorePrice[]>;
 }
 
 /** The app preferences, kept per user (the desktop app: main applies them to every window). */

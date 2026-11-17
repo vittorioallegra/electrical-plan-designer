@@ -10,9 +10,11 @@ import {
   usedItemIds,
   type IncomingCatalog,
 } from '@epd/domain/catalog/replace';
-import { builtinCatalog } from '@epd/domain/catalog/builtin';
+import { builtinCatalogs } from '@epd/domain/catalog/builtin';
 import type { ProjectCatalog } from '@epd/domain/catalog/types';
 import type { Library } from '@epd/domain/library';
+import { isEuroCountry } from '@epd/domain/vatRates';
+import { useLibrary } from '@/stores/library/useLibrary';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { IconButton } from '@/components/ui/IconButton';
@@ -26,9 +28,7 @@ import { useEditorServices } from '@/stores/editor/EditorContext';
 import { useLibraryCatalog } from '../hooks/useLibraryCatalog';
 import { ImportDialog } from './ImportDialog';
 import { ReplaceDialog } from './ReplaceDialog';
-
-/** Value of the `catalog` search parameter that filters the Catalog page to the built-ins. */
-export const BUILTIN_FILTER = 'builtin';
+import { ShellyPricesDialog } from './ShellyPricesDialog';
 
 type Importing =
   { mode: 'import' } | { mode: 'replace'; catalog: ProjectCatalog; incoming?: IncomingCatalog };
@@ -36,8 +36,9 @@ type Importing =
 const row = 'flex h-7 items-center gap-2 rounded-sm px-2 text-body';
 
 /**
- * The catalogs under Catalog in the Settings sidebar: a row each (a click filters the Catalog
- * page to it), with replace, export and remove on the imported ones, and the import action.
+ * The catalogs under Catalog in the Settings sidebar: the built-in ones, then the imported ones,
+ * a row each (a click filters the Catalog page to it), with replace, export and remove on the
+ * imported ones, and the import action.
  */
 export function CatalogList() {
   const { t } = useTranslation();
@@ -49,6 +50,8 @@ export function CatalogList() {
   const active = params.get('catalog');
   const [importing, setImporting] = useState<Importing | null>(null);
   const [removing, setRemoving] = useState<ProjectCatalog | null>(null);
+  const [pricing, setPricing] = useState(false);
+  const country = useLibrary((s) => s.library.company.country);
 
   // In the library only box presets use items; a project keeps its own copies.
   const used = useMemo(
@@ -107,7 +110,33 @@ export function CatalogList() {
   return (
     <>
       <ul aria-label={t('catalog.catalogs')} className="flex flex-col gap-0.5">
-        {entry(BUILTIN_FILTER, t('catalog.builtinCatalog'), builtinCatalog.length)}
+        {builtinCatalogs.map((c) =>
+          entry(
+            c.id,
+            t(c.nameKey),
+            c.items.length,
+            c.id === 'builtin-shelly' ? (
+              <Menu
+                trigger={
+                  <IconButton
+                    label={t('catalog.catalogActions', { name: t(c.nameKey) })}
+                    icon={<MoreHorizontal size={14} />}
+                    className="ml-0.5"
+                  />
+                }
+                items={[
+                  {
+                    key: 'prices',
+                    label: t('shellyPrices.open'),
+                    disabled: !isEuroCountry(country),
+                    ...(isEuroCountry(country) ? {} : { hint: t('shellyPrices.otherCountry') }),
+                    onSelect: () => setPricing(true),
+                  },
+                ]}
+              />
+            ) : undefined,
+          ),
+        )}
         {catalogs.map((c) =>
           entry(
             c.id,
@@ -157,6 +186,9 @@ export function CatalogList() {
         onClick={() => setImporting({ mode: 'import' })}
       />
 
+      {pricing && isEuroCountry(country) ? (
+        <ShellyPricesDialog country={country} onClose={() => setPricing(false)} />
+      ) : null}
       {importing?.mode === 'import' ? (
         <ImportDialog
           title={t('catalog.import.title')}

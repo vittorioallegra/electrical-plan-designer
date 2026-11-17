@@ -5,6 +5,7 @@ import type {
   PreferencesRepository,
   RecentRepository,
   RecoveryRepository,
+  StorePrices,
   WindowHost,
 } from '@/lib/repositories/types';
 import type { LibraryStore } from '@/stores/library/libraryStore';
@@ -19,6 +20,8 @@ export interface EditorServices {
   recent: RecentRepository;
   windowHost: WindowHost;
   preferences: PreferencesRepository;
+  /** Prices from online stores (Shelly); a fake outside the desktop app. */
+  storePrices: StorePrices;
   workspace: Workspace;
   /** The app library, loaded before the first render. */
   library: LibraryStore;

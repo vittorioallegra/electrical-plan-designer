@@ -31,6 +31,30 @@ describe('circuits tab', () => {
     expect(within(editor).getByTestId('circuit-targets')).toHaveTextContent('No targets yet.');
   });
 
+  // protects=smart devices never feed a circuit; fails_when=a DIN smart device is offered as a circuit's device; no_claim=the rail layout
+  it('does not offer smart devices as a circuit device', async () => {
+    const tab = await openCircuits();
+    act(() => {
+      store()
+        .getState()
+        .applyCommand('add smart', (d) => {
+          d.doc.panels[0]!.devices.push({
+            id: 'd_smart',
+            itemId: 'builtin:shelly_pro_1pm',
+            rail: 1,
+            slot: 0,
+            label: 'Shelly',
+          });
+        });
+    });
+    await userEvent.click(within(tab).getByRole('row', { name: /Sockets GF/ }));
+    await userEvent.click(
+      within(screen.getByTestId('circuit-editor')).getByLabelText('Protecting device'),
+    );
+    expect((await screen.findAllByRole('option')).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('option', { name: 'Shelly' })).not.toBeInTheDocument();
+  });
+
   // protects=pick-targets mode; fails_when=the banner does not show or picked targets are not listed; no_claim=canvas hit testing (E2E)
   it('picks targets with a banner and lists them', async () => {
     const tab = await openCircuits();

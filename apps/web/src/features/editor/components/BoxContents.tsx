@@ -1,6 +1,7 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isSmartBox } from '@epd/domain/catalog/attributes';
 import type { PlanNode } from '@epd/domain/types';
 import { useEditor, useEditorContext } from '@/stores/editor/EditorContext';
 import { Button } from '@/components/ui/Button';
@@ -15,7 +16,10 @@ import { useItemName } from '@/hooks/useItemName';
 import { useItemsOf } from '@/hooks/useItemsOf';
 import { boxModules } from '@epd/domain/checks';
 
-/** Contents of a terminal box: devices, blanking covers and plate, with a modules counter. */
+/**
+ * Contents of a box. A terminal box holds devices, blanking covers, a plate and smart devices
+ * (behind the plate, no module), with a modules counter; a junction box holds smart devices only.
+ */
 export function BoxContents({ node }: { node: PlanNode }) {
   const { t } = useTranslation();
   const { store } = useEditorContext();
@@ -26,7 +30,18 @@ export function BoxContents({ node }: { node: PlanNode }) {
   const devices = useItemsOf('device');
   const covers = useItemsOf('blanking_cover');
   const plates = useItemsOf('plate');
+  const smartDevices = useItemsOf('smart_device');
+  const smartBox = useMemo(() => smartDevices.filter(isSmartBox), [smartDevices]);
   const [adding, setAdding] = useState('');
+  const junction = node.kind === 'junction_box';
+  const groups = junction
+    ? ([['smart_device', smartBox]] as const)
+    : ([
+        ['device', devices],
+        ['smart_device', smartBox],
+        ['blanking_cover', covers],
+        ['plate', plates],
+      ] as const);
 
   const contents = node.contents ?? [];
   // Available modules: the plate's when there is one, else the box's (checks.ts).
@@ -51,21 +66,27 @@ export function BoxContents({ node }: { node: PlanNode }) {
     <PanelSection
       title={t('contents.title')}
       actions={
-        <span
-          className={cn(
-            'font-mono tabular-nums',
-            over ? 'font-medium text-error' : 'text-text-muted',
-          )}
-          data-testid="modules-counter"
-        >
-          {available !== undefined
-            ? t('contents.modules', { used, available })
-            : t('contents.modulesNoBox', { used })}
-        </span>
+        junction ? null : (
+          <span
+            className={cn(
+              'font-mono tabular-nums',
+              over ? 'font-medium text-error' : 'text-text-muted',
+            )}
+            data-testid="modules-counter"
+          >
+            {available !== undefined
+              ? t('contents.modules', { used, available })
+              : t('contents.modulesNoBox', { used })}
+          </span>
+        )
       }
     >
       <div className="flex flex-col gap-2" data-testid="box-contents">
-        {contents.length === 0 ? <p className="text-text-muted">{t('contents.empty')}</p> : null}
+        {contents.length === 0 ? (
+          <p className="text-text-muted">
+            {t(junction ? 'contents.emptyJunction' : 'contents.empty')}
+          </p>
+        ) : null}
         <ul className="flex flex-col gap-1">
           {contents.map((c) => (
             <li key={c.itemId} className="flex items-center gap-1">
@@ -103,13 +124,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
             onValueChange={setAdding}
             options={[
               { value: '', label: t('contents.choose') },
-              ...(
-                [
-                  ['device', devices],
-                  ['blanking_cover', covers],
-                  ['plate', plates],
-                ] as const
-              ).flatMap(([category, items]) =>
+              ...groups.flatMap(([category, items]) =>
                 items.map((i) => ({
                   value: i.id,
                   label: `${t(`catalog.categories.${category}`)} · ${itemName(i)}`,
@@ -129,7 +144,7 @@ export function BoxContents({ node }: { node: PlanNode }) {
           </Button>
         </div>
 
-        {boxPresets.length > 0 ? (
+        {!junction && boxPresets.length > 0 ? (
           <div className="flex flex-col gap-1 border-t border-border pt-2">
             <span className="text-small text-text-muted">{t('contents.presets')}</span>
             <Select

@@ -1,6 +1,7 @@
 // Validation of everything the renderer sends to main. Pure functions, tested in plain Node.
 import { isAbsolute } from 'node:path';
 import { menuLabelKeys, themePreferences } from '@epd/bridge/bridge';
+import { isEuroCountry, type EuroCountry } from '@epd/domain/vatRates';
 import type {
   CloseChoice,
   ExportFilter,
@@ -230,6 +231,19 @@ export function parseLibraryReplacement(args: unknown[]): LibraryReplacement {
   )
     fail('library');
   return { library: value.library, logo: parseLibraryLogo(value.logo ?? null) };
+}
+
+/** Arguments of `store.shellyPrices`: a euro-area country and up to 20 product handles. */
+export function parseShellyPricesArgs(args: unknown[]): {
+  country: EuroCountry;
+  handles: string[];
+} {
+  const [country, handles] = args;
+  if (!isEuroCountry(country)) fail('country');
+  if (!Array.isArray(handles) || handles.length === 0 || handles.length > 20) fail('handles');
+  for (const handle of handles)
+    if (typeof handle !== 'string' || !/^[a-z0-9-]{1,80}$/.test(handle)) fail('handle');
+  return { country, handles: handles as string[] };
 }
 
 /** The theme preference to store: one of the three known values. */

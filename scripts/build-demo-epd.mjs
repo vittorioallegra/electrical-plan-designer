@@ -92,7 +92,7 @@ export function buildDemoProject(doc) {
 }
 
 export function buildDemoManifest(appVersion) {
-  return { format: 'epd', schemaVersion: 1, appVersion, savedAt: DEMO_SAVED_AT };
+  return { format: 'epd', schemaVersion: 2, appVersion, savedAt: DEMO_SAVED_AT };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -47,6 +47,7 @@ const company = {
   address: 'Via Garibaldi 3, Torino',
   phone: '',
   email: 'info@rossi.example',
+  country: 'IT' as const,
 };
 const meta = { name: 'Casa Bianchi', clientName: 'Mario Bianchi', address: 'Via Po 1' };
 

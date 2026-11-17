@@ -45,6 +45,33 @@ describe('box contents', () => {
     ]);
   });
 
+  // protects=smart devices behind the plate; fails_when=a box smart device is not offered, takes plate modules, or a DIN one is offered; no_claim=the 503 warning (domain checks)
+  it('adds a smart device behind the plate without using modules', async () => {
+    await openBox('n_s1');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Item to add' }));
+    expect(screen.queryByRole('option', { name: /Shelly Pro/ })).toBeNull();
+    await userEvent.click(screen.getByRole('option', { name: 'Smart devices · Shelly 1PM Mini Gen3' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    expect(screen.getByText('Shelly 1PM Mini Gen3')).toBeInTheDocument();
+    expect(screen.getByTestId('modules-counter')).toHaveTextContent('3 / 3 modules');
+  });
+
+  // protects=smart devices in junction boxes; fails_when=a junction box shows no contents, offers devices or plates, or shows a modules counter; no_claim=BOM rendering
+  it('holds only smart devices in a junction box', async () => {
+    await openBox('n_jb1');
+    expect(screen.queryByTestId('modules-counter')).toBeNull();
+    expect(screen.getByText('No smart devices in this box.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('combobox', { name: 'Item to add' }));
+    const options = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(options.slice(1).every((o) => o?.startsWith('Smart devices · Shelly'))).toBe(true);
+    await userEvent.click(screen.getByRole('option', { name: 'Smart devices · Shelly 2PM Gen3' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    const node = store()!
+      .store.getState()
+      .data.doc.nodes.find((n) => n.id === 'n_jb1')!;
+    expect(node.contents).toEqual([{ itemId: 'builtin:shelly_2pm_gen3', qty: 1 }]);
+  });
+
   // protects=library presets apply to a box and stay out of the project; fails_when=the preset is not offered, not applied, the box offers to save one, or applying it does not copy the items it brings; no_claim=placement on canvas
   it('applies a library preset to another box, copying its items into the project', async () => {
     await openBox('n_s1', {

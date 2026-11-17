@@ -34,8 +34,9 @@ type NumericKey =
   | 'ratingA'
   | 'sensitivityMa'
   | 'rails'
-  | 'modulesPerRail';
-type ChoiceKey = 'deviceType' | 'panelDeviceType' | 'curve' | 'rcdType' | 'color';
+  | 'modulesPerRail'
+  | 'channels';
+type ChoiceKey = 'deviceType' | 'panelDeviceType' | 'curve' | 'rcdType' | 'color' | 'smartMount';
 
 const labelClass = 'flex flex-col gap-1 text-small text-text-muted';
 
@@ -114,6 +115,12 @@ export function AttributeFields({
           {choice('curve', ['B', 'C', 'D'], (o) => o)}
           {num('sensitivityMa', 'mA')}
           {choice('rcdType', ['A', 'AC', 'F', 'B'], (o) => o)}
+        </>
+      ) : null}
+      {category === 'smart_device' ? (
+        <>
+          {choice('smartMount', ['din', 'box'], (o) => t(`catalog.smartMounts.${o}`))}
+          {num('channels', '')}
         </>
       ) : null}
       {category === 'enclosure' ? (

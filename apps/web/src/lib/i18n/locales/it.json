@@ -186,6 +186,18 @@
       "rcd_2p_25a_30ma_ac": "Differenziale puro 2P 25 A 30 mA tipo AC",
       "rcd_2p_40a_30ma_a": "Differenziale puro 2P 40 A 30 mA tipo A",
       "rcd_2p_40a_30ma_ac": "Differenziale puro 2P 40 A 30 mA tipo AC",
+      "shelly_1_gen3": "Shelly 1 Gen3",
+      "shelly_1_mini_gen3": "Shelly 1 Mini Gen3",
+      "shelly_1pm_gen3": "Shelly 1PM Gen3",
+      "shelly_1pm_mini_gen3": "Shelly 1PM Mini Gen3",
+      "shelly_2pm_gen3": "Shelly 2PM Gen3",
+      "shelly_pro_1": "Shelly Pro 1",
+      "shelly_pro_1pm": "Shelly Pro 1PM",
+      "shelly_pro_2": "Shelly Pro 2",
+      "shelly_pro_2pm": "Shelly Pro 2PM",
+      "shelly_pro_3": "Shelly Pro 3",
+      "shelly_pro_4pm": "Shelly Pro 4PM",
+      "shelly_pro_em_50": "Shelly Pro EM-50",
       "socket_10_16": "Presa 10/16 A",
       "socket_schuko": "Presa Schuko",
       "socket_universal": "Presa universale",
@@ -208,7 +220,8 @@
       "conduit": "Tubi",
       "cable": "Cavi",
       "panel_device": "Apparecchi da quadro",
-      "enclosure": "Centralini"
+      "enclosure": "Centralini",
+      "smart_device": "Dispositivi smart"
     },
     "name": "Nome",
     "code": "Codice",
@@ -225,6 +238,7 @@
     "duplicateTitle": "Duplica articolo",
     "copyOf": "{{name}} (copia)",
     "showArchived": "Mostra archiviati",
+    "shellyBadge": "Shelly",
     "builtinBadge": "integrato",
     "archivedBadge": "archiviato",
     "attr": {
@@ -240,7 +254,9 @@
       "sensitivityMa": "Sensibilità differenziale",
       "rcdType": "Tipo differenziale",
       "rails": "Guide DIN",
-      "modulesPerRail": "Moduli per guida"
+      "modulesPerRail": "Moduli per guida",
+      "smartMount": "Montaggio",
+      "channels": "Canali"
     },
     "deviceTypes": {
       "socket": "Presa",
@@ -256,6 +272,10 @@
       "data": "Presa dati",
       "other": "Altro"
     },
+    "smartMounts": {
+      "din": "Guida DIN",
+      "box": "In scatola"
+    },
     "panelDeviceTypes": {
       "mcb": "Magnetotermico",
       "rcd": "Differenziale puro",
@@ -266,6 +286,7 @@
     },
     "myItems": "I miei articoli",
     "catalogs": "Cataloghi",
+    "shellyCatalog": "Catalogo Shelly",
     "builtinCatalog": "Catalogo predefinito",
     "catalogColumn": "Catalogo",
     "export": "Esporta .epc",
@@ -512,6 +533,7 @@
     "modules": "{{used}} / {{available}} moduli",
     "modulesNoBox": "{{used}} moduli",
     "empty": "Nessun frutto: aggiungi una placca con coprifori o segna la scatola come predisposizione.",
+    "emptyJunction": "Nessun dispositivo smart in questa scatola.",
     "less": "Un {{name}} in meno",
     "more": "Un {{name}} in più",
     "remove": "Rimuovi {{name}}",
@@ -541,6 +563,7 @@
       "plate": "Placche",
       "enclosure": "Centralino",
       "panel_device": "Apparecchi da quadro",
+      "smart_device": "Dispositivi smart",
       "missing": "Articoli di catalogo mancanti"
     }
   },
@@ -548,6 +571,7 @@
     "noPanel": "Questo progetto non ha ancora un quadro. Posizionalo sulla pianta con lo strumento Quadro.",
     "goToPlan": "Vai alla pianta",
     "palette": "Apparecchi da quadro",
+    "smartPalette": "Dispositivi smart",
     "modulesShort": "{{count}} mod.",
     "add": "Aggiungi {{name}}",
     "rail": "Guida DIN {{n}}",
@@ -662,6 +686,7 @@
       "conduit_fill": "Tubo troppo pieno",
       "panel_capacity": "Il quadro non basta",
       "box_modules": "Contenuto oltre i moduli della scatola",
+      "box_smart_crowded": "Troppi dispositivi smart in una scatola 503",
       "route_invalid": "Percorsi non validi",
       "target_unreachable": "Destinazioni irraggiungibili",
       "box_not_reached": "Scatole non raggiunte da un circuito",
@@ -682,6 +707,7 @@
       "panel_overflow": "{{name}} non entra nelle guide DIN",
       "panel_overlap": "{{name}} si sovrappone a un altro dispositivo",
       "box_modules": "{{name}}: {{used}} di {{available}} moduli usati",
+      "box_smart_crowded": "{{name}}: {{count}} dispositivi smart, dietro la placca ne sta al massimo {{max}}",
       "route_invalid": "{{name}}: {{problem}}",
       "target_unreachable_one": "{{name}}: {{count}} destinazione irraggiungibile",
       "target_unreachable_other": "{{name}}: {{count}} destinazioni irraggiungibili",
@@ -870,7 +896,10 @@
     "logo": "Logo",
     "removeLogo": "Rimuovi logo",
     "logoType": "Il logo deve essere un'immagine PNG o JPG.",
-    "logoTooLarge": "Il logo può pesare al massimo 2 MB."
+    "logoTooLarge": "Il logo può pesare al massimo 2 MB.",
+    "country": "Paese",
+    "otherCountry": "Altro paese",
+    "countryHint": "Dove acquisti il materiale: Aggiorna prezzi toglie l'IVA di questo paese dai prezzi dei negozi."
   },
   "library": {
     "open": "Impostazioni",
@@ -998,6 +1027,31 @@
       "system": "Sistema",
       "light": "Chiaro",
       "dark": "Scuro"
+    }
+  },
+  "shellyPrices": {
+    "open": "Aggiorna prezzi",
+    "otherCountry": "paese fuori dall'euro",
+    "title": "Aggiorna prezzi Shelly",
+    "description": "Prezzi da shelly.com per {{country}}, senza IVA ({{rate}}%). Spunta quelli da salvare nel catalogo.",
+    "loading": "Richiesta dei prezzi a shelly.com…",
+    "loadingHint": "Ci vuole qualche secondo: shelly.com viene interrogato un modello alla volta.",
+    "model": "Modello",
+    "current": "Attuale",
+    "next": "Nuovo",
+    "status": "Stato",
+    "retry": "Riprova",
+    "apply": "Aggiorna prezzi",
+    "done_one": "{{count}} prezzo aggiornato.",
+    "done_other": "{{count}} prezzi aggiornati.",
+    "statuses": {
+      "ok": "Nuovo prezzo",
+      "unchanged": "Invariato",
+      "unavailable": "Esaurito",
+      "not_found": "Non presente nel negozio",
+      "rate_limited": "Negozio occupato, riprova",
+      "failed": "Non disponibile",
+      "wrong_currency": "Non in euro"
     }
   }
 }
