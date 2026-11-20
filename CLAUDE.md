@@ -6,7 +6,7 @@ docs/specs/ and docs/plans/ (desktop-app, local-first, ui-redesign); release: do
 
 ## Commands
 
-Node 24 via nvm (`export PATH=~/.nvm/versions/node/v24.22.1/bin:$PATH` if `node` is missing),
+Node 26 via nvm (`export PATH=~/.nvm/versions/node/v26.13.1/bin:$PATH` if `node` is missing),
 pnpm 12. No Docker, backend or env vars needed.
 
 - `pnpm setup` — install dependencies and Playwright's Chromium
