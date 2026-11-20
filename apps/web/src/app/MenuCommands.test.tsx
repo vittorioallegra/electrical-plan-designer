@@ -89,7 +89,10 @@ describe('native menu commands', () => {
     await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house.json']));
 
     act(() => windowHost.menuCommand({ command: 'settings' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/settings/general'));
+    // Wait for Settings on screen, not just the router state: until React commits the new page the
+    // project frame is still mounted and would run the export in place.
+    await screen.findByRole('heading', { name: 'General' });
+    expect(router.state.location.pathname).toBe('/settings/general');
     act(() => windowHost.menuCommand({ command: 'exportPdf' }));
     await waitFor(() => expect(fileAccess.exports).toEqual(['Demo-house.json', 'Demo-house.pdf']));
     expect(router.state.location.pathname).toBe('/project/plan');
